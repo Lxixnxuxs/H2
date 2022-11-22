@@ -111,11 +111,35 @@ vector<string> split(const string& s, char splitter = ' '){
 }
 
 Func_block parse_func(vector<string>& func){
+    auto res = Func_block("-");
     string head = func[0];
     int state = 0;
+    string cur;
 
     for (char b : head) {
+        switch (state) {
+            case 0:
+                if (b==' '){
+                    state = 1;
+                    cur = "";
+                }
+                break;
 
+
+            case 1:
+                if (b=='('){
+                    state = 2;
+                    res.name = cur;
+                    cur = "";
+                } else if (b!=' '){
+                    cur+=b;
+                }
+
+                break;
+
+            case 2:
+
+        }
     }
 
 /*
@@ -130,13 +154,12 @@ Func_block parse_func(vector<string>& func){
 
         // finding local variables
         for (string& d : datatypes){
-            cout << '1';
             if (d.length()<=func[i].length() and d == func[i].substr(0,d.length())){
                 cout << "found: " << func[i] << endl;
             }
         }
     }
-    return Func_block("no");
+    return ;
 }
 
 #endif //H2_PARSER_HPP
