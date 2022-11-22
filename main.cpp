@@ -3,17 +3,7 @@
 #include "Expression.hpp"
 
 
-// printing vectors
-template <typename T>
-std::ostream& operator<<(std::ostream& os, std::vector<T> vec){
-    os << "[ ";
-    for (T e : vec){
-        os << e << "\n";
-    }
-    os << "]";
 
-    return os;
-}
 
 
 

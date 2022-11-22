@@ -10,11 +10,24 @@
 #include <string>
 #include <fstream>
 #include "global_names.hpp"
+#include "assert.h"
 
 using namespace std;
 
 
 vector<string> datatypes = {"int"};
+
+// printing vectors
+template <typename T>
+std::ostream& operator<<(std::ostream& os, std::vector<T> vec){
+    os << "[ ";
+    for (T e : vec){
+        os << e << "\n";
+    }
+    os << "]";
+
+    return os;
+}
 
 // code copied from stack-overflow:
 #include <algorithm>
@@ -81,9 +94,39 @@ vector<vector<string>> split_functions(const vector<string>& s){
     return res;
 }
 
+vector<string> split(const string& s, char splitter = ' '){
+    vector<string> res;
+    string cur;
+    for (char b : s) {
+        if (b == splitter) {
+            if (!cur.empty()) {
+                res.push_back(cur);
+                cur = "";
+            }
+        } else {
+            cur += b;
+        }
+    }
+    return res;
+}
 
 Func_block parse_func(vector<string>& func){
-    for (int i = 0; i<func.size(); i++){
+    string head = func[0];
+    int state = 0;
+
+    for (char b : head) {
+
+    }
+
+/*
+    if(head[0]!="def"){
+        cout << "ERROR func declaration has to start with 'def' " << endl;
+    }
+    head.erase(head.begin());
+    cout << head << endl;
+*/
+
+    for (int i = 1; i<func.size(); i++){
 
         // finding local variables
         for (string& d : datatypes){
