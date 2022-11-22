@@ -3,4 +3,4 @@ project(H2)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(H2 main.cpp)
+add_executable(H2 main.cpp Expression.hpp)
