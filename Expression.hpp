@@ -10,7 +10,7 @@
 using namespace std;
 
 enum Operation {
-    ADD, SUB, DIV, MUL, LIT, VAR;
+    ADD, SUB, DIV, MUL, LIT, VAR
 };
 
 class Expression {
