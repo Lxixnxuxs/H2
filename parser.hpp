@@ -9,11 +9,59 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include "global_names.hpp"
 
 using namespace std;
 
 
+vector<string> datatypes = {"int"};
 
+// code copied from stack-overflow:
+#include <algorithm>
+#include <cctype>
+#include <locale>
+
+
+// trim from start (in place)
+static inline void ltrim(std::string &s) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+        return !std::isspace(ch);
+    }));
+}
+
+// trim from end (in place)
+static inline void rtrim(std::string &s) {
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+        return !std::isspace(ch);
+    }).base(), s.end());
+}
+
+// trim from both ends (in place)
+static inline void trim(std::string &s) {
+    rtrim(s);
+    ltrim(s);
+}
+// end copied code
+
+
+
+
+
+
+vector<string> read_file(const string& filename){
+    vector<string> res;
+    ifstream f(filename);
+    string temp;
+
+    if (!f.good()) cout<<"file not found";
+
+    while(getline(f,temp)){
+        trim(temp);     // remove the whitespaces at beginning and end
+        res.push_back(temp);
+    }
+
+    return res;
+}
 
 vector<vector<string>> split_functions(const vector<string>& s){
     int func_count = 0;
@@ -33,16 +81,19 @@ vector<vector<string>> split_functions(const vector<string>& s){
     return res;
 }
 
-vector<string> read_file(const string& filename){
-    vector<string> res;
-    fstream f(filename);
-    string temp;
-    while(getline(f,temp)){
-        res.push_back(temp);
+
+Func_block parse_func(vector<string>& func){
+    for (int i = 0; i<func.size(); i++){
+
+        // finding local variables
+        for (string& d : datatypes){
+            cout << '1';
+            if (d.length()<=func[i].length() and d == func[i].substr(0,d.length())){
+                cout << "found: " << func[i] << endl;
+            }
+        }
     }
-
-    return res;
+    return Func_block("no");
 }
-
 
 #endif //H2_PARSER_HPP
