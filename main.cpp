@@ -2,19 +2,13 @@
 #include "parser.hpp"
 #include "Expression.hpp"
 
-
-
-
-
-
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    string filename = "/home/linus/transfer/wsl_transfer/H2/resources/program.txt";
+    Parser P(filename);
 
-    string file = "/home/ray/CLionProjects/H2/resources/program.txt";//"./resources/program.txt";//"a1.txt";//"/home/ray/CLionProjects/H2/resources/program.txt"; //"
-    vector<string> content = read_file(file);
-    vector<vector<string>> funcs = split_functions(content);
-    cout << content<<endl;
-    parse_func(funcs[0]);
+    for (ParsedFunction f : P.split_by_functions()) {
+        std::cout << f.name << "|" << f.arguments << "|" << f.type << "|" << f.expression_block << "\n";
+    }
+
     return 0;
-
 }

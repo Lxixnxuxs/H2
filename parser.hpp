@@ -1,165 +1,114 @@
-//
-// Created by ray on 22.11.22.
-//
-
 #ifndef H2_PARSER_HPP
 #define H2_PARSER_HPP
 
-
 #include <vector>
 #include <string>
+#include <sstream>
 #include <fstream>
-#include "global_names.hpp"
-#include "assert.h"
+#include "ParsedFunction.hpp"
 
-using namespace std;
+class Parser {
+    std::string filename;
+    std::string file_content;
 
-
-vector<string> datatypes = {"int"};
-
-// printing vectors
-template <typename T>
-std::ostream& operator<<(std::ostream& os, std::vector<T> vec){
-    os << "[ ";
-    for (T e : vec){
-        os << e << "\n";
-    }
-    os << "]";
-
-    return os;
-}
-
-// code copied from stack-overflow:
-#include <algorithm>
-#include <cctype>
-#include <locale>
-
-
-// trim from start (in place)
-static inline void ltrim(std::string &s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }));
-}
-
-// trim from end (in place)
-static inline void rtrim(std::string &s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }).base(), s.end());
-}
-
-// trim from both ends (in place)
-static inline void trim(std::string &s) {
-    rtrim(s);
-    ltrim(s);
-}
-// end copied code
-
-
-
-
-
-
-vector<string> read_file(const string& filename){
-    vector<string> res;
-    ifstream f(filename);
-    string temp;
-
-    if (!f.good()) cout<<"file not found";
-
-    while(getline(f,temp)){
-        trim(temp);     // remove the whitespaces at beginning and end
-        res.push_back(temp);
+    /**
+     * Computes the position of the first character present in the next occurrence of @param s
+     * starting from position @param i
+     */
+    size_t find_next_string(size_t i, std::string s) {
+        return file_content.find(s, i);
     }
 
-    return res;
-}
+    /**
+     * Computes the number of characters between position @param i and the next occurrence of the character @param c
+     * starting from i, excluding position i
+     */
+    size_t num_chars_until(size_t i, char c) {
+        return file_content.find(c, i) - i;
+    }
 
-vector<vector<string>> split_functions(const vector<string>& s){
-    int func_count = 0;
-
-    // list of functions. Each func replesented by rows
-    vector<vector<string>> res;
-    for (const string& l : s){
-
-        // new func found
-        if (l.substr(0,3)=="def"){
-            res.push_back(vector<string>());
-            func_count++;
+    /**
+     * Computes the position of the next non-whitespace (newline, whitespace, tab) character starting from @param i
+     */
+    size_t next_non_whitespace_character(size_t i) {
+        size_t j = i;
+        while (j < file_content.size() &&
+              (file_content.at(j) == '\n' || file_content.at(j) == ' ' || file_content.at(j) == '\r')) {
+            j++;
         }
-
-        res[func_count-1].push_back(l);
+        return j;
     }
-    return res;
-}
 
-vector<string> split(const string& s, char splitter = ' '){
-    vector<string> res;
-    string cur;
-    for (char b : s) {
-        if (b == splitter) {
-            if (!cur.empty()) {
-                res.push_back(cur);
-                cur = "";
-            }
-        } else {
-            cur += b;
-        }
-    }
-    return res;
-}
+    /**
+     * Computes the position of the corresponding closing bracket starting from @param i = (position+1) of its opening
+     * bracket. If @param isCurly true, matches for curly brackets. If false matches for normal brackets
+     */
+    size_t pos_matching_bracket(size_t i, bool isCurly) {
+        char b = isCurly ? '{' : '(';
+        char c = isCurly ? '}' : ')';
 
-Func_block parse_func(vector<string>& func){
-    auto res = Func_block("-");
-    string head = func[0];
-    int state = 0;
-    string cur;
+        size_t counter = 0, j = i;
 
-    for (char b : head) {
-        switch (state) {
-            case 0:
-                if (b==' '){
-                    state = 1;
-                    cur = "";
-                }
+        while (j < file_content.size()) {
+            if (file_content.at(j) == c && counter == 0) {
                 break;
-
-
-            case 1:
-                if (b=='('){
-                    state = 2;
-                    res.name = cur;
-                    cur = "";
-                } else if (b!=' '){
-                    cur+=b;
-                }
-
-                break;
-
-            case 2:
-
-        }
-    }
-
-/*
-    if(head[0]!="def"){
-        cout << "ERROR func declaration has to start with 'def' " << endl;
-    }
-    head.erase(head.begin());
-    cout << head << endl;
-*/
-
-    for (int i = 1; i<func.size(); i++){
-
-        // finding local variables
-        for (string& d : datatypes){
-            if (d.length()<=func[i].length() and d == func[i].substr(0,d.length())){
-                cout << "found: " << func[i] << endl;
+            } else if (file_content.at(j) == c && counter > 0) {
+                counter--;
+            } else if (file_content.at(j) == b) {
+                counter++;
             }
+
+            j++;
         }
+
+        return j < file_content.size() ? j : -1;
     }
-    return ;
-}
+
+public:
+    Parser(std::string& filename): filename(filename) {
+        std::ifstream f(filename);
+        std::stringstream buffer;
+
+        if (!f.good()) {
+            std::cerr << "file not found";
+        }
+
+        buffer << f.rdbuf();
+
+        file_content =  buffer.str();
+    };
+
+    std::vector<ParsedFunction> split_by_functions() {
+        std::vector<ParsedFunction> functions;
+
+        size_t function_pos = find_next_string(0, "def");
+
+        while (function_pos != std::string::npos) {
+            size_t f_name_pos = next_non_whitespace_character(function_pos + 3);
+            size_t f_name_end_pos = num_chars_until(f_name_pos, '(');
+
+            size_t f_args_pos = find_next_string(f_name_pos, "(") + 1;
+            size_t f_args_end_pos = pos_matching_bracket(f_args_pos, false);
+
+            size_t f_type_pos =
+                    next_non_whitespace_character(next_non_whitespace_character(f_args_end_pos + 1) + 2);
+            size_t f_type_end_pos = find_next_string(f_type_pos, " ");
+
+            size_t f_block_pos = next_non_whitespace_character(f_type_end_pos);
+            size_t f_block_end_pos = pos_matching_bracket(f_block_pos + 1, true);
+
+            ParsedFunction f(file_content.substr(f_name_pos, f_name_end_pos),
+                             file_content.substr(f_args_pos, f_args_end_pos - f_args_pos),
+                             file_content.substr(f_type_pos, f_type_end_pos - f_type_pos),
+                             file_content.substr(f_block_pos, f_block_end_pos - f_block_pos + 1));
+
+            functions.push_back(f);
+
+            function_pos = find_next_string(function_pos + 1, "def");
+        }
+
+        return functions;
+    }
+};
 
 #endif //H2_PARSER_HPP
