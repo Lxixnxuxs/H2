@@ -8,7 +8,6 @@
 #include "ParsedFunction.hpp"
 
 class Parser {
-    std::string filename;
     std::string file_content;
 
     /**
@@ -65,18 +64,25 @@ class Parser {
     }
 
 public:
-    Parser(std::string& filename): filename(filename) {
+    Parser() {};
+
+    Parser(std::string& filename) {
         std::ifstream f(filename);
+
+        read(f);
+    };
+
+    void read(std::ifstream& filestream) {
         std::stringstream buffer;
 
-        if (!f.good()) {
-            std::cerr << "file not found";
-        }
-
-        buffer << f.rdbuf();
+        buffer << filestream.rdbuf();
 
         file_content =  buffer.str();
-    };
+    }
+
+    std::string& get_file_content() {
+        return file_content;
+    }
 
     std::vector<ParsedFunction> split_by_functions() {
         std::vector<ParsedFunction> functions;
