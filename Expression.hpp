@@ -20,8 +20,6 @@ class Expression {
     string reg;
 
 public:
-    Expression(): a(nullptr), b(nullptr), op(NONE), d(0), reg("") {};
-
     Expression(Expression* a, Expression* b, Operation op, string reg, int d = 0):
                 a(a), b(b), op(op), d(d), reg(reg) {};
 
