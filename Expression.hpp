@@ -6,7 +6,7 @@
 using namespace std;
 
 enum Operation {
-    ADD, SUB, DIV, MUL, LIT, VAR
+    ADD, SUB, DIV, MUL, LIT, VAR, NONE
 };
 
 class Expression {
@@ -20,9 +20,10 @@ class Expression {
     string reg;
 
 public:
+    Expression(): a(nullptr), b(nullptr), op(NONE), d(0), reg("") {};
+
     Expression(Expression* a, Expression* b, Operation op, string reg, int d = 0):
                 a(a), b(b), op(op), d(d), reg(reg) {};
-
 
     static string compile(Expression& e) {
         if (e.op == VAR) {
