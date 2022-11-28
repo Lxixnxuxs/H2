@@ -8,14 +8,12 @@
 typedef std::string string;
 
 
-class Accumulator{
-public:
+struct Accumulator {
     string code;
     std::map<string,int> bookmarks; // pointing to a position in the string
 
-
     Accumulator(){
-        code = "insert initial code!!!\n"; // insert initial code
+        code = "insert initial code\n"; // insert initial code
     }
 
     void push(const string& s, bool add_nextline = true){
@@ -29,7 +27,7 @@ public:
 
     void insert_at(const string& bookmark, const string& text, bool add_nextline = true){
         int pos = bookmarks[bookmark];
-        string nextl = (add_nextline) ? "\n" : "";
+        string nextl = add_nextline ? "\n" : "";
         code = code.substr(0, pos) + text + nextl +
                code.substr(pos, code.size() - pos);
 
@@ -38,7 +36,7 @@ public:
 
 };
 
-
+/*
 int main(){
     //string s = "uselesstext";
     //std::cout << s.substr(3,3) << std::endl;
@@ -49,3 +47,4 @@ int main(){
     a.insert_at("p1","in between!");
     std::cout << a.code;
 }
+ */

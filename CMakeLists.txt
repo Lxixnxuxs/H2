@@ -5,4 +5,4 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_subdirectory(test)
 
-add_executable(H2 main.cpp Expression.hpp)
+add_executable(H2 main.cpp Expression.hpp ParserMain.hpp)

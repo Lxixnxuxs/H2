@@ -5,10 +5,33 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
+#include <functional>
+#include <cctype>
+#include <locale>
 #include "ParsedFunction.hpp"
 
-class Parser {
+struct Parser {
     std::string file_content;
+
+    // trim from start
+    static inline std::string &ltrim(std::string &s) {
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+                                        std::not1(std::ptr_fun<int, int>(std::isspace))));
+        return s;
+    }
+
+    // trim from end
+    static inline std::string &rtrim(std::string &s) {
+        s.erase(std::find_if(s.rbegin(), s.rend(),
+                             std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+        return s;
+    }
+
+    // trim from both ends
+    static inline std::string &trim(std::string s) {
+        return ltrim(rtrim(s));
+    }
 
     /**
      * Computes the position of the first character present in the next occurrence of @param s
@@ -63,6 +86,22 @@ class Parser {
         return j < file_content.size() ? j : -1;
     }
 
+    std::vector<std::string> extract_statements(std::string s) {
+        size_t pos = 0, pos_end;
+        std::vector<std::string> statements;
+
+        pos_end = s.find(';', pos);
+
+        while (pos_end != std::string::npos) {
+            statements.push_back(trim(s.substr(pos, pos_end - pos)));
+
+            pos = pos_end + 1;
+            pos_end = s.find(';', pos);
+        }
+
+        return statements;
+    }
+
 public:
     Parser() {};
 
@@ -100,13 +139,14 @@ public:
                     next_non_whitespace_character(next_non_whitespace_character(f_args_end_pos + 1) + 2);
             size_t f_type_end_pos = find_next_string(f_type_pos, " ");
 
-            size_t f_block_pos = next_non_whitespace_character(f_type_end_pos);
-            size_t f_block_end_pos = pos_matching_bracket(f_block_pos + 1, true);
+            size_t f_block_pos = next_non_whitespace_character(f_type_end_pos) + 1;
+            size_t f_block_end_pos = pos_matching_bracket(f_block_pos + 1, true) - 1;
 
             ParsedFunction f(file_content.substr(f_name_pos, f_name_end_pos),
                              file_content.substr(f_args_pos, f_args_end_pos - f_args_pos),
                              file_content.substr(f_type_pos, f_type_end_pos - f_type_pos),
-                             file_content.substr(f_block_pos, f_block_end_pos - f_block_pos + 1));
+                             extract_statements(
+                             file_content.substr(f_block_pos, f_block_end_pos - f_block_pos + 1)));
 
             functions.push_back(f);
 
