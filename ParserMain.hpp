@@ -59,8 +59,9 @@ struct ParserMain {
         }
 
         size_t stack_frame_size = main_f.current_offset;  //*
-        acc.insert_at("dec_stackframe","subq $"+std::to_string(stack_frame_size) + ", %rsp");
-        acc.push("addq $"+std::to_string(stack_frame_size) + ", %rsp");
+        acc.insert_at("dec_stackframe","addq $"+std::to_string(stack_frame_size) + ", %rsp");
+        acc.push("subq $"+std::to_string(stack_frame_size) + ", %rsp");
+        acc.push("ret");
 
         return acc.code;
     }
