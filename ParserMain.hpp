@@ -20,7 +20,7 @@ struct ParserMain {
     std::string compile() {
         std::vector<ParsedFunction> functions = Parser::split_by_functions(file_content);
         ParsedFunction main_f = functions[0];
-        //Parser::parse_arguments(main_f);
+        Parser::parse_arguments(main_f);
         Accumulator acc;
 
         acc.set_bookmark("dec_stackframe");
@@ -30,11 +30,9 @@ struct ParserMain {
             // return statement
             if (statement.find("return") != std::string::npos) {
                 Expression e = *Parser::parse_expression(
-                        Parser::s_substring(statement, 6, statement.size()), 0, "%rax");
+                        Parser::s_substring(statement, 6, statement.size()), main_f, 0, "%rax");
 
                 acc.push(Expression::compile(e));
-                acc.push("store {expr reg} {var addr + rsp}"); //*
-
             // declaration statement
             } else if (statement.find("int") != std::string::npos) {
                 auto type = Parser::read_until(statement, ' ');
@@ -43,20 +41,20 @@ struct ParserMain {
 
                 Parser::add_variable(main_f,var_name,type);
 
-                Expression e = *Parser::parse_expression(statement);
+                Expression e = *Parser::parse_expression(statement, main_f, 0, "%rax");
                 acc.push(Expression::compile(e));
 
-                acc.push("mov DWROD %rsp ["+std::to_string(main_f.var_to_offset[var_name])+"], {expr reg}"); //*
+                acc.push("mov DWROD %rax, %rsp [-"+std::to_string(main_f.var_to_offset[var_name])+"]"); //*
 
                 // assignment
             } else {
                 auto var_name = Parser::read_until(statement, ' ');
                 Parser::read_until(statement, '=');
 
-                Expression e = *Parser::parse_expression(statement);
+                Expression e = *Parser::parse_expression(statement, main_f, 0, "%rax");
                 acc.push(Expression::compile(e));
 
-                acc.push("mov DWROD %rsp ["+std::to_string(main_f.var_to_offset[var_name])+"], {expr reg}"); //*
+                acc.push("mov %rax, DWROD %rsp [-" + std::to_string(main_f.var_to_offset[var_name]) + "]"); //*
             }
         }
 

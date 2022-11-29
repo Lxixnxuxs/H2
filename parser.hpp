@@ -13,9 +13,9 @@
 #include "Expression.hpp"
 
 namespace Parser {
-    char operators[] = {'+', '-', '*', '/'};
-    std::string regs[] = {"%rcx", "%r8", "%r9", "%r10", "%r11"};
-    std::map<std::string, size_t> type_to_size = { {"int", 4} };
+    static char operators[] = {'+', '-', '*', '/'};
+    static std::string regs[] = {"%rcx", "%r8", "%r9", "%r10", "%r11"};
+    static std::map<std::string, size_t> type_to_size = { {"int", 4} };
 
     // trim from start
     inline std::string &ltrim(std::string &s) {
@@ -171,10 +171,27 @@ namespace Parser {
         return functions;
     }
 
-    Expression* parse_expression(std::string s, int i = 0, std::string r = "") {
+    Expression* parse_expression(std::string s, ParsedFunction& func, int i = 0, std::string r = "") {
+        if (r.empty()) {
+            r = regs[i];
+        }
+
         if (find_operator(s) == std::string::npos) {
             // base case
-            Expression* e = new Expression(nullptr, nullptr, Operation::LIT, regs[i], std::stoi(s));
+            std::string s1 = s;
+            Parser::trim(s1);
+
+            for(auto i = func.var_to_offset.begin(); i != func.var_to_offset.end(); i++){
+                auto key = (*i).first;
+                if (key == s1) {
+                    // variable
+                    Expression* e = new Expression(nullptr, nullptr, Operation::VAR, r,
+                                                   0, -func.var_to_offset[key]);
+                    return e;
+                }
+            }
+
+            Expression* e = new Expression(nullptr, nullptr, Operation::LIT, r, std::stoi(s));
             return e;
         } else {
             // recursive call
@@ -188,21 +205,17 @@ namespace Parser {
 
             Expression* e;
 
-            if (r.empty()) {
-                r = regs[i];
-            }
-
             if (op == '+') {
-                e = new Expression(parse_expression(left_operand, i), parse_expression(right_operand, i + 1),
+                e = new Expression(parse_expression(left_operand, func, i), parse_expression(right_operand, func, i + 1),
                                    Operation::ADD, r, 0);
             } else if (op == '-') {
-                e = new Expression(parse_expression(left_operand, i), parse_expression(right_operand, i + 1),
+                e = new Expression(parse_expression(left_operand, func, i), parse_expression(right_operand, func, i + 1),
                                    Operation::SUB, r, 0);
             } else if (op == '*') {
-                e = new Expression(parse_expression(left_operand, i), parse_expression(right_operand, i + 1),
+                e = new Expression(parse_expression(left_operand, func, i), parse_expression(right_operand, func, i + 1),
                                    Operation::MUL, r, 0);
             } else if (op == '/') {
-                e = new Expression(parse_expression(left_operand, i), parse_expression(right_operand, i + 1),
+                e = new Expression(parse_expression(left_operand, func, i), parse_expression(right_operand, func, i + 1),
                                    Operation::DIV, r, 0);
             }
 
@@ -210,14 +223,13 @@ namespace Parser {
         }
     }
 
-    void add_variable(ParsedFunction p, std::string name, std::string type){
+    void add_variable(ParsedFunction& p, std::string name, std::string type){
         p.var_to_type[name] = type;
-        p.var_to_offset[name] = p.current_offset;
         p.current_offset += type_to_size[type];
+        p.var_to_offset[name] = p.current_offset;
     }
 
-
-    void parse_arguments(ParsedFunction p){
+    void parse_arguments(ParsedFunction& p){
         std::string text = p.arguments;
         while (not Parser::trim(text).empty()) {
             auto type = Parser::read_until(text);

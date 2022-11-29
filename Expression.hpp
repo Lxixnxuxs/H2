@@ -16,16 +16,17 @@ class Expression {
     Operation op;
 
     int d;
+    int offset;
 
     string reg;
 
 public:
-    Expression(Expression* a, Expression* b, Operation op, string reg, int d = 0):
-                a(a), b(b), op(op), d(d), reg(reg) {};
+    Expression(Expression* a, Expression* b, Operation op, string reg="", int d = 0, int offset = 0):
+                a(a), b(b), op(op), d(d), reg(reg), offset(offset) {};
 
     static string compile(Expression& e) {
         if (e.op == VAR) {
-            return "";
+            return "mov DWROD %rsp [" + to_string(e.offset) + "], " + e.reg ;
         } else if (e.op == LIT) {
             return "movq $" + to_string(e.d) + "," + e.reg + "\n";
         }
