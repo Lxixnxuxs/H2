@@ -24,7 +24,7 @@ int main() {
     string filename = "/home/linus/transfer/wsl_transfer/H2/resources/program.txt";
     ParserMain p(filename);
 
-    std::cout << p.to_assembly() << endl;
+    std::cout << p.compile() << endl;
 
     return 0;
 }
