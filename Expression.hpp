@@ -26,6 +26,8 @@ public:
     static string compile(Expression& e) {
         if (e.op == VAR) {
             return "";
+        } else if (e.op == LIT) {
+            return "movq $" + to_string(e.d) + "," + e.reg + "\n";
         }
 
         Expression *a=e.a, *b=e.b;
@@ -38,7 +40,7 @@ public:
                 case DIV : res = a->d / b->d; break;
             }
 
-            return "movl $" + to_string(res) + "," + e.reg;
+            return "movq $" + to_string(res) + "," + e.reg + "\n";
         } else {
 
             string com = compile(*e.a);
@@ -52,7 +54,7 @@ public:
                 case DIV: op_assembly = "idivq"; break;
             }
 
-            com += op_assembly + " " + e.a->reg + "," + e.b->reg + "\nmovq " + e.b->reg + "," + e.reg;
+            com += op_assembly + " " + e.a->reg + "," + e.b->reg + "\nmovq " + e.b->reg + "," + e.reg + "\n";
 
             return com;
         }

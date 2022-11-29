@@ -52,10 +52,10 @@ public:
         return std::string::npos;
     }
 
-    Expression* parse_expression(std::string s, int i = 0) {
+    Expression* parse_expression(std::string s, int i = 0, std::string r = "") {
         if (find_operator(s) == std::string::npos) {
             // base case
-            Expression* e = new Expression(nullptr, nullptr, Operation::LIT, "", std::stoi(s));
+            Expression* e = new Expression(nullptr, nullptr, Operation::LIT, regs[i], std::stoi(s));
             return e;
         } else {
             // recursive call
@@ -69,18 +69,22 @@ public:
 
             Expression* e;
 
+            if (r.empty()) {
+                r = regs[i];
+            }
+
             if (op == '+') {
                 e = new Expression(parse_expression(left_operand, i), parse_expression(right_operand, i + 1),
-                                   Operation::ADD, regs[i], 0);
+                                   Operation::ADD, r, 0);
             } else if (op == '-') {
                 e = new Expression(parse_expression(left_operand, i), parse_expression(right_operand, i + 1),
-                                   Operation::SUB, regs[i], 0);
+                                   Operation::SUB, r, 0);
             } else if (op == '*') {
                 e = new Expression(parse_expression(left_operand, i), parse_expression(right_operand, i + 1),
-                                   Operation::MUL, regs[i], 0);
+                                   Operation::MUL, r, 0);
             } else if (op == '/') {
                 e = new Expression(parse_expression(left_operand, i), parse_expression(right_operand, i + 1),
-                                   Operation::DIV, regs[i], 0);
+                                   Operation::DIV, r, 0);
             }
 
             return e;
@@ -130,7 +134,7 @@ public:
 
             // return statement
             if (statement.find("return") != std::string::npos) {
-                Expression e = *parse_expression(s_substring(statement, 6, statement.size()));
+                Expression e = *parse_expression(s_substring(statement, 6, statement.size()), 0, "%rax");
 
                 acc.push(Expression::compile(e));
                 acc.push("   store {expr reg} {var addr + rsp}"); //*
