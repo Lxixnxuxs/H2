@@ -20,7 +20,7 @@ struct ParserMain {
     std::string compile() {
         std::vector<ParsedFunction> functions = Parser::split_by_functions(file_content);
         ParsedFunction main_f = functions[0];
-        Parser::parse_arguments(main_f);
+        //Parser::parse_arguments(main_f);
         Accumulator acc;
 
         acc.set_bookmark("dec_stackframe");
@@ -33,7 +33,7 @@ struct ParserMain {
                         Parser::s_substring(statement, 6, statement.size()), 0, "%rax");
 
                 acc.push(Expression::compile(e));
-                acc.push("   store {expr reg} {var addr + rsp}"); //*
+                acc.push("store {expr reg} {var addr + rsp}"); //*
 
             // declaration statement
             } else if (statement.find("int") != std::string::npos) {
@@ -46,8 +46,7 @@ struct ParserMain {
                 Expression e = *Parser::parse_expression(statement);
                 acc.push(Expression::compile(e));
 
-
-                acc.push("store {expr reg} {"+std::to_string(main_f.var_to_offset[var_name])+" + %rsp}"); //*
+                acc.push("mov DWROD %rsp ["+std::to_string(main_f.var_to_offset[var_name])+"], {expr reg}"); //*
 
                 // assignment
             } else {
@@ -57,13 +56,13 @@ struct ParserMain {
                 Expression e = *Parser::parse_expression(statement);
                 acc.push(Expression::compile(e));
 
-                acc.push("store {expr reg} {"+std::to_string(main_f.var_to_offset[var_name])+" + %rsp}"); //*
+                acc.push("mov DWROD %rsp ["+std::to_string(main_f.var_to_offset[var_name])+"], {expr reg}"); //*
             }
         }
 
         size_t stack_frame_size = main_f.current_offset;  //*
-        acc.insert_at("dec_stackframe","   subi #rsp $"+std::to_string(stack_frame_size));
-        acc.push("   addi #rsp $"+std::to_string(stack_frame_size));
+        acc.insert_at("dec_stackframe","subi #rsp $"+std::to_string(stack_frame_size));
+        acc.push("addi #rsp $"+std::to_string(stack_frame_size));
 
         return acc.code;
     }
