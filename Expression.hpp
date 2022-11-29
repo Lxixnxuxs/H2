@@ -55,7 +55,7 @@ public:
                 case DIV: op_assembly = "idivq"; break;
             }
 
-            com += op_assembly + " " + e.a->reg + "," + e.b->reg + "\nmovq " + e.b->reg + "," + e.reg + "\n";
+            com += op_assembly + " " + e.b->reg + "," + e.a->reg + "\nmovq " + e.a->reg + "," + e.reg + "\n";
 
             return com;
         }
