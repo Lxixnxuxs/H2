@@ -15,7 +15,7 @@
 namespace Parser {
     static char operators[] = {'+', '-', '*', '/'};
     static std::string regs[] = {"%rcx", "%r8", "%r9", "%r10", "%r11"};
-    static std::map<std::string, size_t> type_to_size = { {"int", 4} };
+    static std::map<std::string, size_t> type_to_size = { {"int", 8} };
 
     // trim from start
     inline std::string &ltrim(std::string &s) {
@@ -225,8 +225,10 @@ namespace Parser {
 
     void add_variable(ParsedFunction& p, std::string name, std::string type){
         p.var_to_type[name] = type;
+
+        p.var_to_offset[name] = p.current_offset;       // in which order do these two lines need to be?
         p.current_offset += type_to_size[type];
-        p.var_to_offset[name] = p.current_offset;
+
     }
 
     void parse_arguments(ParsedFunction& p){
