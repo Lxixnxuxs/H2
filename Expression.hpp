@@ -26,7 +26,7 @@ public:
 
     static string compile(Expression& e) {
         if (e.op == VAR) {
-            return "mov DWROD %rsp [" + to_string(e.offset) + "], " + e.reg ;
+            return "movq " + to_string(e.offset) + "(%rsp)" + ", " + e.reg;
         } else if (e.op == LIT) {
             return "movq $" + to_string(e.d) + "," + e.reg + "\n";
         }
@@ -41,7 +41,7 @@ public:
                 case DIV : res = a->d / b->d; break;
             }
 
-            return "movq $" + to_string(res) + "," + e.reg + "\n";
+            return "movq $" + to_string(res) + ", " + e.reg + "\n";
         } else {
 
             string com = compile(*e.a);

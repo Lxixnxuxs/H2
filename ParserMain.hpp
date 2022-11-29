@@ -42,9 +42,9 @@ struct ParserMain {
                 Parser::add_variable(main_f,var_name,type);
 
                 Expression e = *Parser::parse_expression(statement, main_f, 0, "%rax");
-                acc.push(Expression::compile(e));
+                acc.push(Expression::compile(e), false);
 
-                acc.push("mov DWROD %rax, %rsp [-"+std::to_string(main_f.var_to_offset[var_name])+"]"); //*
+                acc.push("movq %rax, -" + std::to_string(main_f.var_to_offset[var_name]) + "(%rsp)"); //*
 
                 // assignment
             } else {
@@ -52,19 +52,17 @@ struct ParserMain {
                 Parser::read_until(statement, '=');
 
                 Expression e = *Parser::parse_expression(statement, main_f, 0, "%rax");
-                acc.push(Expression::compile(e));
+                acc.push(Expression::compile(e), false);
 
-                acc.push("mov %rax, DWROD %rsp [-" + std::to_string(main_f.var_to_offset[var_name]) + "]"); //*
+                acc.push("movq %rax, -" + std::to_string(main_f.var_to_offset[var_name]) + "(%rsp)");
             }
         }
 
         size_t stack_frame_size = main_f.current_offset;  //*
-        acc.insert_at("dec_stackframe","subi #rsp $"+std::to_string(stack_frame_size));
-        acc.push("addi #rsp $"+std::to_string(stack_frame_size));
+        acc.insert_at("dec_stackframe","subq $"+std::to_string(stack_frame_size) + ", %rsp");
+        acc.push("addq $"+std::to_string(stack_frame_size) + ", %rsp");
 
         return acc.code;
     }
-
-
 };
 #endif //H2_PARSERMAIN_HPP

@@ -13,7 +13,7 @@ struct Accumulator {
     std::map<string,int> bookmarks; // pointing to a position in the string
 
     Accumulator(){
-        code = "insert initial code\n"; // insert initial code
+        code =""; //"insert initial code\n"; // insert initial code
     }
 
     void push(const string& s, bool add_nextline = true){

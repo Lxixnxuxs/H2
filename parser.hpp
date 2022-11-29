@@ -179,7 +179,7 @@ namespace Parser {
         if (find_operator(s) == std::string::npos) {
             // base case
             std::string s1 = s;
-            Parser::trim(s1);
+            s1 = Parser::trim(s1);
 
             for(auto i = func.var_to_offset.begin(); i != func.var_to_offset.end(); i++){
                 auto key = (*i).first;
