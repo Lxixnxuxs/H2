@@ -15,23 +15,24 @@
 namespace Parser {
     char operators[] = {'+', '-', '*', '/'};
     std::string regs[] = {"%rcx", "%r8", "%r9", "%r10", "%r11"};
+    std::map<std::string, size_t> type_to_size = { {"int", 4} };
 
     // trim from start
-    static inline std::string &ltrim(std::string &s) {
+    inline std::string &ltrim(std::string &s) {
         s.erase(s.begin(), std::find_if(s.begin(), s.end(),
                                         std::not1(std::ptr_fun<int, int>(std::isspace))));
         return s;
     }
 
     // trim from end
-    static inline std::string &rtrim(std::string &s) {
+    inline std::string &rtrim(std::string &s) {
         s.erase(std::find_if(s.rbegin(), s.rend(),
                              std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
         return s;
     }
 
     // trim from both ends
-    static inline std::string &trim(std::string s) {
+    inline std::string &trim(std::string s) {
         return ltrim(rtrim(s));
     }
 
@@ -39,7 +40,7 @@ namespace Parser {
      * Computes the position of the first character present in the next occurrence of @param s
      * starting from position @param i
      */
-    static size_t find_next_string(std::string f, size_t i, std::string s) {
+    size_t find_next_string(std::string f, size_t i, std::string s) {
         return f.find(s, i);
     }
 
@@ -47,14 +48,14 @@ namespace Parser {
      * Computes the number of characters between position @param i and the next occurrence of the character @param c
      * starting from i, excluding position i
      */
-    static size_t num_chars_until(std::string f, size_t i, char c) {
+    size_t num_chars_until(std::string f, size_t i, char c) {
         return f.find(c, i) - i;
     }
 
     /**
      * Computes the position of the next non-whitespace (newline, whitespace, tab) character starting from @param i
      */
-    static size_t next_non_whitespace_character(std::string f, size_t i) {
+    size_t next_non_whitespace_character(std::string f, size_t i) {
         size_t j = i;
         while (j < f.size() &&
               (f.at(j) == '\n' || f.at(j) == ' ' || f.at(j) == '\r')) {
@@ -67,7 +68,7 @@ namespace Parser {
      * Computes the position of the corresponding closing bracket starting from @param i = (position+1) of its opening
      * bracket. If @param isCurly true, matches for curly brackets. If false matches for normal brackets
      */
-    static size_t pos_matching_bracket(std::string f, size_t i, bool isCurly=false) {
+    size_t pos_matching_bracket(std::string f, size_t i, bool isCurly=false) {
         char b = isCurly ? '{' : '(';
         char c = isCurly ? '}' : ')';
 
@@ -88,7 +89,7 @@ namespace Parser {
         return j < f.size() ? j : -1;
     }
 
-    static std::vector<std::string> extract_statements(std::string s) {
+    std::vector<std::string> extract_statements(std::string s) {
         size_t pos = 0, pos_end;
         std::vector<std::string> statements;
 
@@ -104,15 +105,15 @@ namespace Parser {
         return statements;
     }
 
-    static std::string s_substring(std::string s, size_t from, size_t to) {
+    std::string s_substring(std::string s, size_t from, size_t to) {
         return s.substr(from, to - from);
     }
 
-    static std::string substring_between_brackets(std::string s, size_t i, bool isCurly = false) {
+    std::string substring_between_brackets(std::string s, size_t i, bool isCurly = false) {
         return s_substring(s, i + 1, pos_matching_bracket(s, i + 1));
     }
 
-    static size_t find_operator(std::string s, size_t i = 0) {
+    size_t find_operator(std::string s, size_t i = 0) {
         for (char op : operators) {
             size_t pos = s.find(op, i);
             if (pos != std::string::npos) {
@@ -123,7 +124,7 @@ namespace Parser {
         return std::string::npos;
     }
 
-    static std::string read_until(std::string& s, char c, bool stripped = true) {
+    std::string read_until(std::string& s, char c = ' ', bool stripped = true) {
         size_t pos = s.find(c);
         std::string res = s.substr(0, pos);
         s = s_substring(s, pos + 1, s.size());
@@ -136,7 +137,7 @@ namespace Parser {
         return res;
     }
 
-    static std::vector<ParsedFunction> split_by_functions(std::string file_content) {
+    std::vector<ParsedFunction> split_by_functions(std::string file_content) {
         std::vector<ParsedFunction> functions;
 
         size_t function_pos = find_next_string(file_content, 0, "def");
@@ -206,6 +207,23 @@ namespace Parser {
             }
 
             return e;
+        }
+    }
+
+    void add_variable(ParsedFunction p, std::string name, std::string type){
+        p.var_to_type[name] = type;
+        p.var_to_offset[name] = p.current_offset;
+        p.current_offset += type_to_size[type];
+    }
+
+
+    void parse_arguments(ParsedFunction p){
+        std::string text = p.arguments;
+        while (not Parser::trim(text).empty()) {
+            auto type = Parser::read_until(text);
+            auto name = Parser::read_until(text);
+
+            add_variable(p,name,type);
         }
     }
 };
