@@ -1,6 +1,12 @@
 def main() -> void {
     int x = 10;
-    int y = ((7) * (5)) + (x);
-    int z = ((22) * (3)) - (y);
-    return z;
+
+
+    if (5) {
+        return 77;
+    } else {
+
+    }
+
+    return 6;
 }

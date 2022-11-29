@@ -13,7 +13,8 @@ struct ParsedFunction {
     std::string name;
     std::string arguments;
     std::string type;
-    std::vector<std::string> statements;
+    std::string body;
+    //std::vector<std::string> statements;
     //std::vector<std::string> local_v;
     std::map<std::string, std::string> var_to_type;
     std::map<std::string,size_t> var_to_offset;
@@ -21,8 +22,8 @@ struct ParsedFunction {
 
 
 public:
-    ParsedFunction(std::string name, std::string arguments, std::string type, std::vector<std::string> statements):
-        name(name), arguments(arguments), type(type), statements(statements) {};
+    ParsedFunction(std::string name, std::string arguments, std::string type, std::string body):
+        name(name), arguments(arguments), type(type), body(body)  {};
 
 };
 

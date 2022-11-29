@@ -110,8 +110,24 @@ namespace Parser {
     }
 
     std::string substring_between_brackets(std::string s, size_t i, bool isCurly = false) {
-        return s_substring(s, i + 1, pos_matching_bracket(s, i + 1));
+        return s_substring(s, i + 1, pos_matching_bracket(s, i + 1, isCurly));
     }
+
+    std::string read_corresponding_bracket(std::string& s, size_t i, bool isCurly = false, bool stripped = true) {
+        /* mutating the string s and extract all the content within the brackets and cutting it out of s*/
+
+        size_t pos = pos_matching_bracket(s, i + 1,isCurly);
+        auto res = s_substring(s, i + 1 , pos);
+        s = s_substring(s,pos+1,s.size());
+
+        if (stripped) {
+            Parser::ltrim(s);
+            res = Parser::trim(res);
+        }
+
+        return res;
+    }
+
 
     size_t find_operator(std::string s, size_t i = 0) {
         for (char op : operators) {
@@ -160,8 +176,8 @@ namespace Parser {
             ParsedFunction f(file_content.substr(f_name_pos, f_name_end_pos),
                              file_content.substr(f_args_pos, f_args_end_pos - f_args_pos),
                              file_content.substr(f_type_pos, f_type_end_pos - f_type_pos),
-                             extract_statements(
-                             file_content.substr(f_block_pos, f_block_end_pos - f_block_pos + 1)));
+                             //extract_statements(
+                             file_content.substr(f_block_pos, f_block_end_pos - f_block_pos + 1));
 
             functions.push_back(f);
 
