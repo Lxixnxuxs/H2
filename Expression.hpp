@@ -24,7 +24,7 @@ public:
     Expression(Expression* a, Expression* b, Operation op, string reg="", int d = 0, int offset = 0):
                 a(a), b(b), op(op), d(d), reg(reg), offset(offset) {};
 
-    static string compile(Expression& e) {
+    static string compile(Expression& e, bool should_move = true) {
         if (e.op == VAR) {
             return "movq " + to_string(e.offset) + "(%rsp)" + ", " + e.reg;
         } else if (e.op == LIT) {
@@ -55,7 +55,8 @@ public:
                 case DIV: op_assembly = "idivq"; break;
             }
 
-            com += op_assembly + " " + e.b->reg + "," + e.a->reg + "\nmovq " + e.a->reg + "," + e.reg + "\n";
+            com += op_assembly + " " + e.b->reg + "," + e.a->reg +
+                    (should_move ? "\nmovq " + e.a->reg + "," + e.reg + "\n" : "");
 
             return com;
         }
