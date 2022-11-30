@@ -147,7 +147,7 @@ namespace Parser {
 
         if (stripped) {
             Parser::ltrim(s);
-            Parser::rtrim(res);
+            res = Parser::trim(res);
         }
 
         return res;
