@@ -62,9 +62,14 @@ struct ParserMain {
             if (body.rfind("if", 0) == 0) {
                 Parser::read_until(body);
                 auto condition = Parser::read_corresponding_bracket(body,0);
-                Expression e = *Parser::parse_expression(condition,main_f, 0 , "%rax");
-                acc.push(Expression::compile(e), false);
-                acc.push("jnz %rax P1" );       // go into if body if expression evaluates to zero
+                Expression* e = Parser::parse_expression(condition,main_f, 0 , "%rax");
+                Expression* e2 = new Expression(NULL,NULL,LIT,"%r10",0,0);
+                Expression top = Expression(e,e2,ADD,"%rax",0,0);
+                acc.push(Expression::compile(top,false), false);
+                delete e2;
+
+
+                acc.push("jnz P1" );       // go into if body if expression evaluates to zero
 
                 auto inner = Parser::read_corresponding_bracket(body,0,true);
 
