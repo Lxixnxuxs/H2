@@ -1,12 +1,10 @@
 def main() -> void {
     int x = 10;
 
-
-    if (5) {
-        return 77;
+    x = (2) * (x);
+    if ((x) - (20)) {
+        return 10;
     } else {
-
+        return 20;
     }
-
-    return 6;
 }

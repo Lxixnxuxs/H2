@@ -2,7 +2,7 @@
 #include <string>
 #include <fstream>
 #include <vector>
-#include "parser.hpp"
+#include "old/parser.hpp"
 
 class ParserTest : public :: testing::Test {
 protected:

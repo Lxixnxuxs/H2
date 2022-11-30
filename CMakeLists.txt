@@ -4,5 +4,7 @@ project(H2)
 set(CMAKE_CXX_STANDARD 14)
 
 add_subdirectory(test)
+add_subdirectory(old)
 
-add_executable(H2 main.cpp Expression.hpp ParserMain.hpp)
+
+add_executable(main main.cpp)
