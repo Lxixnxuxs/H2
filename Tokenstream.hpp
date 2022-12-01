@@ -8,22 +8,24 @@
 #include <list>
 #include <string>
 #include <iostream>
+#include <map>
 
-using std::string, std::cout, std::list;
+using std::string, std::cout, std::list, std::map;
 
+map<string,string> corresponding_bracket = {{"(",")"},{"{","}"},{"[","]"},{"<",">"}};
 
-
-struct Tokenstream{
+struct Tokenstream {
     list<string>::iterator begin_;
     list<string>::iterator end_;
 
     //list<string>::iterator begin(){ return begin_;}
     //list<string>::iterator end(){ return end_;}
 
-    //bool empty() {return begin_ == end_;}
-    //void operator+=(int x) {std::advance(begin_,x); }
-    //void operator++() { begin_++; }
-    //void operator--() {begin_--;}
+    bool empty() {return begin_ == end_;}
+    void operator+=(int x) {std::advance(begin_,x); }
+    void operator++() { begin_++; }
+    void operator--() {begin_--;}
+    string operator*() {return *begin_;}
 
     Tokenstream(list<string>* obj): begin_(obj->begin()), end_(obj->end()) {}
 
@@ -35,6 +37,23 @@ struct Tokenstream{
         begin_--;
         auto res = Tokenstream(old_begin_,begin_);
         (begin_++)++;  // throwing away the token just found
+    }
+
+    Tokenstream read_inside_brackets(){
+        bool found = false;
+        string bracket = *begin_;
+        string close_bracket;
+        for (auto p : corresponding_bracket){
+            if (p.first == bracket){
+                close_bracket = p.second;
+                found = true;
+            }
+        }
+        if (!found) {
+            throw "'read_inside_brackets' called on non-bracket token: '"+bracket+"'";
+        }
+
+        // TODO implement
     }
 };
 
