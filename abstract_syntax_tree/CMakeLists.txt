@@ -1,0 +1,1 @@
+add_executable(ast_t ast_t.cpp)
