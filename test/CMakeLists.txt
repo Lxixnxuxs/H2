@@ -11,15 +11,18 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_executable(parser_test parser_test.cpp)
-add_executable(expression_test expression_test.cpp)
+add_executable(lexer_test lexer_test.cpp)
+add_executable(tokenstream_test tokenstream_test.cpp)
+add_executable(code_parser_tests code_parser_tests.cpp)
 
-target_link_libraries(parser_test GTest::gtest_main)
-target_link_libraries(expression_test GTest::gtest_main)
+target_link_libraries(lexer_test GTest::gtest_main)
+target_link_libraries(tokenstream_test GTest::gtest_main)
+target_link_libraries(code_parser_tests GTest::gtest_main)
 
 #target_compile_definitions(parser_test PRIVATE TEST_FILE_PATH=${CMAKE_SOURCE_DIR}/test/resources/test_program.txt)
 
 include(GoogleTest)
 
-gtest_discover_tests(parser_test)
-#gtest_discover_tests(expression_test)
+gtest_discover_tests(lexer_test)
+gtest_discover_tests(tokenstream_test)
+gtest_discover_tests(code_parser_tests)

@@ -49,6 +49,33 @@ TEST_F(TokenstreamTest, t5) {
     EXPECT_EQ(toString(ts),"|3|45");
 }
 
+TEST_F(TokenstreamTest, t6) {
+    list<string> list = {"=","3","<","4","[","5"};
+
+    auto ts = Tokenstream(&list);
+    auto t2 = ts.read_until({"<","[",">"});
+    EXPECT_EQ(toString(t2),"|=|3");
+    EXPECT_EQ(toString(ts),"|4|[|5");
+
+}
+
+TEST_F(TokenstreamTest, test_size) {
+    list<string> list = {"=","3","<","4","[","5"};
+
+    auto ts = Tokenstream(&list);
+    EXPECT_EQ(ts.size(),6);
+    EXPECT_EQ(*ts,"=");
+
+}
+
+TEST_F(TokenstreamTest, test_size_edge) {
+    list<string> list = {};
+
+    auto ts = Tokenstream(&list);
+    EXPECT_EQ(ts.size(),0);
+
+}
+
 TEST_F(TokenstreamTest, t1) {
     list<string> list = {"(","1","2",")","3","4"};
 

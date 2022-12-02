@@ -9,8 +9,9 @@
 #include <string>
 #include <iostream>
 #include <map>
+#include <vector>
 
-using std::string, std::cout, std::list, std::map;
+using std::string, std::cout, std::list, std::map, std::vector;
 
 map<string,string> corresponding_bracket = {{"(",")"},{"{","}"},{"[","]"},{"<",">"}};
 
@@ -22,18 +23,46 @@ struct Tokenstream {
     //list<string>::iterator end(){ return end_;}
 
     bool empty() {return begin_ == end_;}
+    size_t size() {
+        size_t res = 0;
+        list<string>::iterator old_begin = begin_;
+        while (!empty()) {
+            begin_++;
+            res++;
+        }
+
+        begin_ = old_begin;
+        return res;
+    }
+
     void operator+=(int x) {std::advance(begin_,x); }
-    void operator++() { std::advance(begin_,1); }
-    void operator--() {begin_--;}
+    /*Tokenstream& operator++() { std::advance(begin_,1);
+    return *this;}
+    void operator--() {begin_--;}*/
     string operator*() {return *begin_;}
 
-    explicit Tokenstream(list<string>* obj): begin_(obj->begin()), end_(obj->end()) {}
+    Tokenstream(list<string>* obj): begin_(obj->begin()), end_(obj->end()) {}
 
     Tokenstream(list<string>::iterator begin_, list<string>::iterator end_): begin_(begin_), end_(end_) {}
 
     Tokenstream read_until(string token){
         auto old_begin_ = begin_;
         while(!empty() and *begin_ != token) {begin_++;};
+        auto res = Tokenstream(old_begin_,begin_);
+        begin_++;  // throwing away the token just found
+        return res;
+    }
+
+    Tokenstream read_until(vector<string> token_vec){
+        auto old_begin_ = begin_;
+        bool found = false;
+        while(!empty() and !found) {
+            for (auto token : token_vec){
+                if (*begin_ == token) {found = true;}
+            }
+            begin_++;
+        };
+        begin_--; // neutralize last 'begin_++' in the loop, when 'found' has already become true
         auto res = Tokenstream(old_begin_,begin_);
         begin_++;  // throwing away the token just found
         return res;

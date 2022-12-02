@@ -9,7 +9,6 @@
 #include <vector>
 #include <list>
 #include <iostream>
-#include "parser.hpp"
 
 using std::string, std::vector, std::cout, std::endl, std::list;
 
@@ -38,7 +37,7 @@ list<string>* lexer(string& text) {
     while ( i<text.size()){
         if (std::isspace(text.at(i))){ //split at whitespace
             if (last_pos < i){ // take if there was something before
-                res->push_back(Parser::s_substring(text,last_pos,i));
+                res->push_back(text.substr(last_pos,i-last_pos));
             }
             last_pos = i+1; // throw away the whitespace
         } else {
@@ -46,9 +45,9 @@ list<string>* lexer(string& text) {
                 size_t pos = text.find(symbol,i);
                 if (pos == i){
                     if (last_pos < i){ // take only if not empty
-                        res->push_back(Parser::s_substring(text,last_pos,i));
+                        res->push_back(text.substr(last_pos,i-last_pos));
                     }
-                    res->push_back(Parser::s_substring(text,i,i+symbol.size()));
+                    res->push_back(text.substr(i,symbol.size()));
                     i+=symbol.size();
                     last_pos = i;
                     i--; //neutralize i++
