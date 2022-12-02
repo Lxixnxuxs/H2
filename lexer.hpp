@@ -11,16 +11,13 @@
 #include <iostream>
 #include "parser.hpp"
 
-using std::string, std::vector, std::cout,std::endl, std::list;
-
+using std::string, std::vector, std::cout, std::endl, std::list;
 
 // symbols at the front have higher priority. eg in " -> int" we would find a "->" and not a "-"
 const vector<string> lexer_symbols = {"->","==",">=","<=","=","(",")","{","}","-","+","*","/",",",";","<",">"};
+const vector<string> operator_symbols = {"-","+","*","/"};
 
-
-
-
-list<string>* lexer(string& text){
+list<string>* lexer(string& text) {
 
 
 
