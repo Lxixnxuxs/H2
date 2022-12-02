@@ -31,20 +31,47 @@ string toString(Tokenstream& t){
     return res;
 }
 
+TEST_F(TokenstreamTest, t4) {
+    list<string> list = {"1","2",";","3","45"};
+
+    auto ts = Tokenstream(&list);
+    auto t2 = ts.read_until(";");
+    EXPECT_EQ(toString(t2),"|1|2");
+    EXPECT_EQ(toString(ts),"|3|45");
+}
+
+TEST_F(TokenstreamTest, t5) {
+    list<string> list = {"=","3","45"};
+
+    auto ts = Tokenstream(&list);
+    auto t2 = ts.read_until("=");
+    EXPECT_EQ(toString(t2),"");
+    EXPECT_EQ(toString(ts),"|3|45");
+}
+
 TEST_F(TokenstreamTest, t1) {
     list<string> list = {"(","1","2",")","3","4"};
 
     auto ts = Tokenstream(&list);
     auto t2 = ts.read_inside_brackets();
-    EXPECT_EQ(toString(t2),"1|2");
-    EXPECT_EQ(toString(ts),"3|4");
+    EXPECT_EQ(toString(t2),"|1|2");
+    EXPECT_EQ(toString(ts),"|3|4");
 }
 
-TEST_F(TokenstreamTest, t2) {
+TEST_F(TokenstreamTest, t2_) {
     list<string> list = {"(","1","(","2",")",")","3","4"};
 
     auto ts = Tokenstream(&list);
     auto t2 = ts.read_inside_brackets();
-    EXPECT_EQ(toString(t2),"1|(|2|)");
-    EXPECT_EQ(toString(ts),"3|4");
+    EXPECT_EQ(toString(t2),"|1|(|2|)");
+    EXPECT_EQ(toString(ts),"|3|4");
+}
+
+TEST_F(TokenstreamTest, t3) {
+    list<string> list = {"{","}","123"};
+
+    auto ts = Tokenstream(&list);
+    auto t2 = ts.read_inside_brackets();
+    EXPECT_EQ(toString(t2),"");
+    EXPECT_EQ(toString(ts),"|123");
 }
