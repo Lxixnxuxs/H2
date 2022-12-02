@@ -23,37 +23,49 @@ struct Tokenstream {
 
     bool empty() {return begin_ == end_;}
     void operator+=(int x) {std::advance(begin_,x); }
-    void operator++() { begin_++; }
+    void operator++() { std::advance(begin_,1); }
     void operator--() {begin_--;}
     string operator*() {return *begin_;}
 
-    Tokenstream(list<string>* obj): begin_(obj->begin()), end_(obj->end()) {}
+    explicit Tokenstream(list<string>* obj): begin_(obj->begin()), end_(obj->end()) {}
 
     Tokenstream(list<string>::iterator begin_, list<string>::iterator end_): begin_(begin_), end_(end_) {}
 
     Tokenstream read_until(string token){
         auto old_begin_ = begin_;
-        while(begin_!=end_ and *begin_ != token) {begin_++;};
-        begin_--;
+        while(!empty() and *begin_ != token) {begin_++;};
         auto res = Tokenstream(old_begin_,begin_);
-        (begin_++)++;  // throwing away the token just found
+        begin_++;  // throwing away the token just found
+        return res;
     }
 
     Tokenstream read_inside_brackets(){
-        bool found = false;
+        auto old_begin_ = begin_;
         string bracket = *begin_;
-        string close_bracket;
+        string close_bracket = "";
+
+        // figure out closing-bracket symbol
         for (auto p : corresponding_bracket){
             if (p.first == bracket){
                 close_bracket = p.second;
-                found = true;
             }
         }
-        if (!found) {
+        if (close_bracket.empty()) {
             throw "'read_inside_brackets' called on non-bracket token: '"+bracket+"'";
         }
 
-        // TODO implement
+        // scanning tokenstream for corresponding bracket
+        int counter = 1;
+        while(!empty() and counter>0){
+            begin_++;
+            if (*begin_ == bracket) counter++;
+            if (*begin_ == close_bracket) counter--;
+        }
+
+        auto res = Tokenstream(++old_begin_,    // trowing away opening bracket
+                               begin_);
+        begin_++;  // throwing away closing bracket
+        return res;
     }
 };
 
@@ -65,6 +77,18 @@ std::ostream& operator<<(std::ostream& os, std::list<a>& t){
         os <<  "|";
         os  << *it;
     }
+    return os;
+}
+
+
+std::ostream& operator<<(std::ostream& os, Tokenstream& t){
+    auto old_begin = t.begin_;
+    while(!t.empty()) {
+        os <<  "|";
+        os  << *t;
+        t+=1;
+    }
+    t.begin_ = old_begin;
     return os;
 }
 

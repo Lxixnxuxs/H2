@@ -19,21 +19,32 @@ protected:
 
 };
 
+string toString(Tokenstream& t){
+    string res = "";
+    auto old_begin = t.begin_;
+    while(!t.empty()) {
+        res +=  "|";
+        res += *t;
+        t+=1;
+    }
+    t.begin_ = old_begin;
+    return res;
+}
+
 TEST_F(TokenstreamTest, t1) {
-    list<string> list = {"def", "main","(",")","->","void","{",
-                             "int","x","=","10",";",
-                             "x","=","(","2",")","*","(","x",")",";",
-                             "if","(","(","x",")","-","(","20",")",")","{",
-                             "return","10",";",
-                             "}","else","{",
-                             "return","20",";","}",
-                             "}"};
+    list<string> list = {"(","1","2",")","3","4"};
+
     auto ts = Tokenstream(&list);
-    auto it = ts.begin_;
-
-
+    auto t2 = ts.read_inside_brackets();
+    EXPECT_EQ(toString(t2),"1|2");
+    EXPECT_EQ(toString(ts),"3|4");
 }
 
 TEST_F(TokenstreamTest, t2) {
+    list<string> list = {"(","1","(","2",")",")","3","4"};
 
+    auto ts = Tokenstream(&list);
+    auto t2 = ts.read_inside_brackets();
+    EXPECT_EQ(toString(t2),"1|(|2|)");
+    EXPECT_EQ(toString(ts),"3|4");
 }
