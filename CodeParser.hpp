@@ -22,11 +22,7 @@ private:
     }
 
 public:
-    Tokenstream stream;
-
     size_t global_id_counter = 0;
-
-    CodeParser(Tokenstream stream): stream(stream) {}
 
     ASTRootNode* parse(Tokenstream t) {
 
@@ -47,8 +43,14 @@ public:
         LocalVariableManager var_manager;
         string func_name = *t;
         var_manager.name = func_name;
-        t+=1;
+        t += 1;
         auto argument_list = t.read_inside_brackets();
+        t += 1; //discard '->'
+
+        var_manager.ret_type = *t;
+
+        t += 1; // discard return type
+
         auto body = t.read_inside_brackets();
 
         // TODO parse_argument_list?
