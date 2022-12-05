@@ -77,6 +77,28 @@ TEST_F(LexerTest, t2) {
     }
 }
 
+TEST_F(LexerTest, edge_last_sign) {
+    string prog2 = "def fu(int x, int y) -> int {\n"
+                   "    return (x) *(y) ;\n"
+                   "} a";
+
+    list<string> expected = {"def","fu","(","int","x",",","int","y",")","->","int","{",
+                             "return","(","x",")","*","(","y",")",";",
+                             "}","a"};
+
+    list<string> res = *lexer(prog2);
+    EXPECT_EQ(expected.size(),res.size());
+
+    auto it_res = res.begin();
+    auto it_exp = expected.begin();
+
+    for (int i = 0; i<expected.size(); i++){
+        ASSERT_EQ(*it_exp,*it_res);
+        it_res++;
+        it_exp++;
+    }
+}
+
 TEST_F(LexerTest, edge) {
     string prog2 = "def y(    int q)-> void {}\n"
                    "\n"
