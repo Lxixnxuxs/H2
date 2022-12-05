@@ -1,8 +1,8 @@
 #ifndef H2_LOCALVARIABLEMANAGER_HPP
 #define H2_LOCALVARIABLEMANAGER_HPP
 
-static std::string data_types[] = {"int"};
-static std::map<std::string, size_t> type_to_size = { {"int", 8} };
+static vector<std::string> data_types = {"void","int"};
+static std::map<std::string, size_t> type_to_size = { {"void",0},{"int", 8} };
 
 struct LocalVariableManager {
 
