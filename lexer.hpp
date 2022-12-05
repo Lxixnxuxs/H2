@@ -13,26 +13,41 @@
 using std::string, std::vector, std::cout, std::endl, std::list;
 
 // symbols at the front have higher priority. eg in " -> int" we would find a "->" and not a "-"
-const vector<string> lexer_symbols = {"->","==",">=","<=","=","(",")","{","}","-","+","*","/",",",";","<",">"};
+const vector<string> lexer_symbols = {"/*","*/","->","==",">=","<=","=","(",")","{","}","-","+","*","/",",",";","<",">"};
 const vector<string> operator_symbols = {"-","+","*","/"};
 
+
+void remove_comments(list<string>* l){
+    auto it = l->begin();
+    bool comment_active = false;
+
+    while(it != l->end()){
+        string token = *it;
+
+        if (token == "/*"){
+            comment_active = true;
+            it = l->erase(it);
+        } else if (token == "*/"){
+            comment_active = false;
+            it = l->erase(it);
+        } else {
+            if (comment_active) {
+                it = l->erase(it);
+            } else {
+                it++;
+            }
+
+        }
+
+    }
+}
+
+
 list<string>* lexer(string& text) {
-
-
-
     auto res = new list<string>;
 
     int last_pos = 0;
     int i = 0;
-
-    /*
-    auto push = [&](bool is_whitespace){
-        if (!(is_whitespace and last_pos == i-1)){ // take only if not a single whitespace
-            res->push_back(Parser::s_substring(text,last_pos,i));
-            last_pos = i;
-        }
-    };
-    */
 
     while ( i<text.size()){
         if (std::isspace(text.at(i))){ //split at whitespace
@@ -57,8 +72,12 @@ list<string>* lexer(string& text) {
         }
         i++;
     }
+
+    remove_comments(res); // comments are removed by default
     return res;
 }
+
+
 
 
 
