@@ -68,6 +68,20 @@ private:
         }
     }
 
+    void expect_empty(Tokenstream t) {
+        if (!t.empty()){
+            auto t_copy = t;
+            string end_message = "";
+            for (int i = 0; i<std::min((int)t.size(),5); i++) {
+                end_message += " '"+*t_copy+"'";
+                t_copy+=1;
+            }
+            throw std::invalid_argument("PARSER ERROR  Expected an empty stream but recieved a stream of size "+std::to_string(t.size())+" starting with " + end_message );
+        }
+
+
+    }
+
 public:
     size_t global_id_counter = 0;
 
@@ -81,6 +95,7 @@ public:
         while (!t.empty()){
             auto t2 = t.read_until("def");
             if (!t2.empty()){
+                cout << t2 << endl;
                 funcs.push_back(parse_function(t2));
             }
 
@@ -115,6 +130,9 @@ public:
 
         // TODO parse_argument_list?
         auto parsed_body = parse_subspace(body, var_manager);
+
+        // expect nothing to be there after closing bracket '}'
+        expect_empty(t);
 
         size_t stack_frame_size = var_manager.current_offset;
 
@@ -186,7 +204,10 @@ public:
         expect(t,"=");
         t+=1; // discard '='
 
+        // expect the whole remaining tokens to belong to the calculation
         auto calculation = parse_calculation(t,v);
+
+
 
         // declare variable only after the calculation, because the parser needs to check that this very variable is not
         // used within its own declaration
@@ -232,7 +253,10 @@ public:
             right = parse_calculation(right_stream, v, h + 1);
         } else {
             right = parse_literal(*t, v, h + 1);
+            t += 1; // discard literal
         }
+
+        expect_empty(t);
 
         return new ASTCalculationNode(left, right, op_string_to_type[op], regs[h]);
     }
