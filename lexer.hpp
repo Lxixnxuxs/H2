@@ -9,6 +9,7 @@
 #include <vector>
 #include <list>
 #include <iostream>
+#include <stdexcept>
 
 using std::string, std::vector, std::cout, std::endl, std::list;
 
@@ -38,7 +39,10 @@ void remove_comments(list<string>* l){
             }
 
         }
+    }
 
+    if (comment_active) {
+        throw std::invalid_argument("LEXER ERROR:  Opened comment with '/*' but never closed it with '*/'");
     }
 }
 
