@@ -10,10 +10,11 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <stdexcept>
 
-using std::string, std::cout, std::list, std::map, std::vector;
+using std::string, std::cout, std::list, std::map, std::vector, std::endl;
 
-map<string,string> corresponding_bracket = {{"(",")"},{"{","}"},{"[","]"},{"<",">"}};
+map<string,string> corresponding_bracket = {{"(",")"},{"{","}"},{"[","]"}};
 
 struct Tokenstream {
     list<string>::iterator begin_;
@@ -41,19 +42,27 @@ struct Tokenstream {
     void operator--() {begin_--;}*/
     string operator*() {return *begin_;}
 
+    // only use this constructor if the only purpose is declaring a variable
+    Tokenstream(){}
+
     Tokenstream(list<string>* obj): begin_(obj->begin()), end_(obj->end()) {}
 
     Tokenstream(list<string>::iterator begin_, list<string>::iterator end_): begin_(begin_), end_(end_) {}
 
     Tokenstream read_until(string token){
+        // given back whole Tokenstream, if no instance is found
+
         auto old_begin_ = begin_;
         while(!empty() and *begin_ != token) {begin_++;};
         auto res = Tokenstream(old_begin_,begin_);
-        begin_++;  // throwing away the token just found
+
+        if (!empty()){
+            begin_++;  // throwing away the token just found
+        }
         return res;
     }
 
-    Tokenstream read_until(vector<string> token_vec){
+    Tokenstream read_until_one_of(vector<string> token_vec){
         auto old_begin_ = begin_;
         bool found = false;
         while(!empty() and !found) {
@@ -62,9 +71,20 @@ struct Tokenstream {
             }
             begin_++;
         };
-        begin_--; // neutralize last 'begin_++' in the loop, when 'found' has already become true
-        auto res = Tokenstream(old_begin_,begin_);
-        begin_++;  // throwing away the token just found
+
+        Tokenstream res;
+
+        if (!empty()){
+            begin_--; // neutralize last 'begin_++' in the loop, when 'found' has already become true
+            res = Tokenstream(old_begin_,begin_);
+            begin_++;  // throwing away the token just found
+        } else {
+            // special treatment of no instance is found
+            res = Tokenstream(old_begin_,begin_);
+        }
+
+
+
         return res;
     }
 
@@ -77,10 +97,13 @@ struct Tokenstream {
         for (auto p : corresponding_bracket){
             if (p.first == bracket){
                 close_bracket = p.second;
+                break;
             }
         }
+
+
         if (close_bracket.empty()) {
-            throw "'read_inside_brackets' called on non-bracket token: '"+bracket+"'";
+            throw std::invalid_argument("'read_inside_brackets' called on non-bracket token: '"+bracket+"'");
         }
 
         // scanning tokenstream for corresponding bracket
@@ -89,6 +112,11 @@ struct Tokenstream {
             begin_++;
             if (*begin_ == bracket) counter++;
             if (*begin_ == close_bracket) counter--;
+        }
+
+
+        if (counter != 0) {
+            throw std::invalid_argument("'read_inside_brackets' was not able to find corresponding closing bracket of kind: '"+close_bracket+"'");
         }
 
         auto res = Tokenstream(++old_begin_,    // trowing away opening bracket
