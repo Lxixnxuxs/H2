@@ -86,6 +86,9 @@ public:
     size_t global_id_counter = 0;
 
     ASTRootNode* parse(Tokenstream t) {
+        if (t.empty()) {
+            throw std::invalid_argument("PARSER ERROR  cannot parse empty programm");
+        }
 
         std::vector<ASTFunctionNode*> funcs;
 
@@ -95,7 +98,6 @@ public:
         while (!t.empty()){
             auto t2 = t.read_until("def");
             if (!t2.empty()){
-                cout << t2 << endl;
                 funcs.push_back(parse_function(t2));
             }
 
@@ -147,15 +149,24 @@ public:
             // checking for control structures
             if (*t == "if") {
                 t += 1; // discard 'if'
+                expect(t,"(");
                 auto cond_stream = t.read_inside_brackets();
+                expect(t,"{");
                 auto if_body_stream = t.read_inside_brackets();
-
                 expect(t,"else");
                 t += 1; // discard 'else'
-
+                expect(t,"{");
                 auto else_body_stream = t.read_inside_brackets();
-
                 res.push_back(parse_if_else(cond_stream, if_body_stream, else_body_stream, v));
+
+            } else if (*t == "while"){
+                t += 1; // discard 'while'
+                expect(t,"(");
+                auto cond_stream = t.read_inside_brackets();
+                expect(t,"{");
+                auto body_stream = t.read_inside_brackets();
+                res.push_back(parse_while(cond_stream,body_stream,v));
+
             } else {
                 // not a control structure
                 res.push_back(parse_line(t.read_until(";"), v));
@@ -172,6 +183,13 @@ public:
         std::vector<ASTStatementNode*> else_body_nodes = parse_subspace(else_body, v);
 
         return new ASTIfElseNode(condition_node, if_body_nodes, else_body_nodes, global_id_counter++);
+    }
+
+    ASTWhileLoopNode* parse_while(Tokenstream condition, Tokenstream body, LocalVariableManager& v) {
+        ASTCalculationNode* condition_node = parse_calculation(condition, v);
+        std::vector<ASTStatementNode*> body_nodes = parse_subspace(body, v);
+
+        return new ASTWhileLoopNode(condition_node,body_nodes,global_id_counter++);
     }
 
     ASTStatementNode* parse_line(Tokenstream t, LocalVariableManager& v){
