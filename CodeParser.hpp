@@ -178,7 +178,7 @@ public:
 
     ASTIfElseNode* parse_if_else(Tokenstream condition, Tokenstream if_body, Tokenstream else_body, LocalVariableManager& v) {
         // Parse condition
-        ASTCalculationNode* condition_node = parse_calculation(condition, v);
+        ASTComparisonNode* condition_node = parse_comparison(condition, v);
         std::vector<ASTStatementNode*> if_body_nodes = parse_subspace(if_body, v);
         std::vector<ASTStatementNode*> else_body_nodes = parse_subspace(else_body, v);
 
@@ -186,7 +186,7 @@ public:
     }
 
     ASTWhileLoopNode* parse_while(Tokenstream condition, Tokenstream body, LocalVariableManager& v) {
-        ASTCalculationNode* condition_node = parse_calculation(condition, v);
+        ASTComparisonNode* condition_node = parse_comparison(condition, v);
         std::vector<ASTStatementNode*> body_nodes = parse_subspace(body, v);
 
         return new ASTWhileLoopNode(condition_node,body_nodes,global_id_counter++);
@@ -234,6 +234,49 @@ public:
         }
 
         return new ASTAssignmentNode(v.var_to_offset[var], calculation);
+    }
+
+    ASTComparisonNode* parse_comparison(Tokenstream t, LocalVariableManager& v){
+        ASTCalculationNode *left, *right;
+
+        if (t.empty()){
+            throw std::invalid_argument("PARSER ERROR: trying to parse an empty comparison");
+        }
+
+        if (t.size() == 1) {
+            throw std::invalid_argument("PARSER ERROR: trying to parse an comparison, but only recieved '"+*t+"'");
+        }
+
+        // Process left side
+        if (*t == "(") {
+            Tokenstream left_stream = t.read_inside_brackets();
+            if (t.empty()) {
+                // there are top-level brackets around the comparison. Look inside
+                return parse_comparison(left_stream,v);
+            }
+            left = parse_calculation(left_stream, v, 0);
+        } else {
+            left = parse_literal(*t, v, 0);
+            t += 1; // discard literal
+        }
+
+        std::string op = *t;
+
+        expect_one_of(t,comparison_symbols);
+        t += 1; // discard operator symbol
+
+        // Process right side
+        if (*t == "(") {
+            Tokenstream right_stream = t.read_inside_brackets();
+            right = parse_calculation(right_stream, v,  1);
+        } else {
+            right = parse_literal(*t, v,  1);
+            t += 1; // discard literal
+        }
+
+        expect_empty(t);
+
+        return new ASTComparisonNode(left, right, op, regs[0],regs[1]);
     }
 
     ASTCalculationNode* parse_calculation(Tokenstream t, LocalVariableManager& v, int h = 0){

@@ -2,13 +2,14 @@
 #define H2_ASTWHILELOOPNODE_HPP
 
 #include "ASTControlFlowNode.hpp"
+#include "ASTComparisonNode.hpp"
 
 struct ASTWhileLoopNode : ASTControlFlowNode {
-    ASTCalculationNode* condition;
+    ASTComparisonNode* condition;
     std::vector<ASTStatementNode*> block;
     int label_id;
 
-    ASTWhileLoopNode(ASTCalculationNode* condition, std::vector<ASTStatementNode*> &block,int label_id): condition(condition),
+    ASTWhileLoopNode(ASTComparisonNode* condition, std::vector<ASTStatementNode*> &block,int label_id): condition(condition),
     block(block), label_id(label_id) {};
 
 
@@ -24,7 +25,7 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
 
         code += condition->compile();
 
-        code += "jz L_WHILE_BODY_" + std::to_string(label_id) + "\n";
+        code += comp_to_jump[condition->comp_type]+" L_WHILE_BODY_" + std::to_string(label_id) + "\n";
 
         return code;
     }

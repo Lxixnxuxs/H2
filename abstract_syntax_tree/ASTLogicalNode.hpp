@@ -41,6 +41,7 @@ struct ASTLogicalNode : ASTComputationNode {
 
 
         }
+        return code;
     }
 
     std::string logical_op_to_string() {
