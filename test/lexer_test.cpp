@@ -138,3 +138,22 @@ TEST_F(LexerTest, comments1) {
         it_exp++;
     }
 }
+
+TEST_F(LexerTest, comments_within_comments1) {
+    list<string> expected = {"def","y","(","int","q",")","->","void","{","}"};
+    list<string> l = {"def","y","(","int","q",")","->","void","{","/*","}",
+                      "def","very_long_func","(","int","xxx",")","->","int","{","if","/*","(","0",">","*/","xxx",")","{","return","xxx","}","*/","}"};
+
+    remove_comments(&l);
+
+
+    auto it_res = l.begin();
+    auto it_exp = expected.begin();
+
+    EXPECT_EQ(l.size(), expected.size());
+    for (int i = 0; i<expected.size(); i++){
+        ASSERT_EQ(*it_exp,*it_res);
+        it_res++;
+        it_exp++;
+    }
+}
