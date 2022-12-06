@@ -10,10 +10,10 @@
 
 std::map<std::string, std::string> comp_to_jump = {{"==","je"},
                                                    {"!=","jne"},
-                                                   {"<","jl"},
-                                                   {"<=","jle"},
-                                                   {">","jg"},
-                                                   {">=","jge"}};
+                                                   {">","jl"},
+                                                   {">=","jle"},
+                                                   {"<","jg"},
+                                                   {"<=","jge"}};
 
 struct ASTComparisonNode : ASTStatementNode {
     ASTComputationNode* left;

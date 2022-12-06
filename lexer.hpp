@@ -14,7 +14,7 @@
 using std::string, std::vector, std::cout, std::endl, std::list;
 
 // symbols at the front have higher priority. eg in " -> int" we would find a "->" and not a "-"
-const vector<string> lexer_symbols = {"/*","*/","->","==",">=","<=","=","(",")","{","}","-","+","*","/",",",";","<",">"};
+const vector<string> lexer_symbols = {"/*","*/","->","==","!=",">=","<=","=","(",")","{","}","-","+","*","/",",",";","<",">"};
 const vector<string> operator_symbols = {"-","+","*","/"};
 const vector<string> comparison_symbols = {"==","!=","<=",">=","<",">"};
 

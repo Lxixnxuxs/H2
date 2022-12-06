@@ -4,7 +4,9 @@
 
 #include "ASTComputationNode.hpp"
 
-enum ComputationOp {LIT, VAR, ADD, SUB, MUL};
+// TODO for some reason any division is ignored by the compiler. Why?
+
+enum ComputationOp {LIT, VAR, ADD, SUB, MUL, DIV};
 
 struct ASTCalculationNode : ASTComputationNode {
     ASTCalculationNode* left;
@@ -51,6 +53,7 @@ struct ASTCalculationNode : ASTComputationNode {
             case ADD: return "addq";
             case SUB: return "subq";
             case MUL: return "mulq";
+            case DIV: return "divq";
         }
         return "";
     }
@@ -60,6 +63,7 @@ struct ASTCalculationNode : ASTComputationNode {
             case ADD: return std::to_string(left->value + right->value);
             case SUB: return std::to_string(left->value - right->value);
             case MUL: return std::to_string(left->value * right->value);
+            case DIV: return std::to_string(left->value / right->value);
         }
         return "";
     }
