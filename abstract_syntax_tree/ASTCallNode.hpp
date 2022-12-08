@@ -21,8 +21,11 @@ struct ASTCallNode : ASTStatementNode{
         std::string code;
         for (int i = 0; i<arguments.size(); i++) {
             code += arguments[i].compile();
-            code += "mov "+regs[0]+" "+argument_regs[i];   //
+            code += "mov "+regs[0]+" "+argument_regs[i];   // put result in corresponding argument place
         }
+
+        code += "call "+target+"\n";    // TODO where on the stack goes the return adress?
+        return code;
     }
 };
 

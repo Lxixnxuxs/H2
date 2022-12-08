@@ -21,4 +21,5 @@ const std::vector<std::string> comparison_symbols = {"==","!=","<=",">=","<",">"
 const vector<std::string> data_types = {"void","int"};
 std::map<std::string, size_t> type_to_size = { {"void",0},{"int", 4} };
 
+
 #endif //H2_GLOBAL_INFORMATION_HPP

@@ -14,5 +14,7 @@
 #include "ASTRootNode.hpp"
 #include "ASTWhileLoopNode.hpp"
 #include "ASTReturnNode.hpp"
+#include "ASTComparisonNode.hpp"
+#include "ASTCallNode.hpp"
 
 #endif //H2_ASTTREE_HPP

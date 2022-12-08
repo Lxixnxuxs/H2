@@ -11,6 +11,7 @@
 #include "old/ParsedFunction.hpp"
 #include "old/parser.hpp"
 #include "LocalVariableManager.hpp"
+#include "GlobalVariableManager.hpp"
 #include "lexer.hpp"
 #include "global_information.hpp"
 
@@ -89,7 +90,7 @@ public:
         if (t.empty()) {
             throw std::invalid_argument("PARSER ERROR  cannot parse empty programm");
         }
-
+        GlobalVariableManager g;
         std::vector<ASTFunctionNode*> funcs;
 
         expect(t,"def");
@@ -98,7 +99,7 @@ public:
         while (!t.empty()){
             auto t2 = t.read_until("def");
             if (!t2.empty()){
-                funcs.push_back(parse_function(t2));
+                funcs.push_back(parse_function(t2, g));
             }
 
         }
@@ -106,7 +107,7 @@ public:
         return new ASTRootNode(funcs);
     }
 
-    ASTFunctionNode* parse_function(Tokenstream t) {
+    ASTFunctionNode* parse_function(Tokenstream t, GlobalVariableManager& g) {
         // Node that the 'def' has already been thrown away
 
         LocalVariableManager var_manager;
@@ -119,6 +120,8 @@ public:
         expect(t,"(");
         auto argument_list = t.read_inside_brackets();
 
+        int arg_stack_size = parse_argument_list(argument_list, var_manager);
+
         expect(t,"->");
         t += 1; //discard '->'
 
@@ -130,19 +133,36 @@ public:
         expect(t,"{");
         auto body = t.read_inside_brackets();
 
-        // TODO parse_argument_list?
-        auto parsed_body = parse_subspace(body, var_manager);
+
+        auto parsed_body = parse_subspace(body, var_manager, g);
 
         // expect nothing to be there after closing bracket '}'
         expect_empty(t);
 
         size_t stack_frame_size = var_manager.current_offset;
 
-        return new ASTFunctionNode(func_name, parsed_body, stack_frame_size);
+        return new ASTFunctionNode(func_name, parsed_body, stack_frame_size, arg_stack_size);
 
     }
 
-    std::vector<ASTStatementNode*> parse_subspace(Tokenstream t, LocalVariableManager& v){
+    int parse_argument_list(Tokenstream t, LocalVariableManager& v){
+        // returns args_stack_size
+
+        while (!t.empty()) {
+            expect_one_of(t,data_types);
+            string type = *t;
+            t+=1; // discard type
+
+            expect_identifier(t);
+            string name = *t;
+            t+=1; // discard name
+
+            v.add_variable(name, type);
+        }
+        return v.current_offset;
+    }
+
+    std::vector<ASTStatementNode*> parse_subspace(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){
         std::vector<ASTStatementNode*> res;
         while (!t.empty()){
 
@@ -157,7 +177,7 @@ public:
                 t += 1; // discard 'else'
                 expect(t,"{");
                 auto else_body_stream = t.read_inside_brackets();
-                res.push_back(parse_if_else(cond_stream, if_body_stream, else_body_stream, v));
+                res.push_back(parse_if_else(cond_stream, if_body_stream, else_body_stream, v,g));
 
             } else if (*t == "while"){
                 t += 1; // discard 'while'
@@ -165,38 +185,40 @@ public:
                 auto cond_stream = t.read_inside_brackets();
                 expect(t,"{");
                 auto body_stream = t.read_inside_brackets();
-                res.push_back(parse_while(cond_stream,body_stream,v));
+                res.push_back(parse_while(cond_stream,body_stream,v,g));
 
             } else {
                 // not a control structure
-                res.push_back(parse_line(t.read_until(";"), v));
+                res.push_back(parse_line(t.read_until(";"), v,g));
             }
         }
 
         return res;
     }
 
-    ASTIfElseNode* parse_if_else(Tokenstream condition, Tokenstream if_body, Tokenstream else_body, LocalVariableManager& v) {
+
+
+    ASTIfElseNode* parse_if_else(Tokenstream condition, Tokenstream if_body, Tokenstream else_body, LocalVariableManager& v, GlobalVariableManager& g) {
         // Parse condition
-        ASTComparisonNode* condition_node = parse_comparison(condition, v);
-        std::vector<ASTStatementNode*> if_body_nodes = parse_subspace(if_body, v);
-        std::vector<ASTStatementNode*> else_body_nodes = parse_subspace(else_body, v);
+        ASTComparisonNode* condition_node = parse_comparison(condition, v, g);
+        std::vector<ASTStatementNode*> if_body_nodes = parse_subspace(if_body, v, g);
+        std::vector<ASTStatementNode*> else_body_nodes = parse_subspace(else_body, v, g);
 
         return new ASTIfElseNode(condition_node, if_body_nodes, else_body_nodes, global_id_counter++);
     }
 
-    ASTWhileLoopNode* parse_while(Tokenstream condition, Tokenstream body, LocalVariableManager& v) {
-        ASTComparisonNode* condition_node = parse_comparison(condition, v);
-        std::vector<ASTStatementNode*> body_nodes = parse_subspace(body, v);
+    ASTWhileLoopNode* parse_while(Tokenstream condition, Tokenstream body, LocalVariableManager& v, GlobalVariableManager& g) {
+        ASTComparisonNode* condition_node = parse_comparison(condition, v, g);
+        std::vector<ASTStatementNode*> body_nodes = parse_subspace(body, v, g);
 
         return new ASTWhileLoopNode(condition_node,body_nodes,global_id_counter++);
     }
 
-    ASTStatementNode* parse_line(Tokenstream t, LocalVariableManager& v){
+    ASTStatementNode* parse_line(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){
 
         if (*t == "return") {
             t += 1; // discard 'return'
-            ASTCalculationNode* calc = parse_calculation(t, v, 0);
+            ASTCalculationNode* calc = parse_calculation(t, v, g, 0);
             return new ASTReturnNode(calc, v.name);
         }
 
@@ -223,7 +245,7 @@ public:
         t+=1; // discard '='
 
         // expect the whole remaining tokens to belong to the calculation
-        auto calculation = parse_calculation(t,v);
+        auto calculation = parse_calculation(t,v,g);
 
 
 
@@ -236,7 +258,11 @@ public:
         return new ASTAssignmentNode(v.var_to_offset[var], calculation);
     }
 
-    ASTComparisonNode* parse_comparison(Tokenstream t, LocalVariableManager& v){
+    ASTCallNode* parse_call(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){
+
+    }
+
+    ASTComparisonNode* parse_comparison(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){
         ASTCalculationNode *left, *right;
 
         if (t.empty()){
@@ -252,11 +278,11 @@ public:
             Tokenstream left_stream = t.read_inside_brackets();
             if (t.empty()) {
                 // there are top-level brackets around the comparison. Look inside
-                return parse_comparison(left_stream,v);
+                return parse_comparison(left_stream,v,g);
             }
-            left = parse_calculation(left_stream, v, 0);
+            left = parse_calculation(left_stream, v,g, 0);
         } else {
-            left = parse_literal(*t, v, 0);
+            left = parse_literal(*t, v,g, 0);
             t += 1; // discard literal
         }
 
@@ -268,9 +294,9 @@ public:
         // Process right side
         if (*t == "(") {
             Tokenstream right_stream = t.read_inside_brackets();
-            right = parse_calculation(right_stream, v,  1);
+            right = parse_calculation(right_stream, v,g,  1);
         } else {
-            right = parse_literal(*t, v,  1);
+            right = parse_literal(*t, v,g,  1);
             t += 1; // discard literal
         }
 
@@ -279,7 +305,7 @@ public:
         return new ASTComparisonNode(left, right, op, regs[0],regs[1]);
     }
 
-    ASTCalculationNode* parse_calculation(Tokenstream t, LocalVariableManager& v, int h = 0) {
+    ASTCalculationNode* parse_calculation(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g, int h = 0){
         ASTCalculationNode *left, *right;
 
         if (t.empty()){
@@ -287,7 +313,14 @@ public:
         }
 
         if (t.size() == 1) {
-            return parse_literal(*t, v, h);
+            return parse_literal(*t, v, g,h);
+        }
+
+        // checking for function call
+        Tokenstream copy = t;
+        copy += 1;
+        if (*copy == "[") {
+
         }
 
         // Process left side
@@ -295,11 +328,11 @@ public:
             Tokenstream left_stream = t.read_inside_brackets();
             if (t.empty()) {
                 // there are top-level brackets around the calculation. Look inside
-                return parse_calculation(left_stream,v,h);
+                return parse_calculation(left_stream,v,g,h);
             }
-            left = parse_calculation(left_stream, v, h);
+            left = parse_calculation(left_stream, v,g, h);
         } else {
-            left = parse_literal(*t, v, h);
+            left = parse_literal(*t, v,g, h);
             t += 1; // discard literal
         }
 
@@ -311,9 +344,9 @@ public:
         // Process right side
         if (*t == "(") {
             Tokenstream right_stream = t.read_inside_brackets();
-            right = parse_calculation(right_stream, v, h + 1);
+            right = parse_calculation(right_stream, v,g, h + 1);
         } else {
-            right = parse_literal(*t, v, h + 1);
+            right = parse_literal(*t, v,g, h + 1);
             t += 1; // discard literal
         }
 
@@ -322,7 +355,7 @@ public:
         return new ASTCalculationNode(left, right, op_string_to_type[op], regs[h]);
     }
 
-    ASTCalculationNode* parse_literal(std::string lit, LocalVariableManager& v, int h) {
+    ASTCalculationNode* parse_literal(std::string lit, LocalVariableManager& v, GlobalVariableManager& g, int h) {
         for (auto pair : v.var_to_offset) {
             if (pair.first == lit) {
                 // found a variable-definition

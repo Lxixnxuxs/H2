@@ -10,13 +10,16 @@ struct ASTFunctionNode : ASTNode {
 
     std::string f_name;
     size_t f_stack_size;
+    size_t arg_stackpart_size;
     std::vector<ASTStatementNode*> body;
+    std::vector<std::string> argument_list;
+
 
     int callee_reg_size = 8;
     int callee_reg_count = callee_save_regs.size();
 
-    ASTFunctionNode(std::string f_name, std::vector<ASTStatementNode*> body, size_t f_stack_size):
-    f_name(f_name), body(body), f_stack_size(f_stack_size) {}
+    ASTFunctionNode(std::string f_name, std::vector<ASTStatementNode*> body, size_t f_stack_size, size_t arg_stackpart_size):
+    f_name(f_name), body(body), f_stack_size(f_stack_size), arg_stackpart_size(arg_stackpart_size) {}
 
     std::string compile() {
         std::string code = f_name + ":\n";
@@ -26,6 +29,11 @@ struct ASTFunctionNode : ASTNode {
         // storing all the callee-save register
         for (int i = 0; i<callee_reg_count; i++){
             code += "mov " + callee_save_regs[i]+ ", -" + std::to_string(f_stack_size + i*callee_reg_size) +"(%rsp)\n";
+        }
+
+        // moving arguments to stack
+        for (int i = 0; i<argument_list.size(); i++) {
+            code += "mov " + argument_regs[i]+ ", -" + std::to_string(f_stack_size - arg_stackpart_size + i*callee_reg_size) +"(%rsp)\n";
         }
 
         for (ASTStatementNode* e : body) {
