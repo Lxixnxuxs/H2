@@ -15,7 +15,8 @@
 #include "global_information.hpp"
 
 
-static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-", SUB}, {"*", MUL}};
+static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-", SUB}, {"*", MUL}, {"/", DIV},
+                                                                 {"%", MOD}};
 
 class CodeParser {
 private:
@@ -278,7 +279,7 @@ public:
         return new ASTComparisonNode(left, right, op, regs[0],regs[1]);
     }
 
-    ASTCalculationNode* parse_calculation(Tokenstream t, LocalVariableManager& v, int h = 0){
+    ASTCalculationNode* parse_calculation(Tokenstream t, LocalVariableManager& v, int h = 0) {
         ASTCalculationNode *left, *right;
 
         if (t.empty()){

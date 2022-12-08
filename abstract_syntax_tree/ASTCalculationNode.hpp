@@ -6,7 +6,7 @@
 
 // TODO for some reason any division is ignored by the compiler. Why?
 
-enum ComputationOp {LIT, VAR, ADD, SUB, MUL, DIV};
+enum ComputationOp {LIT, VAR, ADD, SUB, MUL, DIV, MOD};
 
 struct ASTCalculationNode : ASTComputationNode {
     ASTCalculationNode* left;
@@ -30,18 +30,27 @@ struct ASTCalculationNode : ASTComputationNode {
 
     std::string compile() override {
         if (comp_type == VAR) {
-            return "movq -" + std::to_string(offset) + "(%rsp)" + ", " + reg + "\n";
+            return "mov -" + std::to_string(offset) + "(%rsp)" + ", " + reg + "\n";
         } else if (comp_type == LIT) {
-            return "movq $" + std::to_string(value) + "," + reg + "\n";
+            return "mov $" + std::to_string(value) + "," + reg + "\n";
         } else {
             // Recursive code generation
             if (left->comp_type == LIT && right->comp_type == LIT) {
-                return "movq $" + optimize_literal_computation() + ", " + reg + "\n";
+                return "mov $" + optimize_literal_computation() + ", " + reg + "\n";
             } else {
                 std::string code = left->compile() + right->compile();
-
-                code += computation_op_to_string() + " " + right->reg + "," + left->reg +
-                (own_reg ? "\nmovq " + left->reg + "," + reg + "\n" : "\n");
+                if (comp_type == DIV) {
+                    /*code += "mov " + left->reg + ", %eax\nmov " + right->reg + ", %edx\n" +
+                            "div " + (own_reg ? reg : left->reg) + "\n";*/
+                    code += "mov $0, %edx\nmov " + left->reg + ", %eax\ndiv " + right->reg +
+                            (own_reg ? "\nmov %eax, " + left->reg : "\nmov %eax, " + reg) + "\n";
+                }else if (comp_type == MOD) {
+                    code += "mov $0, %edx\nmov " + left->reg + ", %eax\ndiv " + right->reg +
+                            (own_reg ? "\nmov %edx, " + left->reg : "\nmov %edx, " + reg) + "\n";
+                } else {
+                    code += computation_op_to_string() + " " + right->reg + "," + left->reg +
+                            (own_reg ? "\nmov " + left->reg + "," + reg + "\n" : "\n");
+                }
 
                 return code;
             }
@@ -50,10 +59,10 @@ struct ASTCalculationNode : ASTComputationNode {
 
     std::string computation_op_to_string() {
         switch (comp_type) {
-            case ADD: return "addq";
-            case SUB: return "subq";
-            case MUL: return "mulq";
-            case DIV: return "divq";
+            case ADD: return "add";
+            case SUB: return "sub";
+            case MUL: return "mul";
+            case DIV: return "div";
         }
         return "";
     }
@@ -66,6 +75,22 @@ struct ASTCalculationNode : ASTComputationNode {
             case DIV: return std::to_string(left->value / right->value);
         }
         return "";
+    }
+
+    bool operator==(ASTCalculationNode& other) {
+        if (comp_type == LIT) {
+            return other.comp_type == LIT && other.value == value && other.reg == reg;
+        } else if (comp_type == VAR) {
+            return other.comp_type == VAR && other.offset == offset && other.reg == reg;
+        } else {
+            bool b0 = other.comp_type == comp_type;
+            bool b1 = other.reg == reg;
+            bool b2 = other.left == left;
+            bool b3 = other.right == right;
+
+            return false;
+            //return other.comp_type == comp_type && other.reg == reg && other.left == left && other.right == right;
+        }
     }
 };
 

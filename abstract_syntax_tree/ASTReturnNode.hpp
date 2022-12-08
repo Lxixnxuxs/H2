@@ -13,7 +13,7 @@ struct ASTReturnNode : ASTStatementNode {
 
     std::string compile() {
         std::string code = calc->compile();
-        code += "movq " + calc->reg + ", %rax\n";
+        code += "mov " + calc->reg + ", %eax\n";
         code += "jmp END_" + f_name + '\n';
 
         return code;
