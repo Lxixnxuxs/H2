@@ -12,9 +12,8 @@
 #include "old/parser.hpp"
 #include "LocalVariableManager.hpp"
 #include "lexer.hpp"
+#include "global_information.hpp"
 
-static vector<std::string> keywords = {"def", "return", "if", "else"};
-static vector<std::string> regs = {"%rcx", "%r8", "%r9", "%r10", "%r11"};
 
 static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-", SUB}, {"*", MUL}};
 

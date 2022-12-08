@@ -11,6 +11,7 @@ struct ASTFunctionNode : ASTNode {
     std::string f_name;
     size_t f_stack_size;
     std::vector<ASTStatementNode*> body;
+    std::vector<> argument_list;
 
     int callee_reg_size = 8;
     int callee_reg_count = callee_save_regs.size();
