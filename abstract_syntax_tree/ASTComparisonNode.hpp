@@ -32,7 +32,7 @@ struct ASTComparisonNode : ASTStatementNode {
 
         code += left->compile();
         code += right->compile();
-        code += "cmpq "+reg1+", "+reg2+"\n";
+        code += "cmp "+reg1+", "+reg2+"\n";
         //code += comp_to_jump[comp_type] + " "
         // figuring out the kind of jump is part of the controll-structures job
 

@@ -120,7 +120,11 @@ public:
         expect(t,"(");
         auto argument_list = t.read_inside_brackets();
 
-        int arg_stack_size = parse_argument_list(argument_list, var_manager);
+        std::pair<int,vector<string>> temp  = parse_argument_list(argument_list, var_manager);
+        int arg_stack_size = temp.first;
+        vector<string> arg_list = temp.second;
+
+        g.var_to_argument_list[func_name] = arg_list;
 
         expect(t,"->");
         t += 1; //discard '->'
@@ -141,12 +145,14 @@ public:
 
         size_t stack_frame_size = var_manager.current_offset;
 
-        return new ASTFunctionNode(func_name, parsed_body, stack_frame_size, arg_stack_size);
+        return new ASTFunctionNode(func_name, parsed_body, stack_frame_size, arg_stack_size,arg_list);
 
     }
 
-    int parse_argument_list(Tokenstream t, LocalVariableManager& v){
+    std::pair<int,vector<string>> parse_argument_list(Tokenstream t, LocalVariableManager& v){
         // returns args_stack_size
+
+        vector<string> type_list;
 
         while (!t.empty()) {
             expect_one_of(t,data_types);
@@ -158,8 +164,9 @@ public:
             t+=1; // discard name
 
             v.add_variable(name, type);
+            type_list.push_back(type);
         }
-        return v.current_offset;
+        return std::pair<int,vector<string>>{v.current_offset,type_list};
     }
 
     std::vector<ASTStatementNode*> parse_subspace(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){
@@ -222,6 +229,8 @@ public:
             return new ASTReturnNode(calc, v.name);
         }
 
+
+
         bool need_to_declare = false;
         string type_;
 
@@ -236,6 +245,15 @@ public:
                 break;
             }
         }
+
+        // check for expression without '='. eg a funcion call or something like an unused '3+4;'
+        // all this is handled in parse_calculation
+        auto copy = t;
+        copy+=1;
+        if (*copy != "=") {
+            return parse_calculation(t,v,g);
+        }
+
 
         expect_identifier(t);
         auto var = *t;
@@ -258,7 +276,49 @@ public:
         return new ASTAssignmentNode(v.var_to_offset[var], calculation);
     }
 
-    ASTCallNode* parse_call(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){
+    ASTCallNode* parse_call(Tokenstream& t, LocalVariableManager& v, GlobalVariableManager& g){
+        // be aware that this call changes the Tokenstream of the higher level
+
+        // TODO check that argument-list has proper size and type names fit
+
+        expect_identifier(t);
+        string func_name = *t;
+        vector<string> expected_types;
+        bool defined = false;
+        for (const auto pair : g.var_to_argument_list) {
+            //cout << "defined: "+ pair.first+" "<< pair.second.size() << endl; // TODO why is it not recognized if not defined?
+            if (pair.first == func_name){
+                defined = true;
+                expected_types = pair.second;
+            }
+            //cout << defined << endl;
+        }
+        //cout << endl;
+
+        if (!defined) {
+            throw std::invalid_argument("PARSER ERROR  function '"+func_name+"' not defined");
+        }
+        t+=1; // discard func_name
+        expect(t, "[");
+        auto arguments_stream = t.read_inside_brackets();
+
+        vector<ASTCalculationNode*> arguments;
+
+        int i = 0;
+        while (!arguments_stream.empty()) {
+            if (i>=expected_types.size()) throw std::invalid_argument("PARSER ERROR  '"+func_name+
+                    "' was called with too many arguments (with more than "+ std::to_string(expected_types.size())+")");
+
+            auto stream = arguments_stream.read_until(",");
+            arguments.push_back(parse_calculation(stream,v,g));
+            // here should be implemented a type-check for the argument
+            i++;
+        }
+
+        if (i<expected_types.size()) throw std::invalid_argument("PARSER ERROR  '"+func_name+
+        "' was called with not enought arguments: "+std::to_string(i)+" instead of "+ std::to_string(expected_types.size())+"");
+
+        return new ASTCallNode(nullptr, nullptr,VAR,"",0,0,func_name,arguments);
 
     }
 
@@ -320,7 +380,7 @@ public:
         Tokenstream copy = t;
         copy += 1;
         if (*copy == "[") {
-
+            return parse_call(t,v,g);
         }
 
         // Process left side
@@ -332,8 +392,15 @@ public:
             }
             left = parse_calculation(left_stream, v,g, h);
         } else {
-            left = parse_literal(*t, v,g, h);
-            t += 1; // discard literal
+            // checking for function call
+            Tokenstream copy = t;
+            copy += 1;
+            if (*copy == "[") {
+                left = parse_call(t,v,g);
+            } else {
+                left = parse_literal(*t, v, g, h);
+                t += 1; // discard literal
+            }
         }
 
         std::string op = *t;
@@ -346,8 +413,15 @@ public:
             Tokenstream right_stream = t.read_inside_brackets();
             right = parse_calculation(right_stream, v,g, h + 1);
         } else {
-            right = parse_literal(*t, v,g, h + 1);
-            t += 1; // discard literal
+            // checking for function call
+            Tokenstream copy = t;
+            copy += 1;
+            if (*copy == "[") {
+                right = parse_call(t,v,g);
+            } else {
+                right = parse_literal(*t, v, g, h + 1);
+                t += 1; // discard literal
+            }
         }
 
         expect_empty(t);

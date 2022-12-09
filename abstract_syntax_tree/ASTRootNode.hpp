@@ -11,7 +11,7 @@ struct ASTRootNode : ASTNode {
     ASTRootNode(std::vector<ASTFunctionNode*>& funcs): funcs(funcs) {}
 
     std::string compile() {
-        std::string code = "";
+        std::string code = "jmp main\n\n"; // always starting with main function
 
         for (ASTNode* f : funcs) {
             code += f->compile();
