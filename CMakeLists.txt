@@ -8,3 +8,4 @@ add_subdirectory(old)
 add_subdirectory(abstract_syntax_tree)
 
 add_executable(main main.cpp)
+add_executable(compiler compiler.cpp)
