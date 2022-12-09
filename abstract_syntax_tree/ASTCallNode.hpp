@@ -14,21 +14,22 @@ struct ASTCallNode : ASTCalculationNode{
 
     std::string target;
     std::vector<ASTCalculationNode*> arguments;
+    int h;
 
     ASTCallNode(ASTCalculationNode *left, ASTCalculationNode *right, ComputationOp compType, std::string reg, int value,
-                size_t offset, std::string target_, std::vector<ASTCalculationNode*> arguments) : ASTCalculationNode(
-            left, right, compType, "%eax", value, offset), target(target_), arguments(arguments) {}
+                size_t offset, std::string target_, std::vector<ASTCalculationNode*> arguments, int h) : ASTCalculationNode(
+            left, right, compType, regs[h], value, offset), target(target_), arguments(arguments), h(h) {}
             // call node is always taking register eax
-            // TODO what if multiple calls are processed like  f(x) * g(x)  ?
 
     std::string compile() override{
         std::string code;
         for (int i = 0; i<arguments.size(); i++) {
             code += arguments[i]->compile();
-            code += "mov "+regs[0]+", "+argument_regs[i]+"\n";   // put result in corresponding argument place
+            code += "mov "+regs[i+h]+", "+argument_regs[i]+"\n";   // put subcalculation-result in corresponding argument place
         }
 
-        code += "call "+target+"\n";    // TODO where on the stack goes the return adress?
+        code += "call "+target+"\n";
+        code += "mov %eax, "+regs[h]+"\n";
         return code;
     }
 };

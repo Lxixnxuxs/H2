@@ -276,17 +276,15 @@ public:
         return new ASTAssignmentNode(v.var_to_offset[var], calculation);
     }
 
-    ASTCallNode* parse_call(Tokenstream& t, LocalVariableManager& v, GlobalVariableManager& g){
+    ASTCallNode* parse_call(Tokenstream& t, LocalVariableManager& v, GlobalVariableManager& g, int h=0){
         // be aware that this call changes the Tokenstream of the higher level
-
-        // TODO check that argument-list has proper size and type names fit
 
         expect_identifier(t);
         string func_name = *t;
         vector<string> expected_types;
         bool defined = false;
         for (const auto pair : g.var_to_argument_list) {
-            //cout << "defined: "+ pair.first+" "<< pair.second.size() << endl; // TODO why is it not recognized if not defined?
+            //cout << "defined: "+ pair.first+" "<< pair.second.size() << endl;
             if (pair.first == func_name){
                 defined = true;
                 expected_types = pair.second;
@@ -310,15 +308,16 @@ public:
                     "' was called with too many arguments (with more than "+ std::to_string(expected_types.size())+")");
 
             auto stream = arguments_stream.read_until(",");
-            arguments.push_back(parse_calculation(stream,v,g));
+            arguments.push_back(parse_calculation(stream,v,g,h+i));
             // here should be implemented a type-check for the argument
             i++;
+
         }
 
         if (i<expected_types.size()) throw std::invalid_argument("PARSER ERROR  '"+func_name+
         "' was called with not enought arguments: "+std::to_string(i)+" instead of "+ std::to_string(expected_types.size())+"");
 
-        return new ASTCallNode(nullptr, nullptr,VAR,"",0,0,func_name,arguments);
+        return new ASTCallNode(nullptr, nullptr,VAR,"",0,0,func_name,arguments,h);
 
     }
 
@@ -380,7 +379,10 @@ public:
         Tokenstream copy = t;
         copy += 1;
         if (*copy == "[") {
-            return parse_call(t,v,g);
+            copy.read_inside_brackets();
+            if (copy.empty()) {     // only if it is just a function call and nothing more
+                return parse_call(t,v,g,h);
+            }
         }
 
         // Process left side
@@ -396,7 +398,7 @@ public:
             Tokenstream copy = t;
             copy += 1;
             if (*copy == "[") {
-                left = parse_call(t,v,g);
+                left = parse_call(t,v,g,h);
             } else {
                 left = parse_literal(*t, v, g, h);
                 t += 1; // discard literal
@@ -417,7 +419,7 @@ public:
             Tokenstream copy = t;
             copy += 1;
             if (*copy == "[") {
-                right = parse_call(t,v,g);
+                right = parse_call(t,v,g, h+1);
             } else {
                 right = parse_literal(*t, v, g, h + 1);
                 t += 1; // discard literal
