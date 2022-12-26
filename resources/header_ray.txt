@@ -1,4 +1,0 @@
-	.file	"as.s"
-	.text
-	.globl	main
-	.type	main, @function

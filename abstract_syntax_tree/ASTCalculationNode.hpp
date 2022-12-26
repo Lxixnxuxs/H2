@@ -30,7 +30,7 @@ struct ASTCalculationNode : ASTComputationNode {
 
     std::string compile() override {
         if (comp_type == VAR) {
-            return "mov -" + std::to_string(offset) + "(%rsp)" + ", " + reg + "\n";
+            return "mov " + std::to_string(offset) + "(%rsp)" + ", " + reg + "\n";
         } else if (comp_type == LIT) {
             return "mov $" + std::to_string(value) + "," + reg + "\n";
         } else {

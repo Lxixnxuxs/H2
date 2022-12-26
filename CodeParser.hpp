@@ -203,8 +203,6 @@ public:
         return res;
     }
 
-
-
     ASTIfElseNode* parse_if_else(Tokenstream condition, Tokenstream if_body, Tokenstream else_body, LocalVariableManager& v, GlobalVariableManager& g) {
         // Parse condition
         ASTComparisonNode* condition_node = parse_comparison(condition, v, g);

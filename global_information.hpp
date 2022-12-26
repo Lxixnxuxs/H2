@@ -8,7 +8,7 @@
 #ifndef H2_GLOBAL_INFORMATION_HPP
 #define H2_GLOBAL_INFORMATION_HPP
 
-const std::vector<std::string> callee_save_regs = {"%r12d","%r13d","%r14d","%r15d"};
+const std::vector<std::string> callee_save_regs = {"%r12d","%r13d","%r14d","%r15d","%ecx", "%r10d", "%r11d"};
 const std::vector<std::string> argument_regs = {"%edi","%esi","edx","esx","r8d","r9d"};
 
 // all the callee-save regs are saved and can therefore be used

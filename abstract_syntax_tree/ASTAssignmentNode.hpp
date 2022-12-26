@@ -15,7 +15,7 @@ struct ASTAssignmentNode : ASTStatementNode {
 
     std::string compile() {
         std::string code = right->compile();
-        code += "mov " + right->reg + ", -" + std::to_string(offset) + "(%rsp)\n";
+        code += "mov " + right->reg + ", " + std::to_string(offset) + "(%rsp)\n";
 
         return code;
     }
