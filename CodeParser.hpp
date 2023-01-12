@@ -8,8 +8,6 @@
 #include "abstract_syntax_tree/ASTTree.hpp"
 
 #include <vector>
-#include "old/ParsedFunction.hpp"
-#include "old/parser.hpp"
 #include "LocalVariableManager.hpp"
 #include "GlobalVariableManager.hpp"
 #include "lexer.hpp"

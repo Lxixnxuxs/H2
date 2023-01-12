@@ -7,4 +7,4 @@ add_subdirectory(test)
 add_subdirectory(abstract_syntax_tree)
 
 add_executable(main main.cpp)
-add_executable(compiler compiler.cpp)
+add_executable(compiler compiler.cpp lexer.cpp Tokenstream.cpp)
