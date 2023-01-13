@@ -31,6 +31,14 @@ struct ASTRootNode : ASTNode {
         complexity = new Term(VARIABLE,"-"); // placeholder
         return complexity;
     }
+
+    std::string to_code() override {
+        std::string res;
+        for (auto e : funcs) {
+            res += e->to_code() + "\n\n";
+        }
+        return res;
+    }
 };
 
 #endif //H2_ASTROOTNODE_HPP

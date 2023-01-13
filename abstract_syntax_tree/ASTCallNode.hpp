@@ -38,6 +38,17 @@ struct ASTCallNode : ASTCalculationNode{
         complexity = a;
         return a;
     }
+
+    std::string to_code() override {
+        auto res =  target_name + "[";
+        for (int i = 0; i<arguments.size(); i++) {
+            res += arguments[i]->to_code();
+            if (i!=arguments.size()-1) res += ", ";
+        }
+        res += "]";
+        return res;
+
+    }
 };
 
 #endif //H2_ASTCALLNODE_HPP

@@ -24,6 +24,10 @@ struct ASTReturnNode : ASTStatementNode {
         complexity = a;
         return a;
     }
+
+    std::string to_code() override {
+        return "return " + calc->to_code();
+    }
 };
 
 #endif //H2_ASTRETURNNODE_HPP

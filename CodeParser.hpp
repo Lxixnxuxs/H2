@@ -1,6 +1,7 @@
 #ifndef H2_PARSER_HPP
 #define H2_PARSER_HPP
 
+
 #include <stdexcept>
 #include <algorithm>
 #include "Tokenstream.hpp"
@@ -106,7 +107,7 @@ public:
     }
 
     ASTFunctionNode* parse_function(Tokenstream t, GlobalVariableManager& g) {
-        // Node that the 'def' has already been thrown away
+        // Note that the 'def' has already been thrown away
 
         LocalVariableManager var_manager;
         string func_name = *t;
@@ -118,9 +119,9 @@ public:
         expect(t,"(");
         auto argument_list = t.read_inside_brackets();
 
-        std::pair<int,vector<string>> temp  = parse_argument_list(argument_list, var_manager);
+        std::pair<int,vector<std::pair<string,string>>> temp  = parse_argument_list(argument_list, var_manager);
         int arg_stack_size = temp.first;
-        vector<string> arg_list = temp.second;
+        auto arg_list = temp.second;
 
         g.var_to_argument_list[func_name] = arg_list;
 
@@ -130,6 +131,7 @@ public:
         var_manager.ret_type = *t;
 
         expect_one_of(t,data_types);
+        std::string return_type = *t;
         t += 1; // discard return type
 
         expect(t,"{");
@@ -143,15 +145,15 @@ public:
 
         size_t stack_frame_size = var_manager.current_offset;
 
-        auto res = new ASTFunctionNode(func_name, parsed_body, stack_frame_size, arg_stack_size,arg_list);
+        auto res = new ASTFunctionNode(func_name, parsed_body, stack_frame_size, arg_stack_size,arg_list, return_type);
         g.var_to_node[func_name] = res; // Node Object is known to global variable manager
         return res;
     }
 
-    std::pair<int,vector<string>> parse_argument_list(Tokenstream t, LocalVariableManager& v){
+    std::pair<int,vector<std::pair<string,string>>> parse_argument_list(Tokenstream t, LocalVariableManager& v){
         // returns args_stack_size
 
-        vector<string> type_list;
+        vector<std::pair<string,string>> type_list;
 
         while (!t.empty()) {
             expect_one_of(t,data_types);
@@ -163,9 +165,9 @@ public:
             t+=1; // discard name
 
             v.add_variable(name, type);
-            type_list.push_back(type);
+            type_list.emplace_back(name, type);
         }
-        return std::pair<int,vector<string>>{v.current_offset,type_list};
+        return {v.current_offset, type_list};
     }
 
     std::vector<ASTStatementNode*> parse_subspace(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){
@@ -270,7 +272,7 @@ public:
             v.add_variable(var,type_);
         }
 
-        return new ASTAssignmentNode(v.var_to_offset[var], calculation);
+        return new ASTAssignmentNode(v.var_to_offset[var], calculation, var);
     }
 
     ASTCallNode* parse_call(Tokenstream& t, LocalVariableManager& v, GlobalVariableManager& g, int h=0){
@@ -284,7 +286,10 @@ public:
             //cout << "defined: "+ pair.first+" "<< pair.second.size() << endl;
             if (pair.first == func_name){
                 defined = true;
-                expected_types = pair.second;
+                expected_types;
+                for (const auto p : pair.second) {
+                    expected_types.push_back(p.first);
+                }
             }
             //cout << defined << endl;
         }
@@ -432,7 +437,7 @@ public:
         for (auto pair : v.var_to_offset) {
             if (pair.first == lit) {
                 // found a variable-definition
-                return new ASTCalculationNode(nullptr, nullptr, VAR,regs[h],0,v.var_to_offset[lit]);
+                return new ASTCalculationNode(nullptr, nullptr, VAR,regs[h],0,v.var_to_offset[lit], lit);
             }
         }
 

@@ -54,6 +54,15 @@ struct ASTIfElseNode : ASTControlFlowNode {
         return a;
 
     }
+
+    std::string to_code() override {
+        auto res = "if (" + condition->to_code() + ") {\n";
+        for (auto e : if_block) res += e->to_code();
+        res += "} else {\n";
+        for (auto e : else_block) res += e->to_code();
+        res += "}\n";
+        return res;
+    }
 };
 
 #endif //H2_ASTIFELSENODE_HPP

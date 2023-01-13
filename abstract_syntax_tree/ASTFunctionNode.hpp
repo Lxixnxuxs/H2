@@ -12,15 +12,16 @@ struct ASTFunctionNode : ASTNode {
     size_t f_stack_size;
     size_t arg_stackpart_size;
     std::vector<ASTStatementNode*> body;
-    std::vector<std::string> argument_list;
+    std::vector<std::pair<std::string,std::string>> argument_list;  // name to type
+    std::string return_type;
 
 
     int callee_reg_size = 4;
     int callee_reg_count = callee_save_regs.size();
 
     ASTFunctionNode(std::string f_name, std::vector<ASTStatementNode*> body, size_t f_stack_size, size_t arg_stackpart_size,
-                    std::vector<std::string> argument_list):
-    f_name(f_name), body(body), f_stack_size(f_stack_size), arg_stackpart_size(arg_stackpart_size), argument_list(argument_list) {}
+                    std::vector<std::pair<std::string,std::string>> argument_list, std::string return_type):
+    f_name(f_name), body(body), f_stack_size(f_stack_size), arg_stackpart_size(arg_stackpart_size), argument_list(argument_list), return_type(return_type) {}
 
     std::string compile() {
         std::string code = f_name + ":\n";
@@ -61,6 +62,27 @@ struct ASTFunctionNode : ASTNode {
         }
         complexity = a;
         return a;
+    }
+
+    std::string to_code() override {
+        auto res = "def " + f_name + "(";
+        for (int i = 0; i<argument_list.size(); i++) {
+            res += argument_list[i].second + " " + argument_list[i].first;
+            if (i!=argument_list.size()-1) res += ", ";
+        }
+        res += ") -> " + return_type;
+
+        // TODO insert O-Notation here
+
+        res += " {\n";
+
+        for (auto e : body) {
+            res += e->to_code();
+        }
+
+        res += "\n}\n";
+
+        return res;
     }
 };
 

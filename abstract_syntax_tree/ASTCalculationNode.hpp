@@ -19,11 +19,12 @@ struct ASTCalculationNode : ASTComputationNode {
 
     // Optional variables for cases (LIT, VAR)
     int value;
+    std::string var_name;
     size_t offset;
 
+
     ASTCalculationNode(ASTCalculationNode* left, ASTCalculationNode* right, ComputationOp comp_type, std::string reg = "",
-                       int value = 0, size_t offset = 0):
-            left(left), right(right), comp_type(comp_type), value(value), offset(offset){
+                       int value = 0, size_t offset = 0, std::string var_name = "SomeVar"): left(left), right(right), comp_type(comp_type), value(value), offset(offset), var_name(var_name){
         this->reg = reg;
         if (reg.empty() && left != nullptr) {reg = left->reg; own_reg = false;}
     }
@@ -95,6 +96,18 @@ struct ASTCalculationNode : ASTComputationNode {
 
     Term* calculate_complexity() override{
         return new Term(VARIABLE, "1"); // TODO implement this method properly!
+    }
+
+    std::string to_code() override {
+        switch (comp_type) {
+            case LIT: return std::to_string(value);
+            case VAR: return var_name;
+            case ADD: return "(" + left->to_code() + " + " + right->to_code() + ")";
+            case SUB: return "(" + left->to_code() + " - " + right->to_code() + ")";
+            case MUL: return "(" + left->to_code() + " * " + right->to_code() + ")";
+            case DIV: return "(" + left->to_code() + " / " + right->to_code() + ")";
+            case MOD: return "(" + left->to_code() + " % " + right->to_code() + ")";
+        }
     }
 };
 

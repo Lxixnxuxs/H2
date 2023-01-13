@@ -41,9 +41,20 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
         }
         auto* b = new Term(MULTIPLICATION);
         b->children.push_back(a);
-        b->children.push_back(new Term(VARIABLE,"iter"));
+        b->children.push_back(new Term(VARIABLE,"iter"+std::to_string(label_id)));
         complexity = b;
         return complexity;
+    }
+
+    std::string to_code() override {
+        auto res = "while (" + condition->to_code()+")";
+        // TODO: insert O-Notation here
+        res += "{\n";
+        for (auto e : block) {
+            res += e->to_code();
+        }
+        res += "}\n";
+        return res;
     }
 };
 

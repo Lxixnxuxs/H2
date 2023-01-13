@@ -12,6 +12,8 @@ struct ASTNode {
     virtual std::string compile() = 0;
 
     virtual Term* calculate_complexity() = 0;
+
+    virtual std::string to_code() = 0;
 };
 
 #endif //H2_ASTNODE_HPP

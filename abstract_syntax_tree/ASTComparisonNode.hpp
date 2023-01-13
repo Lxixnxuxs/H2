@@ -46,6 +46,10 @@ struct ASTComparisonNode : ASTStatementNode {
         complexity = a;
         return a;
     }
+
+    std::string to_code() override {
+        return left->to_code() + comp_type + right->to_code();
+    }
 };
 
 #endif //H2_ASTCOMPARISONNODE_HPP
