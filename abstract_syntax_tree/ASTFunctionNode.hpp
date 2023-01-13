@@ -73,6 +73,7 @@ struct ASTFunctionNode : ASTNode {
         res += ") -> " + return_type;
 
         // TODO insert O-Notation here
+        res += " /% _O("+ complexity->as_string() +") %/ ";
 
         res += " {\n";
 
