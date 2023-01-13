@@ -53,6 +53,15 @@ struct ASTFunctionNode : ASTNode {
 
         return code;
     }
+
+    Term* calculate_complexity() override {
+        auto* a = new Term(ADDITION);
+        for (auto e : body) {
+            a->children.push_back(e->calculate_complexity());
+        }
+        complexity = a;
+        return a;
+    }
 };
 
 #endif //H2_ASTFUNCTIONNODE_HPP

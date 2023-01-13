@@ -29,6 +29,22 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
 
         return code;
     }
+
+    Term* calculate_complexity() override {
+        auto* a = new Term(ADDITION);
+
+        a->children.push_back(condition->calculate_complexity());
+
+        // TODO I need a multiply logic here. Not jet correct
+        for (auto e : block) {
+            a->children.push_back(e->calculate_complexity());
+        }
+        auto* b = new Term(MULTIPLICATION);
+        b->children.push_back(a);
+        b->children.push_back(new Term(VARIABLE,"iter"));
+        complexity = b;
+        return complexity;
+    }
 };
 
 #endif //H2_ASTWHILELOOPNODE_HPP

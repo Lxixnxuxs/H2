@@ -23,7 +23,7 @@ struct ASTCalculationNode : ASTComputationNode {
 
     ASTCalculationNode(ASTCalculationNode* left, ASTCalculationNode* right, ComputationOp comp_type, std::string reg = "",
                        int value = 0, size_t offset = 0):
-    left(left), right(right), comp_type(comp_type), value(value), offset(offset){
+            left(left), right(right), comp_type(comp_type), value(value), offset(offset){
         this->reg = reg;
         if (reg.empty() && left != nullptr) {reg = left->reg; own_reg = false;}
     }
@@ -91,6 +91,10 @@ struct ASTCalculationNode : ASTComputationNode {
             return false;
             //return other.comp_type == comp_type && other.reg == reg && other.left == left && other.right == right;
         }
+    }
+
+    Term* calculate_complexity() override{
+        return new Term(VARIABLE, "1"); // TODO implement this method properly!
     }
 };
 

@@ -32,6 +32,12 @@ struct ASTCallNode : ASTCalculationNode{
         code += "mov %eax, "+regs[h]+"\n";
         return code;
     }
+
+    Term* calculate_complexity() override {
+        auto* a = new Term(VARIABLE,target);
+        complexity = a;
+        return a;
+    }
 };
 
 #endif //H2_ASTCALLNODE_HPP

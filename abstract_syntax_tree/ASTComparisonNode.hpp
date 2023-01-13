@@ -38,6 +38,14 @@ struct ASTComparisonNode : ASTStatementNode {
 
         return code;
     }
+
+    Term* calculate_complexity() override {
+        auto* a = new Term(ADDITION);
+        a->children.push_back(left->calculate_complexity());
+        a->children.push_back(right->calculate_complexity());
+        complexity = a;
+        return a;
+    }
 };
 
 #endif //H2_ASTCOMPARISONNODE_HPP

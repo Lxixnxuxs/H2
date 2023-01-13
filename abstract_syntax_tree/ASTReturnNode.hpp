@@ -18,6 +18,12 @@ struct ASTReturnNode : ASTStatementNode {
 
         return code;
     }
+
+    Term* calculate_complexity() override {
+        auto a = calc->calculate_complexity();
+        complexity = a;
+        return a;
+    }
 };
 
 #endif //H2_ASTRETURNNODE_HPP

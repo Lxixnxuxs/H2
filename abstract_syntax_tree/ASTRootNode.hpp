@@ -19,6 +19,18 @@ struct ASTRootNode : ASTNode {
 
         return code;
     }
+
+    Term * calculate_complexity() override{
+
+        // sub calls
+        for (auto e : funcs) {
+            e->calculate_complexity();
+        }
+
+        // only functions eg have meaningful complexity. Not the root node itself
+        complexity = new Term(VARIABLE,"-"); // placeholder
+        return complexity;
+    }
 };
 
 #endif //H2_ASTROOTNODE_HPP
