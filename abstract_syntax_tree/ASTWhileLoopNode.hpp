@@ -50,14 +50,8 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
     }
 
     Term* calculate_complexity() override {
-        if (complexity_is_custom) return complexity;
 
         auto* a = new Term(ADDITION);
-
-        a->children.push_back(condition->calculate_complexity());
-
-        // TODO not each iteration may have same complexity, because unknowns change (need parameter logic)
-
         if (!body_complexity_is_custom) {
             for (auto e : block) {
                 a->children.push_back(e->calculate_complexity());
@@ -67,6 +61,16 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
         if (!iteration_complexity_is_custom) {
             iterations = new Term(VARIABLE,"iter"+std::to_string(label_id));
         }
+
+        if (complexity_is_custom) return complexity;
+
+
+
+        a->children.push_back(condition->calculate_complexity());
+
+        // TODO not each iteration may have same complexity, because unknowns change (need parameter logic)
+
+
 
         auto* b = new Term(MULTIPLICATION);
         b->children.push_back(iterations);
