@@ -143,8 +143,9 @@ public:
 
         size_t stack_frame_size = var_manager.current_offset;
 
-        return new ASTFunctionNode(func_name, parsed_body, stack_frame_size, arg_stack_size,arg_list);
-
+        auto res = new ASTFunctionNode(func_name, parsed_body, stack_frame_size, arg_stack_size,arg_list);
+        g.var_to_node[func_name] = res; // Node Object is known to global variable manager
+        return res;
     }
 
     std::pair<int,vector<string>> parse_argument_list(Tokenstream t, LocalVariableManager& v){
@@ -313,7 +314,7 @@ public:
         if (i<expected_types.size()) throw std::invalid_argument("PARSER ERROR  '"+func_name+
         "' was called with not enought arguments: "+std::to_string(i)+" instead of "+ std::to_string(expected_types.size())+"");
 
-        return new ASTCallNode(nullptr, nullptr,VAR,"",0,0,func_name,arguments,h);
+        return new ASTCallNode(nullptr, nullptr,VAR,"",0,0,g.var_to_node[func_name],arguments,h);
 
     }
 

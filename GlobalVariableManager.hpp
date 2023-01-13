@@ -10,6 +10,7 @@
 
 struct GlobalVariableManager {
     std::map<std::string, std::vector<std::string>> var_to_argument_list;
+    std::map<std::string, ASTFunctionNode*> var_to_node;
 };
 
 #endif //H2_GLOBALVARIABLEMANAGER_HPP
