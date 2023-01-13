@@ -8,11 +8,13 @@ struct ASTAssignmentNode : ASTStatementNode {
 
     size_t offset;
     std::string var_name;
+    std::string data_type;
+    bool is_declaration;
 
     ASTComputationNode* right;
 
-    ASTAssignmentNode(size_t offset, ASTComputationNode* right, std::string var_name):
-             offset(offset), right(right), var_name(var_name) {}
+    ASTAssignmentNode(size_t offset, ASTComputationNode* right, std::string var_name, std::string data_type = "", bool is_declaraion = false ):
+             offset(offset), right(right), var_name(var_name), data_type(data_type), is_declaration(is_declaraion) {}
 
     std::string compile() override{
         std::string code = right->compile();
@@ -28,8 +30,10 @@ struct ASTAssignmentNode : ASTStatementNode {
     }
 
     std::string to_code() override {
-        return var_name + " = " + right->to_code() + ";\n";
+        return get_indention(block_level) +(is_declaration ? data_type+" " : "")+  var_name + " = " + right->to_code() + ";\n";
     }
+
+
 };
 
 #endif //H2_ASTASSIGNMENTNODE_HPP

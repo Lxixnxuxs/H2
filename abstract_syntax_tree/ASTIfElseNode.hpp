@@ -56,12 +56,19 @@ struct ASTIfElseNode : ASTControlFlowNode {
     }
 
     std::string to_code() override {
-        auto res = "if (" + condition->to_code() + ") {\n";
+        auto res = get_indention(block_level)+"if (" + condition->to_code() + ") {\n";
         for (auto e : if_block) res += e->to_code();
-        res += "} else {\n";
+        res += get_indention(block_level)+"} else {\n";
         for (auto e : else_block) res += e->to_code();
-        res += "}\n";
+        res += get_indention(block_level)+"}\n";
         return res;
+    }
+
+    void set_block_level(int n) {
+        block_level = n;
+        for (auto f: if_block) f->set_block_level(n+1);
+        for (auto f: else_block) f->set_block_level(n+1);
+
     }
 };
 

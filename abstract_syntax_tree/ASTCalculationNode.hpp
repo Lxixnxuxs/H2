@@ -95,7 +95,16 @@ struct ASTCalculationNode : ASTComputationNode {
     }
 
     Term* calculate_complexity() override{
-        return new Term(VARIABLE, "1"); // TODO implement this method properly!
+        if (comp_type == LIT or comp_type == VAR){
+            complexity = new Term(VARIABLE, "1");
+            return complexity;
+        }
+
+        Term* a = new Term(ADDITION);
+        a->children.push_back(left->calculate_complexity());
+        a->children.push_back(right->calculate_complexity());
+        complexity = a;
+        return complexity;
     }
 
     std::string to_code() override {
@@ -108,7 +117,10 @@ struct ASTCalculationNode : ASTComputationNode {
             case DIV: return "(" + left->to_code() + " / " + right->to_code() + ")";
             case MOD: return "(" + left->to_code() + " % " + right->to_code() + ")";
         }
+        return "";
     }
+
+
 };
 
 #endif //H2_ASTCALCULATIONNODE_HPP

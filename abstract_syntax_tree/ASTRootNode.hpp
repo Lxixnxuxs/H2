@@ -39,6 +39,11 @@ struct ASTRootNode : ASTNode {
         }
         return res;
     }
+
+    void set_block_level(int n) {
+        block_level = 0;
+        for (auto f: funcs) f->set_block_level(0);
+    }
 };
 
 #endif //H2_ASTROOTNODE_HPP

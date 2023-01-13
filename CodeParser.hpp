@@ -199,9 +199,13 @@ public:
                 t += 1; // discard 'while'
                 expect(t,"(");
                 auto cond_stream = t.read_inside_brackets();
+                Tokenstream complexity_stream; // TODO does this work with empty complexity?
+                if (*t == "/%") {
+                    complexity_stream = t.read_inside_brackets();
+                }
                 expect(t,"{");
                 auto body_stream = t.read_inside_brackets();
-                res.push_back(parse_while(cond_stream,body_stream,v,g));
+                res.push_back(parse_while(cond_stream,complexity_stream,body_stream,v,g));
 
             } else {
                 // not a control structure
@@ -221,11 +225,12 @@ public:
         return new ASTIfElseNode(condition_node, if_body_nodes, else_body_nodes, global_id_counter++);
     }
 
-    ASTWhileLoopNode* parse_while(Tokenstream condition, Tokenstream body, LocalVariableManager& v, GlobalVariableManager& g) {
+    ASTWhileLoopNode* parse_while(Tokenstream condition,Tokenstream complexity_stream, Tokenstream body, LocalVariableManager& v, GlobalVariableManager& g) {
         ASTComparisonNode* condition_node = parse_comparison(condition, v, g);
+        auto complexity_map = parse_complexity(complexity_stream);
         std::vector<ASTStatementNode*> body_nodes = parse_subspace(body, v, g);
 
-        return new ASTWhileLoopNode(condition_node,body_nodes,global_id_counter++);
+        return new ASTWhileLoopNode(condition_node,body_nodes,global_id_counter++, complexity_map);
     }
 
     std::map<string, Term*> parse_complexity(Tokenstream t) {
@@ -235,7 +240,7 @@ public:
 
         while (!t.empty()) {
 
-            expect_one_of(t,{"O","I","_O","_I"});
+            expect_one_of(t,{"O","I","_O","_I","C","_C"});
             std::string op = *t;
             bool custom = (op[0] != '_');
             t+=1; // disregard operator
@@ -348,7 +353,7 @@ public:
             v.add_variable(var,type_);
         }
 
-        return new ASTAssignmentNode(v.var_to_offset[var], calculation, var);
+        return new ASTAssignmentNode(v.var_to_offset[var], calculation, var,type_,need_to_declare);
     }
 
     ASTCallNode* parse_call(Tokenstream& t, LocalVariableManager& v, GlobalVariableManager& g, int h=0){

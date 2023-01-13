@@ -26,7 +26,7 @@ struct ASTReturnNode : ASTStatementNode {
     }
 
     std::string to_code() override {
-        return "return " + calc->to_code();
+        return get_indention(block_level)+"return " + calc->to_code() + ";\n";
     }
 };
 

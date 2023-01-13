@@ -12,8 +12,24 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
     Term* body_complexity;
     Term* iterations;
 
-    ASTWhileLoopNode(ASTComparisonNode* condition, std::vector<ASTStatementNode*> &block,int label_id): condition(condition),
-    block(block), label_id(label_id) {};
+    bool iteration_complexity_is_custom = false;
+    bool body_complexity_is_custom = false;
+
+    ASTWhileLoopNode(ASTComparisonNode* condition, std::vector<ASTStatementNode*> &block,int label_id, std::map<std::string, Term*> complexity_map): condition(condition),
+    block(block), label_id(label_id) {
+        if (complexity_map.find("O") != complexity_map.end()) {
+            complexity_is_custom = true;
+            complexity = complexity_map["O"];
+        }
+        if (complexity_map.find("I") != complexity_map.end()) {
+            iteration_complexity_is_custom = true;
+            iterations = complexity_map["I"];
+        }
+        if (complexity_map.find("C") != complexity_map.end()) {
+            body_complexity_is_custom = true;
+            body_complexity = complexity_map["C"];
+        }
+    };
 
 
     std::string compile() override {
@@ -34,16 +50,24 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
     }
 
     Term* calculate_complexity() override {
+        if (complexity_is_custom) return complexity;
+
         auto* a = new Term(ADDITION);
 
         a->children.push_back(condition->calculate_complexity());
 
-        // TODO I need a multiply logic here. Not jet correct
-        for (auto e : block) {
-            a->children.push_back(e->calculate_complexity());
+        // TODO not each iteration may have same complexity, because unknowns change (need parameter logic)
+
+        if (!body_complexity_is_custom) {
+            for (auto e : block) {
+                a->children.push_back(e->calculate_complexity());
+            }
+            body_complexity = a;
         }
-        body_complexity = a;
-        iterations = new Term(VARIABLE,"iter"+std::to_string(label_id));
+        if (!iteration_complexity_is_custom) {
+            iterations = new Term(VARIABLE,"iter"+std::to_string(label_id));
+        }
+
         auto* b = new Term(MULTIPLICATION);
         b->children.push_back(iterations);
         b->children.push_back(body_complexity);
@@ -53,16 +77,23 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
     }
 
     std::string to_code() override {
-        auto res = "while (" + condition->to_code()+")";
+        auto res = get_indention(block_level)+"while (" + condition->to_code()+")";
         // TODO: insert O-Notation here
-        //res += " /% _I("+iterations->as_string() +") _O("+ body_complexity->as_string() +") %/ ";
+        res += " /% "+(complexity_is_custom ? ((string) "") : ((string) "_"))+"O("+ complexity->as_string() + ") "
+                +(iteration_complexity_is_custom ? ((string) "") : ((string) "_"))+"I("+iterations->as_string() +") "+
+                                (body_complexity_is_custom ? ((string) "") : ((string) "_"))+"C("+ body_complexity->as_string() +") %/ ";
 
-        res += "{\n";
+        res += " {\n";
         for (auto e : block) {
             res += e->to_code();
         }
-        res += "}\n";
+        res += get_indention(block_level)+"}\n";
         return res;
+    }
+
+    void set_block_level(int n) {
+        block_level = n;
+        for (auto& f: block) f->set_block_level(n+1);
     }
 };
 

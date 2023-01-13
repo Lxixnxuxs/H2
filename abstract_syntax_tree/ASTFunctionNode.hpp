@@ -88,9 +88,14 @@ struct ASTFunctionNode : ASTNode {
             res += e->to_code();
         }
 
-        res += "\n}\n";
+        res += "}\n";
 
         return res;
+    }
+
+    void set_block_level(int n) {
+        block_level = n;
+        for (auto& f: body) f->set_block_level(n+1);
     }
 };
 

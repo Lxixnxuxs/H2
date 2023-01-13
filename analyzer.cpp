@@ -24,9 +24,8 @@ int main() {
     CodeParser parser;
     ASTRootNode* root = parser.parse(t);
     root->calculate_complexity();
-    for (auto& e : root->funcs) {
-        cout << e->f_name << " : " <<  e->complexity->as_string() << endl;
-    }
+    root->set_block_level(0);
+
 
     auto new_code = root->to_code();
     std::cout << new_code;
