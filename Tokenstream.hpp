@@ -19,7 +19,7 @@ using std::map;
 using std::vector;
 using std::endl;
 
-const map<string,string> corresponding_bracket = {{"(",")"},{"{","}"},{"[","]"}};
+const map<string,string> corresponding_bracket = {{"(",")"},{"{","}"},{"[","]"},{"/%","%/"}};
 
 struct Tokenstream {
     list<string>::iterator begin_;

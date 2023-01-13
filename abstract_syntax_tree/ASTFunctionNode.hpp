@@ -20,8 +20,13 @@ struct ASTFunctionNode : ASTNode {
     int callee_reg_count = callee_save_regs.size();
 
     ASTFunctionNode(std::string f_name, std::vector<ASTStatementNode*> body, size_t f_stack_size, size_t arg_stackpart_size,
-                    std::vector<std::pair<std::string,std::string>> argument_list, std::string return_type):
-    f_name(f_name), body(body), f_stack_size(f_stack_size), arg_stackpart_size(arg_stackpart_size), argument_list(argument_list), return_type(return_type) {}
+                    std::vector<std::pair<std::string,std::string>> argument_list, std::string return_type, std::map<std::string, Term*> complexity_map):
+    f_name(f_name), body(body), f_stack_size(f_stack_size), arg_stackpart_size(arg_stackpart_size), argument_list(argument_list), return_type(return_type) {
+        if (complexity_map.find("O") != complexity_map.end()) {
+            complexity_is_custom = true;
+            complexity = complexity_map["O"];
+        }
+    }
 
     std::string compile() {
         std::string code = f_name + ":\n";
@@ -56,6 +61,8 @@ struct ASTFunctionNode : ASTNode {
     }
 
     Term* calculate_complexity() override {
+        if (complexity_is_custom) return complexity;
+
         auto* a = new Term(ADDITION);
         for (auto e : body) {
             a->children.push_back(e->calculate_complexity());
@@ -73,7 +80,7 @@ struct ASTFunctionNode : ASTNode {
         res += ") -> " + return_type;
 
         // TODO insert O-Notation here
-        res += " /% _O("+ complexity->as_string() +") %/ ";
+        res += " /% " + (complexity_is_custom ? ((string) "") : ((string) "_")) + "O("+ complexity->as_string() +") %/ ";
 
         res += " {\n";
 

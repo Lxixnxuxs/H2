@@ -8,6 +8,7 @@ enum ASTNodeType {};
 
 struct ASTNode {
     Term* complexity;
+    bool complexity_is_custom = false;
 
     virtual std::string compile() = 0;
 

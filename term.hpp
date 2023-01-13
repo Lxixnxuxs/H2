@@ -51,12 +51,16 @@ struct Term {
 
         if (type == ADDITION or type == MULTIPLICATION) {
             std::string op_symbol = (type == ADDITION) ? "+" : "*";
-            res += "(";
+
             for (int i = 0; i<children.size(); i++) {
                 if (i!=0) res += " " + op_symbol + " ";
+
+                if (children[i]->type != VARIABLE) res += "(";
                 res += children[i]->as_string();
+                if (children[i]->type != VARIABLE) res += ")";
+
             }
-            res += ")";
+
         }
 
         return res;

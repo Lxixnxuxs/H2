@@ -134,6 +134,14 @@ public:
         std::string return_type = *t;
         t += 1; // discard return type
 
+        map<string, Term*> complexity_map;
+        if (*t == "/%") {
+            // a complexity annotation is given
+            Tokenstream complexity_stream = t.read_inside_brackets();
+            complexity_map = parse_complexity(complexity_stream);
+        }
+
+
         expect(t,"{");
         auto body = t.read_inside_brackets();
 
@@ -145,7 +153,7 @@ public:
 
         size_t stack_frame_size = var_manager.current_offset;
 
-        auto res = new ASTFunctionNode(func_name, parsed_body, stack_frame_size, arg_stack_size,arg_list, return_type);
+        auto res = new ASTFunctionNode(func_name, parsed_body, stack_frame_size, arg_stack_size,arg_list, return_type, complexity_map);
         g.var_to_node[func_name] = res; // Node Object is known to global variable manager
         return res;
     }
@@ -218,6 +226,74 @@ public:
         std::vector<ASTStatementNode*> body_nodes = parse_subspace(body, v, g);
 
         return new ASTWhileLoopNode(condition_node,body_nodes,global_id_counter++);
+    }
+
+    std::map<string, Term*> parse_complexity(Tokenstream t) {
+        // returns a map from "O" or "I" to a Term
+        // Only custom terms are regarded!
+        std::map<string, Term*> res;
+
+        while (!t.empty()) {
+
+            expect_one_of(t,{"O","I","_O","_I"});
+            std::string op = *t;
+            bool custom = (op[0] != '_');
+            t+=1; // disregard operator
+
+            expect(t,"(");
+            Tokenstream term_stream = t.read_inside_brackets();
+            Term* term = parse_complexity_term(term_stream);
+            if (custom) res[op] = term;
+
+        }
+
+        return res;
+    }
+
+    Term* parse_complexity_term(Tokenstream t) {
+        // TODO implement
+        if (t.empty()) {
+            throw std::invalid_argument("PARSER ERROR  cannot parse empty complexity_term");
+        }
+
+        if (t.size() == 1) return new Term(VARIABLE,*t);
+
+        Term* first;
+        Term* second;
+        string operation;
+
+        // first part of the operation
+        if (*t == "(") {
+            Tokenstream t1 = t.read_inside_brackets();
+            first = parse_complexity_term(t1);
+            expect_one_of(t,{"+","*"});
+            operation = *t;
+
+        } else {
+            first = new Term(VARIABLE,*t);
+            t+=1;
+            expect_one_of(t,{"+","*"});
+            operation = *t;
+
+        }
+
+        // second part of the operation
+        t+=1; // disregard operation
+        if (t.size()==1) second = parse_complexity_term(t);
+        else {
+            expect(t,"(");
+            second = parse_complexity_term(t.read_inside_brackets());
+        }
+
+        // putting both together
+        Term* res;
+        if (operation == "+") res = new Term(ADDITION);
+        if (operation == "*") res = new Term(MULTIPLICATION);
+
+        res->children.push_back(first);
+        res->children.push_back(second);
+
+        return res;
     }
 
     ASTStatementNode* parse_line(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){

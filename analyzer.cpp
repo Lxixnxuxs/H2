@@ -7,6 +7,15 @@
 #include "lexer.hpp"
 
 int main() {
+    /*
+    list<string> list = {"/%","123","=","%/","return"};
+
+    auto ts = Tokenstream(&list);
+    auto t2 = ts.read_inside_brackets();
+
+    cout << t2 << endl;
+    cout << ts << endl;
+    */
     std::string path = "/home/ray/CLionProjects/H2/resources/raw.txt";
     std::ifstream file(path);
     std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
@@ -26,4 +35,5 @@ int main() {
     ofile << new_code;
     ofile.close();
     return 0;
+
 }

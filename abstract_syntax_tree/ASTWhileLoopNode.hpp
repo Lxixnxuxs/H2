@@ -9,6 +9,9 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
     std::vector<ASTStatementNode*> block;
     int label_id;
 
+    Term* body_complexity;
+    Term* iterations;
+
     ASTWhileLoopNode(ASTComparisonNode* condition, std::vector<ASTStatementNode*> &block,int label_id): condition(condition),
     block(block), label_id(label_id) {};
 
@@ -39,9 +42,12 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
         for (auto e : block) {
             a->children.push_back(e->calculate_complexity());
         }
+        body_complexity = a;
+        iterations = new Term(VARIABLE,"iter"+std::to_string(label_id));
         auto* b = new Term(MULTIPLICATION);
-        b->children.push_back(a);
-        b->children.push_back(new Term(VARIABLE,"iter"+std::to_string(label_id)));
+        b->children.push_back(iterations);
+        b->children.push_back(body_complexity);
+
         complexity = b;
         return complexity;
     }
@@ -49,6 +55,8 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
     std::string to_code() override {
         auto res = "while (" + condition->to_code()+")";
         // TODO: insert O-Notation here
+        //res += " /% _I("+iterations->as_string() +") _O("+ body_complexity->as_string() +") %/ ";
+
         res += "{\n";
         for (auto e : block) {
             res += e->to_code();
