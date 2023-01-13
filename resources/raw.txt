@@ -1,0 +1,16 @@
+def f(int r) -> int /% _O(iter0) %/  {
+res = 0;
+i = 0;
+while (i<r){
+res = (res + i);
+i = (i + 1);
+}
+return res
+}
+
+
+def main() -> void /% _O(iter0) %/  {
+return f[4]
+}
+
+

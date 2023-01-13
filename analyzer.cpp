@@ -7,7 +7,7 @@
 #include "lexer.hpp"
 
 int main() {
-    std::string path = "/home/ray/CLionProjects/H2/resources/program.txt";
+    std::string path = "/home/ray/CLionProjects/H2/resources/raw.txt";
     std::ifstream file(path);
     std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     Tokenstream t = lexer(content);
@@ -18,11 +18,12 @@ int main() {
     for (auto& e : root->funcs) {
         cout << e->f_name << " : " <<  e->complexity->as_string() << endl;
     }
-    /*std::cout << compilation;
+
+    auto new_code = root->to_code();
+    std::cout << new_code;
 
     std::ofstream ofile("/home/ray/CLionProjects/H2/resources/raw.txt");
-    ofile << ".globl main\n";
-    ofile << compilation;
-    ofile.close();*/
+    ofile << new_code;
+    ofile.close();
     return 0;
 }
