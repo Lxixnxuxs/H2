@@ -1,27 +1,17 @@
-def g() -> int /% O(t) %/  {
-    a = 0;
-    if (a==0) {
-        return 1;
-    } else {
-        return 4;
-    }
+def f(int r) -> int /% O(r) %/  {
+    return (r * 2);
 }
 
 
-def f(int r) -> int /% _O(r * a) %/  {
-    int res = 0;
-    int i = 0;
-    while (i<r) /% _O(r * a) I(r) C(a) %/  {
-        int a = 2;
-        res = (res + i);
-        i = (i + 1);
-    }
+def g(int a, int b) -> int /% _O(r) %/  {
+    int c = (a * b);
+    int res = f[c];
     return res;
 }
 
 
-def main() -> void /% _O((r * a) + t) %/  {
-    return (f[3] + g[]);
+def main() -> void /% _O(r + r) %/  {
+    return (f[3] + f[4]);
 }
 
 

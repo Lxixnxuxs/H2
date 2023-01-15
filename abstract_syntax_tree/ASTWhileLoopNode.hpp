@@ -9,14 +9,14 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
     std::vector<ASTStatementNode*> block;
     int label_id;
 
-    Term* body_complexity;
-    Term* iterations;
+    ComplexityTerm* body_complexity;
+    ComplexityTerm* iterations;
 
     bool iteration_complexity_is_custom = false;
     bool body_complexity_is_custom = false;
 
-    ASTWhileLoopNode(ASTComparisonNode* condition, std::vector<ASTStatementNode*> &block,int label_id, std::map<std::string, Term*> complexity_map): condition(condition),
-    block(block), label_id(label_id) {
+    ASTWhileLoopNode(ASTComparisonNode* condition, std::vector<ASTStatementNode*> &block,int label_id, std::map<std::string, ComplexityTerm*> complexity_map): condition(condition),
+                                                                                                                                                               block(block), label_id(label_id) {
         if (complexity_map.find("O") != complexity_map.end()) {
             complexity_is_custom = true;
             complexity = complexity_map["O"];
@@ -49,9 +49,9 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
         return code;
     }
 
-    Term* calculate_complexity() override {
+    ComplexityTerm* calculate_complexity() override {
 
-        auto* a = new Term(ADDITION);
+        auto* a = new ComplexityTerm(ADDITION);
         if (!body_complexity_is_custom) {
             for (auto e : block) {
                 a->children.push_back(e->calculate_complexity());
@@ -59,7 +59,7 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
             body_complexity = a;
         }
         if (!iteration_complexity_is_custom) {
-            iterations = new Term(VARIABLE,"iter"+std::to_string(label_id));
+            iterations = new ComplexityTerm(VARIABLE, "iter" + std::to_string(label_id));
         }
 
         if (complexity_is_custom) return complexity;
@@ -72,7 +72,7 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
 
 
 
-        auto* b = new Term(MULTIPLICATION);
+        auto* b = new ComplexityTerm(MULTIPLICATION);
         b->children.push_back(iterations);
         b->children.push_back(body_complexity);
 

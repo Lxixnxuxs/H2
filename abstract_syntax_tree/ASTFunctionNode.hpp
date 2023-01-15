@@ -20,7 +20,7 @@ struct ASTFunctionNode : ASTNode {
     int callee_reg_count = callee_save_regs.size();
 
     ASTFunctionNode(std::string f_name, std::vector<ASTStatementNode*> body, size_t f_stack_size, size_t arg_stackpart_size,
-                    std::vector<std::pair<std::string,std::string>> argument_list, std::string return_type, std::map<std::string, Term*> complexity_map):
+                    std::vector<std::pair<std::string,std::string>> argument_list, std::string return_type, std::map<std::string, ComplexityTerm*> complexity_map):
     f_name(f_name), body(body), f_stack_size(f_stack_size), arg_stackpart_size(arg_stackpart_size), argument_list(argument_list), return_type(return_type) {
         if (complexity_map.find("O") != complexity_map.end()) {
             complexity_is_custom = true;
@@ -60,10 +60,10 @@ struct ASTFunctionNode : ASTNode {
         return code;
     }
 
-    Term* calculate_complexity() override {
+    ComplexityTerm* calculate_complexity() override {
         if (complexity_is_custom) return complexity;
 
-        auto* a = new Term(ADDITION);
+        auto* a = new ComplexityTerm(ADDITION);
         for (auto e : body) {
             a->children.push_back(e->calculate_complexity());
         }
@@ -96,6 +96,10 @@ struct ASTFunctionNode : ASTNode {
     void set_block_level(int n) {
         block_level = n;
         for (auto& f: body) f->set_block_level(n+1);
+    }
+
+    void virtual_execution() {
+
     }
 };
 

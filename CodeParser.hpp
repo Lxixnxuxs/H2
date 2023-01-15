@@ -134,7 +134,7 @@ public:
         std::string return_type = *t;
         t += 1; // discard return type
 
-        map<string, Term*> complexity_map;
+        map<string, ComplexityTerm*> complexity_map;
         if (*t == "/%") {
             // a complexity annotation is given
             Tokenstream complexity_stream = t.read_inside_brackets();
@@ -240,10 +240,10 @@ public:
         return new ASTWhileLoopNode(condition_node,body_nodes,global_id_counter++, complexity_map);
     }
 
-    std::map<string, Term*> parse_complexity(Tokenstream t) {
-        // returns a map from "O" or "I" to a Term
+    std::map<string, ComplexityTerm*> parse_complexity(Tokenstream t) {
+        // returns a map from "O" or "I" to a ComplexityTerm
         // Only custom terms are regarded!
-        std::map<string, Term*> res;
+        std::map<string, ComplexityTerm*> res;
 
         while (!t.empty()) {
 
@@ -254,7 +254,7 @@ public:
 
             expect(t,"(");
             Tokenstream term_stream = t.read_inside_brackets();
-            Term* term = parse_complexity_term(term_stream);
+            ComplexityTerm* term = parse_complexity_term(term_stream);
             if (custom) res[op] = term;
 
         }
@@ -262,16 +262,16 @@ public:
         return res;
     }
 
-    Term* parse_complexity_term(Tokenstream t) {
+    ComplexityTerm* parse_complexity_term(Tokenstream t) {
         // TODO implement
         if (t.empty()) {
             throw std::invalid_argument("PARSER ERROR  cannot parse empty complexity_term");
         }
 
-        if (t.size() == 1) return new Term(VARIABLE,*t);
+        if (t.size() == 1) return new ComplexityTerm(VARIABLE, *t);
 
-        Term* first;
-        Term* second;
+        ComplexityTerm* first;
+        ComplexityTerm* second;
         string operation;
 
         // first part of the operation
@@ -282,7 +282,7 @@ public:
             operation = *t;
 
         } else {
-            first = new Term(VARIABLE,*t);
+            first = new ComplexityTerm(VARIABLE, *t);
             t+=1;
             expect_one_of(t,{"+","*"});
             operation = *t;
@@ -298,9 +298,9 @@ public:
         }
 
         // putting both together
-        Term* res;
-        if (operation == "+") res = new Term(ADDITION);
-        if (operation == "*") res = new Term(MULTIPLICATION);
+        ComplexityTerm* res;
+        if (operation == "+") res = new ComplexityTerm(ADDITION);
+        if (operation == "*") res = new ComplexityTerm(MULTIPLICATION);
 
         res->children.push_back(first);
         res->children.push_back(second);

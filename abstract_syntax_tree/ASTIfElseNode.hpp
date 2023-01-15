@@ -42,8 +42,8 @@ struct ASTIfElseNode : ASTControlFlowNode {
         return code;
     }
 
-    Term* calculate_complexity() override {
-        auto* a = new Term(ADDITION);
+    ComplexityTerm* calculate_complexity() override {
+        auto* a = new ComplexityTerm(ADDITION);
         for (auto e : if_block) {
             a->children.push_back(e->calculate_complexity());
         }

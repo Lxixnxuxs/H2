@@ -33,7 +33,7 @@ struct ASTCallNode : ASTCalculationNode{
         return code;
     }
 
-    Term* calculate_complexity() override {
+    ComplexityTerm* calculate_complexity() override {
         // TODO important!!!   the calling cost must be calculated by matching with which arguments the function is called
         //  and how the arguments contribute to the complexity of the function
         //  matching the own function arguments unknowns to the arguments of the called function

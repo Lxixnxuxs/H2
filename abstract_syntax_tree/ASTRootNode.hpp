@@ -20,7 +20,7 @@ struct ASTRootNode : ASTNode {
         return code;
     }
 
-    Term * calculate_complexity() override{
+    ComplexityTerm * calculate_complexity() override{
 
         // sub calls
         for (auto e : funcs) {
@@ -28,7 +28,7 @@ struct ASTRootNode : ASTNode {
         }
 
         // only functions eg have meaningful complexity. Not the root node itself
-        complexity = new Term(VARIABLE,"-"); // placeholder
+        complexity = new ComplexityTerm(VARIABLE, "-"); // placeholder
         return complexity;
     }
 

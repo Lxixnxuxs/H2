@@ -39,8 +39,8 @@ struct ASTComparisonNode : ASTStatementNode {
         return code;
     }
 
-    Term* calculate_complexity() override {
-        auto* a = new Term(ADDITION);
+    ComplexityTerm* calculate_complexity() override {
+        auto* a = new ComplexityTerm(ADDITION);
         a->children.push_back(left->calculate_complexity());
         a->children.push_back(right->calculate_complexity());
         complexity = a;
