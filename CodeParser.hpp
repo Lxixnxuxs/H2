@@ -162,8 +162,15 @@ public:
         // returns args_stack_size
 
         vector<std::pair<string,string>> type_list;
+        bool is_first_iteration = true;
 
         while (!t.empty()) {
+            if (is_first_iteration) {
+                is_first_iteration = false;
+            } else {
+                expect(t,",");
+                t+=1; // discard ',' between arguments
+            }
             expect_one_of(t,data_types);
             string type = *t;
             t+=1; // discard type
