@@ -2,20 +2,21 @@
 // Created by ray on 12.01.23.
 //
 
-#ifndef H2_TERM_HPP
-#define H2_TERM_HPP
+#ifndef H2_COMPLEXITY_TERM_HPP
+#define H2_COMPLEXITY_TERM_HPP
 
+#include <utility>
 #include <vector>
 #include <string>
 
-enum TermType {ADDITION,MULTIPLICATION,VARIABLE};
+enum ComplexityTermType {ADDITION,MULTIPLICATION,VARIABLE};
 
-struct Term {
-    std::vector<Term*> children;
-    TermType type;
+struct ComplexityTerm {
+    std::vector<ComplexityTerm*> children;
+    ComplexityTermType type;
     std::string name;
 
-    Term(TermType type, std::string name = ""): type(type), name(name) {}
+    ComplexityTerm(ComplexityTermType type, std::string name = ""): type(type), name(std::move(name)) {}
 
     void simplify(){
         for (auto e : children) e->simplify();
@@ -23,11 +24,11 @@ struct Term {
         if (type == ADDITION or type == MULTIPLICATION) {
 
             // removing redundant O(1)
-            std::vector<Term*> new_children;
+            std::vector<ComplexityTerm*> new_children;
             for (auto e : children) {
                 if (e->type != VARIABLE or e->name != "1") new_children.push_back(e);
             }
-            if (new_children.empty()) new_children.push_back(new Term(VARIABLE,"1"));
+            if (new_children.empty()) new_children.push_back(new ComplexityTerm(VARIABLE, "1"));
             children = new_children;
 
 
@@ -35,7 +36,7 @@ struct Term {
             // simplify to be just the child
             if (children.size() == 1) {
                 // copy all properties
-                Term* child = children[0];
+                ComplexityTerm* child = children[0];
                 type = child->type;
                 name = child->name;
                 children = child->children;
@@ -67,4 +68,4 @@ struct Term {
     }
 };
 
-#endif //H2_TERM_HPP
+#endif //H2_COMPLEXITY_TERM_HPP
