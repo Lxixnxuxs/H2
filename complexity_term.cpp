@@ -4,11 +4,11 @@
 
 #include "complexity_term.hpp"
 
-//ComplexityTerm::ComplexityTerm(ComplexityTermType type, std::string name): type(type), name(name) {}
+//VirtualMathTerm::VirtualMathTerm(ComplexityTermType type, std::string name): type(type), name(name) {}
 
 
 // TODO implement some simplification rules (later)
-/*void ComplexityTerm::simplify() {
+/*void VirtualMathTerm::simplify() {
     if (type == ADDITION) {
 
     }

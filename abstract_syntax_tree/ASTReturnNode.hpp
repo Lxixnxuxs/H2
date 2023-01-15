@@ -19,7 +19,7 @@ struct ASTReturnNode : ASTStatementNode {
         return code;
     }
 
-    ComplexityTerm* calculate_complexity() override {
+    VirtualMathTerm calculate_complexity() override {
         auto a = calc->calculate_complexity();
         complexity = a;
         return a;

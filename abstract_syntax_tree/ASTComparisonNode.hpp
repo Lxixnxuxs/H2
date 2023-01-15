@@ -39,10 +39,10 @@ struct ASTComparisonNode : ASTStatementNode {
         return code;
     }
 
-    ComplexityTerm* calculate_complexity() override {
-        auto* a = new ComplexityTerm(ADDITION);
-        a->children.push_back(left->calculate_complexity());
-        a->children.push_back(right->calculate_complexity());
+    VirtualMathTerm calculate_complexity() override {
+        auto a = VirtualMathTerm(ADDITION);
+        a.children.push_back(left->calculate_complexity());
+        a.children.push_back(right->calculate_complexity());
         complexity = a;
         return a;
     }

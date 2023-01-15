@@ -2,7 +2,7 @@
 #ifndef H2_ASTNODE_HPP
 #define H2_ASTNODE_HPP
 
-#include "../complexity_term.hpp"
+#include "../virtual_math_term.hpp"
 #include "../code_style.hpp"
 
 enum ASTNodeType {};
@@ -12,7 +12,7 @@ std::string get_indention(int level) {
 }
 
 struct ASTNode {
-    ComplexityTerm* complexity;
+    VirtualMathTerm complexity;
     bool complexity_is_custom = false;
 
     int block_level;
@@ -23,7 +23,7 @@ struct ASTNode {
 
     virtual std::string compile() = 0;
 
-    virtual ComplexityTerm* calculate_complexity() = 0;
+    virtual VirtualMathTerm calculate_complexity() = 0;
 
     virtual std::string to_code() = 0;
 

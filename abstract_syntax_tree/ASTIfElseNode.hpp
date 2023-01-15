@@ -42,13 +42,13 @@ struct ASTIfElseNode : ASTControlFlowNode {
         return code;
     }
 
-    ComplexityTerm* calculate_complexity() override {
-        auto* a = new ComplexityTerm(ADDITION);
+    VirtualMathTerm calculate_complexity() override {
+        auto a = VirtualMathTerm(ADDITION);
         for (auto e : if_block) {
-            a->children.push_back(e->calculate_complexity());
+            a.children.push_back(e->calculate_complexity());
         }
         for (auto e : else_block) {
-            a->children.push_back(e->calculate_complexity());
+            a.children.push_back(e->calculate_complexity());
         }
         complexity = a;
         return a;

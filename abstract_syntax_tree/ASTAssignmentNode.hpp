@@ -23,7 +23,7 @@ struct ASTAssignmentNode : ASTStatementNode {
         return code;
     }
 
-    ComplexityTerm* calculate_complexity() override {
+    VirtualMathTerm calculate_complexity() override {
         auto a = right->calculate_complexity();
         complexity = a;
         return a;

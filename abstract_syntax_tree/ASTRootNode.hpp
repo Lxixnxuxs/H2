@@ -20,7 +20,7 @@ struct ASTRootNode : ASTNode {
         return code;
     }
 
-    ComplexityTerm * calculate_complexity() override{
+    VirtualMathTerm calculate_complexity() override{
 
         // sub calls
         for (auto e : funcs) {
@@ -28,7 +28,7 @@ struct ASTRootNode : ASTNode {
         }
 
         // only functions eg have meaningful complexity. Not the root node itself
-        complexity = new ComplexityTerm(VARIABLE, "-"); // placeholder
+        complexity = VirtualMathTerm("-"); // placeholder
         return complexity;
     }
 

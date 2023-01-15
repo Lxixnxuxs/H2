@@ -10,7 +10,7 @@ def g(int a, int b) -> int /% _O(r) %/  {
 }
 
 
-def main() -> void /% _O(r + r) %/  {
+def main() -> void /% _O(r) %/  {
     return (f[3] + f[4]);
 }
 

@@ -9,14 +9,14 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
     std::vector<ASTStatementNode*> block;
     int label_id;
 
-    ComplexityTerm* body_complexity;
-    ComplexityTerm* iterations;
+    VirtualMathTerm body_complexity;
+    VirtualMathTerm iterations;
 
     bool iteration_complexity_is_custom = false;
     bool body_complexity_is_custom = false;
 
-    ASTWhileLoopNode(ASTComparisonNode* condition, std::vector<ASTStatementNode*> &block,int label_id, std::map<std::string, ComplexityTerm*> complexity_map): condition(condition),
-                                                                                                                                                               block(block), label_id(label_id) {
+    ASTWhileLoopNode(ASTComparisonNode* condition, std::vector<ASTStatementNode*> &block,int label_id, std::map<std::string, VirtualMathTerm> complexity_map): condition(condition),
+                                                                                                                                                                block(block), label_id(label_id) {
         if (complexity_map.find("O") != complexity_map.end()) {
             complexity_is_custom = true;
             complexity = complexity_map["O"];
@@ -49,32 +49,32 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
         return code;
     }
 
-    ComplexityTerm* calculate_complexity() override {
+    VirtualMathTerm calculate_complexity() override {
 
-        auto* a = new ComplexityTerm(ADDITION);
+        auto a = VirtualMathTerm(ADDITION);
         if (!body_complexity_is_custom) {
             for (auto e : block) {
-                a->children.push_back(e->calculate_complexity());
+                a.children.push_back(e->calculate_complexity());
             }
             body_complexity = a;
         }
         if (!iteration_complexity_is_custom) {
-            iterations = new ComplexityTerm(VARIABLE, "iter" + std::to_string(label_id));
+            iterations = VirtualMathTerm("iter" + std::to_string(label_id));
         }
 
         if (complexity_is_custom) return complexity;
 
 
 
-        a->children.push_back(condition->calculate_complexity());
+        a.children.push_back(condition->calculate_complexity());
 
         // TODO not each iteration may have same complexity, because unknowns change (need parameter logic)
 
 
 
-        auto* b = new ComplexityTerm(MULTIPLICATION);
-        b->children.push_back(iterations);
-        b->children.push_back(body_complexity);
+        auto b = VirtualMathTerm(MULTIPLICATION);
+        b.children.push_back(iterations);
+        b.children.push_back(body_complexity);
 
         complexity = b;
         return complexity;
@@ -83,9 +83,9 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
     std::string to_code() override {
         auto res = get_indention(block_level)+"while (" + condition->to_code()+")";
         // TODO: insert O-Notation here
-        res += " /% "+(complexity_is_custom ? ((string) "") : ((string) "_"))+"O("+ complexity->as_string() + ") "
-                +(iteration_complexity_is_custom ? ((string) "") : ((string) "_"))+"I("+iterations->as_string() +") "+
-                                (body_complexity_is_custom ? ((string) "") : ((string) "_"))+"C("+ body_complexity->as_string() +") %/ ";
+        res += " /% "+(complexity_is_custom ? ((string) "") : ((string) "_"))+"O("+ complexity.as_string() + ") "
+                +(iteration_complexity_is_custom ? ((string) "") : ((string) "_"))+"I("+iterations.as_string() +") "+
+                                (body_complexity_is_custom ? ((string) "") : ((string) "_"))+"C("+ body_complexity.as_string() +") %/ ";
 
         res += " {\n";
         for (auto e : block) {

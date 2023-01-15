@@ -94,15 +94,15 @@ struct ASTCalculationNode : ASTComputationNode {
         }
     }
 
-    ComplexityTerm* calculate_complexity() override{
+    VirtualMathTerm calculate_complexity() override{
         if (comp_type == LIT or comp_type == VAR){
-            complexity = new ComplexityTerm(VARIABLE, "1");
+            complexity = VirtualMathTerm(1);
             return complexity;
         }
 
-        ComplexityTerm* a = new ComplexityTerm(ADDITION);
-        a->children.push_back(left->calculate_complexity());
-        a->children.push_back(right->calculate_complexity());
+        auto a = VirtualMathTerm(ADDITION);
+        a.children.push_back(left->calculate_complexity());
+        a.children.push_back(right->calculate_complexity());
         complexity = a;
         return complexity;
     }
