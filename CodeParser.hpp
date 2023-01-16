@@ -278,13 +278,13 @@ public:
         if (*t == "(") {
             Tokenstream t1 = t.read_inside_brackets();
             first = parse_complexity_term(t1);
-            expect_one_of(t,{"+","*"});
+            expect_one_of(t,complexity_operator_symbols);
             operation = *t;
 
         } else {
             first = VirtualMathTerm(*t);
             t+=1;
-            expect_one_of(t,{"+","*"});
+            expect_one_of(t,complexity_operator_symbols);
             operation = *t;
 
         }
@@ -301,6 +301,7 @@ public:
         VirtualMathTerm res;
         if (operation == "+") res = VirtualMathTerm(ADDITION);
         if (operation == "*") res = VirtualMathTerm(MULTIPLICATION);
+        if (operation == "^") res = VirtualMathTerm(EXPONENTIAL);
 
         res.children.push_back(first);
         res.children.push_back(second);

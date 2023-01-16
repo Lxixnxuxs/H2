@@ -20,14 +20,17 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
         if (complexity_map.find("O") != complexity_map.end()) {
             complexity_is_custom = true;
             complexity = complexity_map["O"];
+            complexity.simplify();
         }
         if (complexity_map.find("I") != complexity_map.end()) {
             iteration_complexity_is_custom = true;
             iterations = complexity_map["I"];
+            iterations.simplify();
         }
         if (complexity_map.find("C") != complexity_map.end()) {
             body_complexity_is_custom = true;
             body_complexity = complexity_map["C"];
+            body_complexity.simplify();
         }
     };
 

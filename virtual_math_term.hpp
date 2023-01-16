@@ -41,16 +41,6 @@ struct VirtualMathTerm {
     VirtualMathTerm(): type(ADDITION), o_notation(true) {} // default type is addition
 
 
-    // method for calling simplify logic until a steady state is reached
-    void simplify() {
-        auto before = *this;
-        simplify_logic();
-        if (o_notation) turn_into_o_notation();
-
-        // keep on simplifying, since term was still changing
-        if (before!=*this) simplify();
-    }
-
     void substitude_variable(const std::string& var_name, const VirtualMathTerm& replacement) {
         if (type == NUMBER) return;
         if (type == VARIABLE and var_name == name) {
@@ -74,7 +64,7 @@ struct VirtualMathTerm {
 
         if (type == VARIABLE) return name;
 
-        if (type == EXPONENTIAL) return children[0].as_string() + "^" + children[1].as_string();
+        if (type == EXPONENTIAL) return "("+children[0].as_string() + ")^(" + children[1].as_string()+")";
 
         if (type == ADDITION or type == MULTIPLICATION) {
             std::string op_symbol = (type == ADDITION) ? "+" : "*";
@@ -115,6 +105,16 @@ struct VirtualMathTerm {
 
     bool operator!=(const VirtualMathTerm& other) {
         return !operator==(other);
+    }
+
+    // method for calling simplify logic until a steady state is reached
+    void simplify() {
+        auto before = *this;
+        simplify_logic();
+        if (o_notation) turn_into_o_notation();
+
+        // keep on simplifying, since term was still changing
+        if (before!=*this) simplify();
     }
 
 private:
@@ -201,7 +201,7 @@ private:
                 for (auto p : var_to_occurances) {
                     if (p.first == e.name) found = true;
                 }
-                if (!found) var_to_occurances[e.name]=0;
+                if (!found) var_to_occurances[e.name] = 0;
                 var_to_occurances[e.name] += 1;
             } else {
                 new_children.push_back(e);
@@ -255,11 +255,8 @@ private:
 
     // this is a kind of simplification function which will cut off constants and will provide pure O-Notation
     void turn_into_o_notation() {
-        if (type == VARIABLE) { return;}
-        if (type == NUMBER) {
-            value = 1;
-            return;
-        }
+        if (type == VARIABLE or type == NUMBER) { return;}
+
 
         //auto before = *this; // create copy to compare in the end
 

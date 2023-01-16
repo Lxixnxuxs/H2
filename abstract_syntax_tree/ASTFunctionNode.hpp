@@ -30,6 +30,7 @@ struct ASTFunctionNode : ASTNode {
         if (complexity_map.find("O") != complexity_map.end()) {
             complexity_is_custom = true;
             complexity = complexity_map["O"];
+            complexity.simplify();
         }
     }
 

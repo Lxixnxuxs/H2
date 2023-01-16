@@ -27,7 +27,7 @@ struct ASTNode {
 
     virtual std::string to_code() = 0;
 
-
+    virtual std::string get_class() = 0;
 };
 
 
