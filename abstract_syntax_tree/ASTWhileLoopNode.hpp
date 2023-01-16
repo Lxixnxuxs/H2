@@ -99,6 +99,8 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
         block_level = n;
         for (auto& f: block) f->set_block_level(n+1);
     }
+
+    std::string get_class() override { return "While";}
 };
 
 #endif //H2_ASTWHILELOOPNODE_HPP

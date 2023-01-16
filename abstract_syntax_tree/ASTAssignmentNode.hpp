@@ -33,7 +33,7 @@ struct ASTAssignmentNode : ASTStatementNode {
         return get_indention(block_level) +(is_declaration ? data_type+" " : "")+  var_name + " = " + right->to_code() + ";\n";
     }
 
-
+    std::string get_class() override { return "Assignment";}
 };
 
 #endif //H2_ASTASSIGNMENTNODE_HPP

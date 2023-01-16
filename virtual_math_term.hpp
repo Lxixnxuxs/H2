@@ -21,9 +21,11 @@ struct VirtualMathTerm {
     double value;
     bool o_notation = true; // ATTENTION: O-Notation like calculation per default!
 
-    VirtualMathTerm(MathTermType type) : type(type) {}
+    VirtualMathTerm(MathTermType type, bool o_notation = true) : type(type), o_notation(o_notation) {}
 
-    VirtualMathTerm(std::string name) {
+    VirtualMathTerm(MathTermType type, std::vector<VirtualMathTerm> children, bool o_notation = true): type(type), children(children), o_notation(o_notation) {}
+
+    VirtualMathTerm(std::string name,  bool o_notation = true): o_notation(o_notation) {
         try {
             double nr = stoi(name);
             *this = VirtualMathTerm(nr); // is this a correct way of calling another constructor?
@@ -33,9 +35,10 @@ struct VirtualMathTerm {
         }
     }
 
-    VirtualMathTerm(double value) : type(NUMBER), value(value) {}
+    VirtualMathTerm(double value, bool o_notation = true) : type(NUMBER), value(value), o_notation(o_notation) {}
+    VirtualMathTerm(int value, bool o_notation = true) : type(NUMBER), value(value),o_notation(o_notation) {}
 
-    VirtualMathTerm()=default;
+    VirtualMathTerm(): type(ADDITION), o_notation(true) {} // default type is addition
 
 
     // method for calling simplify logic until a steady state is reached
@@ -46,6 +49,17 @@ struct VirtualMathTerm {
 
         // keep on simplifying, since term was still changing
         if (before!=*this) simplify();
+    }
+
+    void substitude_variable(const std::string& var_name, const VirtualMathTerm& replacement) {
+        if (type == NUMBER) return;
+        if (type == VARIABLE and var_name == name) {
+            copy_to_me(replacement);
+        }
+
+        for (auto& e : children) {
+            e.substitude_variable(var_name, replacement);
+        }
     }
 
     std::string as_string() {
@@ -59,6 +73,8 @@ struct VirtualMathTerm {
         }
 
         if (type == VARIABLE) return name;
+
+        if (type == EXPONENTIAL) return children[0].as_string() + "^" + children[1].as_string();
 
         if (type == ADDITION or type == MULTIPLICATION) {
             std::string op_symbol = (type == ADDITION) ? "+" : "*";
@@ -123,7 +139,7 @@ private:
         children = new_children;
     }
 
-    // putting together multiple Number values
+    // putting together multiple Number values. Adding the neutral value to an empty operation
     void simplify_multiple_numbers(){
         assert(type == ADDITION or type == MULTIPLICATION);
         double default_value;
@@ -136,6 +152,12 @@ private:
         } else if (type == MULTIPLICATION) {
             default_value = 1;
             combination_func = [](double a, double b){return a*b;};
+        }
+
+        // Adding the neutral value to an empty operation
+        if (children.empty()) {
+            children.emplace_back(default_value);
+            return;
         }
 
 

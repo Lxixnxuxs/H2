@@ -34,14 +34,22 @@ struct ASTCallNode : ASTCalculationNode{
     }
 
     VirtualMathTerm calculate_complexity() override {
-        // TODO important!!!   the calling cost must be calculated by matching with which arguments the function is called
-        //  and how the arguments contribute to the complexity of the function
-        //  matching the own function arguments unknowns to the arguments of the called function
-        //  (the current implementation is simple but wrong)
+        VirtualMathTerm func_complexity = target->complexity; // hopefully already calculated
 
-        auto a = target->complexity;
-        complexity = a;
-        return a;
+        // substituting all arguments in
+        for (int i = 0; i<target->argument_list.size(); i++) {
+            func_complexity.substitude_variable(target->argument_list[i].first, arguments[i]->as_math_term());
+        }
+
+
+        auto res = VirtualMathTerm(ADDITION,{func_complexity});
+
+        for ( auto e : arguments) {
+            res.children.push_back(e->calculate_complexity());
+        }
+
+        complexity = res;
+        return complexity;
     }
 
     std::string to_code() override {
@@ -55,6 +63,11 @@ struct ASTCallNode : ASTCalculationNode{
 
     }
 
+    std::string get_class() override { return "Call";}
+
+    VirtualMathTerm as_math_term() override {
+        return VirtualMathTerm(target_name+"_return", false);
+    }
 };
 
 #endif //H2_ASTCALLNODE_HPP

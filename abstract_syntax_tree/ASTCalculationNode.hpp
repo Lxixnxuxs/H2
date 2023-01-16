@@ -120,7 +120,24 @@ struct ASTCalculationNode : ASTComputationNode {
         return "";
     }
 
+    std::string get_class() override { return "Calculation";}
 
+    virtual VirtualMathTerm as_math_term() {
+        if (comp_type == LIT) return VirtualMathTerm(value, false);
+        if (comp_type == VAR) return VirtualMathTerm(var_name, false);
+
+        auto left_term = left->as_math_term();
+        auto right_term = right->as_math_term();
+
+        if (comp_type == ADD) return VirtualMathTerm(ADDITION, {left_term,right_term}, false);
+        if (comp_type == SUB) return VirtualMathTerm(ADDITION,
+                                                     {left_term, VirtualMathTerm(MULTIPLICATION,{VirtualMathTerm(-1),right_term},
+                                                                                 false)},
+                                                     false);
+        if (comp_type == MUL) return VirtualMathTerm(MULTIPLICATION, {left_term, right_term}, false);
+        //if (comp_type == DIV) return VirtualMathTerm(MULTIPLICATION, {left_term, })
+        throw std::invalid_argument("Operation not jet convertible to math term");
+    }
 };
 
 #endif //H2_ASTCALCULATIONNODE_HPP

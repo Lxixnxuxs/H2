@@ -28,6 +28,8 @@ struct ASTReturnNode : ASTStatementNode {
     std::string to_code() override {
         return get_indention(block_level)+"return " + calc->to_code() + ";\n";
     }
+
+    std::string get_class() override { return "Return";}
 };
 
 #endif //H2_ASTRETURNNODE_HPP

@@ -3,6 +3,7 @@
 
 
 #include "ASTStatementNode.hpp"
+#include "ASTReturnNode.hpp"
 #include <vector>
 #include "../global_information.hpp"
 #include "../virtual_math_term.hpp"
@@ -15,6 +16,9 @@ struct ASTFunctionNode : ASTNode {
     std::vector<ASTStatementNode*> body;
     std::vector<std::pair<std::string,std::string>> argument_list;  // name to type
     std::string return_type;
+
+    // not always will it be possible to figure out the runtime. Therefore the logic has the option to surrender
+    bool virtual_exec_surrendered = false;
 
 
     int callee_reg_size = 4;
@@ -62,14 +66,17 @@ struct ASTFunctionNode : ASTNode {
     }
 
     VirtualMathTerm calculate_complexity() override {
-        if (complexity_is_custom) return complexity;
+        if (!complexity_is_custom) virtual_execution();
+        if (virtual_exec_surrendered) complexity = VirtualMathTerm(f_name); // is its own variable if surrendered
+        return complexity;
+        /*if (complexity_is_custom) return complexity;
 
         auto a = VirtualMathTerm(ADDITION);
         for (auto e : body) {
             a.children.push_back(e->calculate_complexity());
         }
         complexity = a;
-        return a;
+        return a;*/
     }
 
     std::string to_code() override {
@@ -99,14 +106,98 @@ struct ASTFunctionNode : ASTNode {
         for (auto& f: body) f->set_block_level(n+1);
     }
 
+
     void virtual_execution() {
-        std::vector<std::string> parameter;
-        for (auto p : argument_list) {
-            parameter.push_back(p.first);
-        }
+        virtual_exec_surrendered = true; // surrendered execpt able to come till the end
+        VirtualMathTerm complexity_sum = VirtualMathTerm(ADDITION);
+
+        // dictionary of current state in the execution
         std::map<std::string,VirtualMathTerm> variablename_to_term;
+        for (int i = 0; i<argument_list.size(); i++) {
+            variablename_to_term[argument_list[i].first] = VirtualMathTerm("param_"+std::to_string(i));
+        }
+        // all function arguments are set as parameters
+        // parameter name -> original name
+
+        std::map<std::string, std::string> parameter;
+        for (int i = 0; i<argument_list.size(); i++) {
+            parameter["param_"+std::to_string(i)] = argument_list[i].first;
+        }
+
+
+        // ATTENTION: to the parameter name there will be a fitting variable
+        // this variable may change its value, but the result will be in terms of the parameters and some numbers
+
+
+
+
+        // execute the body
+        for (auto e : body) {
+            auto cls = e->get_class();
+            cout << cls << endl;
+
+
+            // not able to copy with those
+            if (cls == "While" or cls == "IfElse") return;
+
+            if (cls == "Return" or cls == "Assignment") {
+                ASTCalculationNode* calc;
+                std::string writeback_name;
+
+                if (cls == "Assignment") {
+                    auto pr = dynamic_cast<ASTAssignmentNode *>(e);
+                    if (pr->is_declaration) variablename_to_term[pr->var_name] = VirtualMathTerm();
+
+                    calc = dynamic_cast<ASTCalculationNode *>(pr->right);
+                    writeback_name = pr->var_name;
+
+                }
+                if (cls == "Return") {
+                    auto pr = dynamic_cast<ASTReturnNode*>(e);
+                    calc = dynamic_cast<ASTCalculationNode*>(pr->calc);
+                }
+
+
+                VirtualMathTerm child_complexity = calc->calculate_complexity();
+                for (auto p : variablename_to_term) {
+                    child_complexity.substitude_variable(p.first,p.second);
+                }
+
+                child_complexity.simplify();
+                complexity_sum.children.push_back(child_complexity);
+
+                VirtualMathTerm v = calc->as_math_term();
+                for (auto p : variablename_to_term) {
+                    v.substitude_variable(p.first,p.second);
+                }
+
+                // writing to the current variable state
+                if (cls == "Assignment") variablename_to_term[writeback_name] = v;
+
+
+
+            }
+
+            // simplifying all terms
+            for (auto& p : variablename_to_term) {
+                p.second.simplify();
+            }
+        }
+
+        // put in the original parameter names again
+        for (int i = 0; i<argument_list.size(); i++) {
+            auto s = "param_"+std::to_string(i);
+            complexity_sum.substitude_variable(s, VirtualMathTerm(parameter[s]));
+        }
+
+
+
+        complexity = complexity_sum;
+        virtual_exec_surrendered = false; // successful virtual execution
 
     }
+
+    std::string get_class() override { return "Function";}
 };
 
 #endif //H2_ASTFUNCTIONNODE_HPP

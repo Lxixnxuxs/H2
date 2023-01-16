@@ -70,6 +70,8 @@ struct ASTIfElseNode : ASTControlFlowNode {
         for (auto f: else_block) f->set_block_level(n+1);
 
     }
+
+    std::string get_class() override { return "IfElse";}
 };
 
 #endif //H2_ASTIFELSENODE_HPP

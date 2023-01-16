@@ -51,6 +51,7 @@ struct ASTComparisonNode : ASTStatementNode {
         return left->to_code() + comp_type + right->to_code();
     }
 
+    std::string get_class() override { return "Comparison";}
 };
 
 #endif //H2_ASTCOMPARISONNODE_HPP

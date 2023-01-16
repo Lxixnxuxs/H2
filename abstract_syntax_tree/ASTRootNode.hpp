@@ -44,6 +44,8 @@ struct ASTRootNode : ASTNode {
         block_level = 0;
         for (auto f: funcs) f->set_block_level(0);
     }
+
+    std::string get_class() override { return "Root";}
 };
 
 #endif //H2_ASTROOTNODE_HPP

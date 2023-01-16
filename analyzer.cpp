@@ -28,7 +28,7 @@ int main() {
 
 
     auto new_code = root->to_code();
-    std::cout << new_code;
+    //std::cout << new_code;
 
     std::ofstream ofile("/home/ray/CLionProjects/H2/resources/raw.txt");
     ofile << new_code;

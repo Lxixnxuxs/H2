@@ -52,6 +52,8 @@ struct ASTLogicalNode : ASTComputationNode {
             default: return "cmp";
         }
     }
+
+    std::string get_class() override { return "Logical";}
 };
 
 #endif //H2_ASTLOGICALNODE_HPP
