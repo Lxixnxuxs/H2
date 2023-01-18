@@ -8,18 +8,24 @@
 #include <vector>
 #include <string>
 #include <functional>
-#include <assert.h>
-#include <math.h>
+#include <cassert>
+#include <cmath>
 #include <map>
 
-enum MathTermType {ADDITION,MULTIPLICATION,EXPONENTIAL,VARIABLE,NUMBER};
+
+enum MathTermType {ADDITION,MULTIPLICATION,EXPONENTIAL,VARIABLE,NUMBER,CALL};
 
 struct VirtualMathTerm {
     std::vector<VirtualMathTerm> children;   // for an exponential there are only two children
     MathTermType type;
     std::string name;
     double value;
-    bool o_notation = true; // ATTENTION: O-Notation like calculation per default!
+    bool o_notation = true;
+    // ATTENTION: O-Notation like calculation per default! One O-Notation can make the whole subtree to turn into o-notation
+    // TODO I should change that
+
+
+
 
     VirtualMathTerm(MathTermType type, bool o_notation = true) : type(type), o_notation(o_notation) {}
 
@@ -34,6 +40,8 @@ struct VirtualMathTerm {
             this->name = name;
         }
     }
+
+    VirtualMathTerm(std::string name, std::vector<VirtualMathTerm> children): type(CALL), name(name), children(children) {}
 
     VirtualMathTerm(double value, bool o_notation = true) : type(NUMBER), value(value), o_notation(o_notation) {}
     VirtualMathTerm(int value, bool o_notation = true) : type(NUMBER), value(value),o_notation(o_notation) {}
@@ -52,6 +60,18 @@ struct VirtualMathTerm {
         }
     }
 
+    void substitude_call(const std::string& var_name, const VirtualMathTerm& replacement) {
+        if (type == NUMBER or type == VARIABLE) return;
+        if (type == CALL and var_name == name) {
+            copy_to_me(replacement);
+            return;
+        }
+
+        for (auto& e : children) {
+            e.substitude_call(var_name, replacement);
+        }
+    }
+
     std::string as_string() {
         simplify();
 
@@ -65,6 +85,8 @@ struct VirtualMathTerm {
         if (type == VARIABLE) return name;
 
         if (type == EXPONENTIAL) return "("+children[0].as_string() + ")^(" + children[1].as_string()+")";
+
+        if (type == CALL) return "CALL_"+name;
 
         if (type == ADDITION or type == MULTIPLICATION) {
             std::string op_symbol = (type == ADDITION) ? "+" : "*";
@@ -88,11 +110,61 @@ struct VirtualMathTerm {
         return res;
     }
 
+    std::vector<VirtualMathTerm> find_calls() {
+
+        if (type == NUMBER or type == VARIABLE) return {};
+
+        std::vector<VirtualMathTerm> res;
+
+        for (auto& e : children) {
+            auto lower = e.find_calls();
+            res.insert(res.end(), lower.begin(), lower.end());
+            //if (e.type == CALL) res.push_back(e);
+        }
+        if (type == CALL) res.push_back(*this);
+        return res;
+    }
+
+    bool contains_variable(std::string var_name) {
+
+        // does not count if it only appears inside a call !!!
+        if (type == NUMBER or type == CALL) return false;
+        if (type == VARIABLE) return name == var_name;
+
+        for (auto& e : children) {
+            if (e.contains_variable(var_name)) return true;
+        }
+        return false;
+    }
+
+    /*
+    // 0 no, below     1 yes     2 no, above
+    int is_linear_in(std::string var_name) {
+        if (type == NUMBER or type == CALL) return 0;
+        if (type == VARIABLE) return 1;
+
+        if (type == ADDITION or type == MULTIPLICATION){
+
+            // for MULIPLICATION assume multiple occurances would have been united
+
+            for (auto& e : children) {
+                if (e.is_linear_in(var_name)) return true;
+            }
+            return false;
+        }
+
+        // better be conservative
+        return false;
+
+    }*/
+
     bool operator==(const VirtualMathTerm& other) const {
         if (type != other.type) return false;
 
         if (type == NUMBER) return (value == other.value);
         if (type == VARIABLE) return (name == other.name);
+
+        if (type == CALL and name != other.name) return false;
 
         // is Addition, Multiplication or Exponential
         if (children.size() != other.children.size()) return false;
@@ -232,8 +304,9 @@ private:
     void simplify_logic() {
         if (type == NUMBER or type == VARIABLE) return;
 
-        // first simplify lower levels
         for (auto& e: children) e.simplify_logic();
+
+        if (type == CALL) return;
 
         if (type == EXPONENTIAL) {
             assert(children.size() == 2);
@@ -255,10 +328,7 @@ private:
 
     // this is a kind of simplification function which will cut off constants and will provide pure O-Notation
     void turn_into_o_notation() {
-        if (type == VARIABLE or type == NUMBER) { return;}
-
-
-        //auto before = *this; // create copy to compare in the end
+        if (type == VARIABLE or type == NUMBER or type == CALL) { return;}
 
         for (auto& e : children) e.turn_into_o_notation();
 
@@ -275,9 +345,6 @@ private:
         if (new_children.size() == 1){
             copy_to_me(children[0]);
         }
-
-        // keep on simplifying, since term was still changing
-        //if (before != *this) simplify();
     }
 };
 

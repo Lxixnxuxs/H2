@@ -109,21 +109,29 @@ public:
     ASTFunctionNode* parse_function(Tokenstream t, GlobalVariableManager& g) {
         // Note that the 'def' has already been thrown away
 
+
+
         LocalVariableManager var_manager;
         string func_name = *t;
         var_manager.name = func_name;
+
+        auto* res = new ASTFunctionNode();
+        g.var_to_node[func_name] = res; // Node Object is known to global variable manager
+        res->f_name = func_name;
 
         expect_identifier(t);
         t += 1; // discard func_name
 
         expect(t,"(");
-        auto argument_list = t.read_inside_brackets();
+        auto argument_stream = t.read_inside_brackets();
 
-        std::pair<int,vector<std::pair<string,string>>> temp  = parse_argument_list(argument_list, var_manager);
-        int arg_stack_size = temp.first;
-        auto arg_list = temp.second;
+        std::pair<int,vector<std::pair<string,string>>> temp  = parse_argument_list(argument_stream, var_manager);
 
-        g.var_to_argument_list[func_name] = arg_list;
+        res->arg_stackpart_size = temp.first;
+
+        res->argument_list = temp.second;
+
+        g.var_to_argument_list[func_name] = res->argument_list;
 
         expect(t,"->");
         t += 1; //discard '->'
@@ -131,14 +139,15 @@ public:
         var_manager.ret_type = *t;
 
         expect_one_of(t,data_types);
-        std::string return_type = *t;
+        res->return_type = *t;
+
         t += 1; // discard return type
 
         map<string, VirtualMathTerm> complexity_map;
         if (*t == "/%") {
             // a complexity annotation is given
             Tokenstream complexity_stream = t.read_inside_brackets();
-            complexity_map = parse_complexity(complexity_stream);
+            res->initialize_with_complexity_map(parse_complexity(complexity_stream));
         }
 
 
@@ -147,14 +156,17 @@ public:
 
 
         auto parsed_body = parse_subspace(body, var_manager, g);
+        res->body = parsed_body;
 
         // expect nothing to be there after closing bracket '}'
         expect_empty(t);
 
         size_t stack_frame_size = var_manager.current_offset;
+        res->f_stack_size = stack_frame_size;
 
-        auto res = new ASTFunctionNode(func_name, parsed_body, stack_frame_size, arg_stack_size,arg_list, return_type, complexity_map);
-        g.var_to_node[func_name] = res; // Node Object is known to global variable manager
+
+        //auto res = new ASTFunctionNode(func_name, parsed_body, stack_frame_size, arg_stack_size,arg_list, return_type, complexity_map);
+        //g.var_to_node[func_name] = res; // Node Object is known to global variable manager
         return res;
     }
 

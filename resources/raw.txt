@@ -1,17 +1,35 @@
-def f(int r) -> int /% O(r) %/  {
-    return (r * 2);
+def g(int x) -> int /% _O((2.000000)^(x)) %/  {
+    if (x<5) {
+        return 1;
+    } else {
+        int _ = g[(x - 1)];
+    }
+    return g[(x - 1)];
 }
 
 
-def g(int a, int b) -> int /% _O(r) %/  {
-    int c = (a * b);
-    int res = f[c];
-    return res;
+def f(int x) -> int /% _O(INFINITY) %/  {
+    return f[1];
 }
 
 
-def main() -> void /% _O(r) %/  {
-    return (f[3] + f[4]);
+def z(int a) -> void /% _O(a) %/  {
+    if (a<0) {
+        return a;
+    } else {
+        return z[(a - 1)];
+    }
+}
+
+
+def h(int x, int y) -> int /% _O((x * y) + y) %/  {
+    if (y<0) {
+        int _ = z[y];
+        return 1;
+    } else {
+        int _ = z[x];
+    }
+    return h[(x - 1), (y - 1)];
 }
 
 

@@ -4,6 +4,7 @@
 
 #include "ASTComputationNode.hpp"
 #include <map>
+#include "../LogicTerm.hpp"
 
 #ifndef H2_ASTCOMPARISONNODE_HPP
 #define H2_ASTCOMPARISONNODE_HPP
@@ -14,6 +15,13 @@ std::map<std::string, std::string> comp_to_jump = {{"==","je"},
                                                    {">=","jle"},
                                                    {"<","jg"},
                                                    {"<=","jge"}};
+
+std::map<std::string, LogicTermType> comp_to_logic_type = {{"==",EQUAL},
+                                                   {"!=",UNEQUAL},
+                                                   {">",GREATER},
+                                                   {">=",GREATER_EQUAL},
+                                                   {"<",LESS},
+                                                   {"<=",LESS_EQUAL}};
 
 struct ASTComparisonNode : ASTStatementNode {
     ASTComputationNode* left;
@@ -52,6 +60,10 @@ struct ASTComparisonNode : ASTStatementNode {
     }
 
     std::string get_class() override { return "Comparison";}
+
+    LogicTerm as_logic_term() {
+        return {comp_to_logic_type[comp_type], {left->as_math_term(), right->as_math_term()}};
+    }
 };
 
 #endif //H2_ASTCOMPARISONNODE_HPP

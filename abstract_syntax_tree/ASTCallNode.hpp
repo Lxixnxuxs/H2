@@ -33,14 +33,26 @@ struct ASTCallNode : ASTCalculationNode{
         return code;
     }
 
+
+
     VirtualMathTerm calculate_complexity() override {
+
+        // managing recursive calls
+        if (target->within_active_analysis) {
+            std::vector<VirtualMathTerm> math_args;
+            for (auto e : arguments) {
+                math_args.push_back(e->as_math_term());
+            }
+            return {target_name, math_args};
+        }
+
+
         VirtualMathTerm func_complexity = target->complexity; // hopefully already calculated
 
         // substituting all arguments in
         for (int i = 0; i<target->argument_list.size(); i++) {
             func_complexity.substitude_variable(target->argument_list[i].first, arguments[i]->as_math_term());
         }
-
 
         auto res = VirtualMathTerm(ADDITION,{func_complexity});
 
