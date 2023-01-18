@@ -154,6 +154,10 @@ std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::
     // without base case, the recursion goes forever
     if (base_cases.empty()) return O_INFINITY;
 
+    // do not allow multiple base cases, because not able to find out in which the recursion will terminate
+    // TODO find way to do this
+    if (base_cases.size() > 1) return SURRENDERED;
+
     // cannot handle multiple recursion cases
     if (recursive_executions.size() > 1) return SURRENDERED;
     recursive_execution recursiveExecution = recursive_executions[0];
@@ -213,17 +217,21 @@ std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::
 
     // provide an according complexity
 
+    Complexity recursion_depth = {get_base_case_variable(hit_base_cases[0].first)};
+    Complexity res = {ADDITION};
+    res.children.push_back(hit_base_cases[0].second); // bc
 
     if (recursive_calls.size() == 1){
-        Complexity recursion_depth = {get_base_case_variable(hit_base_cases[0].first)};
-        Complexity res = {ADDITION};
-        res.children.push_back(hit_base_cases[0].second); // bc
         res.children.push_back({MULTIPLICATION, {recursion_depth,std::get<1>(recursiveExecution)}});  // recursive iterations
-        return {true,res};
     }
 
-    // TODO implement properly!
-    if (recursive_calls.size() >= 2) return {true, {EXPONENTIAL, {(int)(recursive_calls.size()), var_names[0]}}};
+    Complexity tree_size = {EXPONENTIAL, {(int)(recursive_calls.size()),recursion_depth}};
+
+    if (recursive_calls.size() >= 2) {
+        res.children.push_back({MULTIPLICATION, {tree_size,std::get<1>(recursiveExecution)}});
+    }
+
+    return {true,res};
 
 }
 
