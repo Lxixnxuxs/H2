@@ -8,8 +8,10 @@
 #include "../global_information.hpp"
 #include "../virtual_math_term.hpp"
 
+//extern struct ExecutionPath;
 #include "../ExecutionPath.hpp"
 #include "../recursive_analysis.hpp"
+
 
 struct ASTFunctionNode : ASTNode {
 
@@ -99,7 +101,7 @@ struct ASTFunctionNode : ASTNode {
         res += ") -> " + return_type;
 
         // TODO insert O-Notation here
-        res += " /% " + (complexity_is_custom ? ((string) "") : ((string) "_")) + "O("+ complexity.as_string() +") %/ ";
+        res += " /% " + (complexity_is_custom ? ((std::string) "") : ((std::string) "_")) + "O("+ complexity.as_string() +") %/ ";
 
         res += " {\n";
 
@@ -135,22 +137,6 @@ struct ASTFunctionNode : ASTNode {
         path.start();
         std::vector<ExecutionPath> all_paths = path.get_all_branches();
 
-        // throw out impossible execs
-        // count nr of recursive execs
-        /*
-        int nr_of_recursive_execs = 0;
-        std::vector<ExecutionPath> filtered_all_paths;
-        for (auto& e : all_paths) {
-            if (e.condition.type == FALSE) continue;
-            filtered_all_paths.push_back(e);
-            if (!e.total_complexity.find_calls().empty()) {
-                nr_of_recursive_execs ++;
-            }
-        }
-        all_paths = filtered_all_paths;
-
-        if (nr_of_recursive_execs > 1) return; // surrender
-        */
         for (auto& path : all_paths) {
             if (path.surrendered) return; // surrender if not fully able to execute
         }

@@ -235,4 +235,25 @@ std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::
 
 }
 
+
+
+// call-helper
+
+std::pair<bool, Complexity> analyze_execution_from_all_paths(std::string func_name, std::vector<std::string> var_names, std::vector<ExecutionPath> all_paths) {
+    std::vector<std::pair<LogicTerm, VirtualMathTerm>> base_cases;
+    std::vector<std::tuple<LogicTerm, VirtualMathTerm, std::vector<VirtualMathTerm>>> recursive_executions;
+    for (auto &e: all_paths) {
+        auto calls = e.total_complexity.find_calls();
+        if (calls.empty()) {
+            base_cases.emplace_back(e.condition, e.total_complexity);
+        } else {
+            recursive_executions.emplace_back(e.condition, e.total_complexity, calls);
+        }
+    }
+
+    return analyze_execution_paths(func_name, var_names, base_cases, recursive_executions);
+}
+
+
+
 #endif //H2_RECURSIVE_ANALYSIS_HPP

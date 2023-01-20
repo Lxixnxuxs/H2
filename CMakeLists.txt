@@ -9,4 +9,4 @@ include_directories(term)
 
 add_executable(main main.cpp lexer.cpp Tokenstream.cpp)
 add_executable(compiler compiler.cpp lexer.cpp Tokenstream.cpp)
-add_executable(analyzer analyzer.cpp lexer.cpp Tokenstream.cpp)
+add_executable(analyzer analyzer.cpp lexer.cpp Tokenstream.cpp ExecutionPath.cpp)

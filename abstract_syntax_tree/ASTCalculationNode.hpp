@@ -29,6 +29,8 @@ struct ASTCalculationNode : ASTComputationNode {
         if (reg.empty() && left != nullptr) {reg = left->reg; own_reg = false;}
     }
 
+    ASTCalculationNode()=default;
+
     std::string compile() override {
         if (comp_type == VAR) {
             return "mov " + std::to_string(offset) + "(%rsp)" + ", " + reg + "\n";

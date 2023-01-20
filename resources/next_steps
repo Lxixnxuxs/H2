@@ -1,0 +1,26 @@
+* analysis of while loops
+* recursive functions like f(x/2)
+* start with function-choice interfaces
+
+
+
+interface I(int x, int y) -> int;
+/* maybe one can give an implementation here in order to show the desired functionality.
+This way the Compiler can kind of make sure any implementation is working the intended way by comparing some cases*/
+
+def f:I /% _O(x) %/{ /* leave out the parameter list, since it is known from the interface*/
+    if (x<0) {
+        return y;
+    } else {
+        return f[x-1, y];
+    }
+}
+
+def g:I /% O(y) %/ {
+/*......*/
+}
+
+
+def h(int x) -> int {
+    return /% _f %/ I(x, x*x);  %* call of interface will induce the better runtime one*%
+}

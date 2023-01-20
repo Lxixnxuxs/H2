@@ -21,6 +21,8 @@ struct ASTCallNode : ASTCalculationNode{
             left, right, compType, regs[h], value, offset), target(target_), target_name(target_->f_name), arguments(arguments), h(h) {}
             // call node is always taking register eax
 
+    ASTCallNode()=default;
+
     std::string compile() override{
         std::string code;
         for (int i = 0; i<arguments.size(); i++) {
@@ -32,8 +34,6 @@ struct ASTCallNode : ASTCalculationNode{
         code += "mov %eax, "+regs[h]+"\n";
         return code;
     }
-
-
 
     VirtualMathTerm calculate_complexity() override {
 

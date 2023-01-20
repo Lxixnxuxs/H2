@@ -19,7 +19,7 @@ const std::vector<std::string> operator_symbols = {"-","+","*","/","%"};
 const std::vector<std::string> complexity_operator_symbols = {"+","*","^"};
 const std::vector<std::string> comparison_symbols = {"==","!=","<=",">=","<",">"};
 
-const vector<std::string> data_types = {"void","int"};
+const std::vector<std::string> data_types = {"void","int"};
 std::map<std::string, size_t> type_to_size = { {"void",0},{"int", 4} };
 
 
