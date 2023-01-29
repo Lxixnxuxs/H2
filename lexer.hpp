@@ -8,13 +8,9 @@
 #include <string>
 #include <vector>
 #include <list>
-#include <iostream>
-#include <stdexcept>
 
 using std::string;
 using std::vector;
-using std::cout;
-using std::endl;
 using std::list;
 
 // symbols at the front have higher priority. eg in " -> int" we would find a "->" and not a "-"

@@ -5,4 +5,5 @@
 
 struct ASTControlFlowNode : ASTStatementNode {};
 
+
 #endif //H2_ASTCONTROLFLOWNODE_HPP

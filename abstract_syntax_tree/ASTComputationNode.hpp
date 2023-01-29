@@ -9,4 +9,5 @@ struct ASTComputationNode : ASTStatementNode {
     virtual VirtualMathTerm as_math_term() = 0;
 };
 
+
 #endif //H2_ASTCOMPUTATIONNODE_HPP

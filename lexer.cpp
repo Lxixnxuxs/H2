@@ -2,6 +2,9 @@
 // Created by ray on 07.01.23.
 //
 
+#include <iostream>
+#include <stdexcept>
+
 #include "lexer.hpp"
 
 void remove_comments(list<string>* l){

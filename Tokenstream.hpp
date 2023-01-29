@@ -7,19 +7,17 @@
 
 #include <list>
 #include <string>
-#include <iostream>
 #include <map>
 #include <vector>
-#include <stdexcept>
+
 
 using std::string;
-using std::cout;
 using std::list;
 using std::map;
 using std::vector;
-using std::endl;
 
-const map<string,string> corresponding_bracket = {{"(",")"},{"{","}"},{"[","]"},{"/%","%/"}};
+
+static const map<string,string> corresponding_bracket = {{"(",")"},{"{","}"},{"[","]"},{"/%","%/"}};
 
 struct Tokenstream {
     list<string>::iterator begin_;

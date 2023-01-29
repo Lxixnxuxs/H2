@@ -2,26 +2,19 @@
 // Created by ray on 06.12.22.
 //
 
-#include "ASTComputationNode.hpp"
-#include <map>
-#include "../LogicTerm.hpp"
-
 #ifndef H2_ASTCOMPARISONNODE_HPP
 #define H2_ASTCOMPARISONNODE_HPP
 
-std::map<std::string, std::string> comp_to_jump = {{"==","je"},
-                                                   {"!=","jne"},
-                                                   {">","jl"},
-                                                   {">=","jle"},
-                                                   {"<","jg"},
-                                                   {"<=","jge"}};
+#include <map>
+#include "ASTStatementNode.hpp"
+#include "../LogicTerm.hpp"
 
-std::map<std::string, LogicTermType> comp_to_logic_type = {{"==",EQUAL},
-                                                   {"!=",UNEQUAL},
-                                                   {">",GREATER},
-                                                   {">=",GREATER_EQUAL},
-                                                   {"<",LESS},
-                                                   {"<=",LESS_EQUAL}};
+struct ASTComputationNode;
+
+
+extern std::map<std::string, std::string> comp_to_jump;
+extern std::map<std::string, LogicTermType> comp_to_logic_type;
+
 
 struct ASTComparisonNode : ASTStatementNode {
     ASTComputationNode* left;
@@ -31,39 +24,17 @@ struct ASTComparisonNode : ASTStatementNode {
     std::string reg1;   // two registers to compare
     std::string reg2;
 
-    ASTComparisonNode(ASTComputationNode* left, ASTComputationNode* right, std::string comp_type, std::string reg1,std::string reg2):
-            left(left), right(right), comp_type(comp_type), reg1(reg1),reg2(reg2) {
-    }
+    ASTComparisonNode(ASTComputationNode* left, ASTComputationNode* right, std::string comp_type, std::string reg1,std::string reg2);
 
-    std::string compile() override {
-        std::string code = "";
+    std::string compile() override;
 
-        code += left->compile();
-        code += right->compile();
-        code += "cmp "+reg1+", "+reg2+"\n";
-        //code += comp_to_jump[comp_type] + " "
-        // figuring out the kind of jump is part of the controll-structures job
+    VirtualMathTerm calculate_complexity() override;
 
-        return code;
-    }
+    std::string to_code() override;
 
-    VirtualMathTerm calculate_complexity() override {
-        auto a = VirtualMathTerm(ADDITION);
-        a.children.push_back(left->calculate_complexity());
-        a.children.push_back(right->calculate_complexity());
-        complexity = a;
-        return a;
-    }
+    std::string get_class() override;
 
-    std::string to_code() override {
-        return left->to_code() + comp_type + right->to_code();
-    }
-
-    std::string get_class() override { return "Comparison";}
-
-    LogicTerm as_logic_term() {
-        return {comp_to_logic_type[comp_type], {left->as_math_term(), right->as_math_term()}};
-    }
+    LogicTerm as_logic_term();
 };
 
 #endif //H2_ASTCOMPARISONNODE_HPP

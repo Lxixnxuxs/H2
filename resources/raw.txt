@@ -1,11 +1,15 @@
-def f(int r) -> int /% _O(3.000000) %/  {
-    int res = 0;
-    int i = r;
-    while (0<i) /% _O(0.000000) %/  {
-        res = (res + i);
-        i = (i + 1);
+def f(int r) -> int /% _O(r) %/  {
+    if (r<=0) {
+        return 1;
+    } else {
+        return f[(r - 1)];
     }
-    return res;
+}
+
+
+def g(int x) -> int /% _O((x)^(2.000000)) %/  {
+    x = (x * x);
+    return f[x];
 }
 
 

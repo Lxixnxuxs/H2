@@ -2,24 +2,26 @@
 #ifndef H2_ASTNODE_HPP
 #define H2_ASTNODE_HPP
 
+#include <string>
+
+
+
+// TODO will this lead to problems when laying out memory? Because this has a wrong idea of how the struct looks like
+//struct VirtualMathTerm;
+
 #include "../virtual_math_term.hpp"
-#include "../code_style.hpp"
+
 
 enum ASTNodeType {};
 
-std::string get_indention(int level) {
-    return std::string(level * block_indention,' ');
-}
+extern std::string get_indentation(int level);
 
 struct ASTNode {
     VirtualMathTerm complexity;
     bool complexity_is_custom = false;
-
     int block_level;
 
-    virtual void set_block_level(int n = 0){
-        block_level = n;
-    };
+    virtual void set_block_level(int n);
 
     virtual std::string compile() = 0;
 

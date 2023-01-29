@@ -10,8 +10,11 @@
 
 #include <string>
 #include <vector>
-#include "abstract_syntax_tree/ASTStatementNode.hpp"
+#include <map>
+//#include "abstract_syntax_tree/ASTStatementNode.hpp"
+//#include "LogicTerm.hpp"
 #include "LogicTerm.hpp"
+struct ASTStatementNode;
 
 
 typedef std::string variable_name;

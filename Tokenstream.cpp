@@ -2,6 +2,9 @@
 // Created by ray on 30.11.22.
 //
 
+#include <stdexcept>
+#include <iostream>
+
 #include "Tokenstream.hpp"
 
 

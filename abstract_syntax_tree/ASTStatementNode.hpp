@@ -6,4 +6,5 @@
 
 struct ASTStatementNode : ASTNode {};
 
+
 #endif //H2_ASTSTATEMENTNODE_HPP

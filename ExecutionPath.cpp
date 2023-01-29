@@ -2,10 +2,10 @@
 // Created by ray on 19.01.23.
 //
 
+#include "ExecutionPath.hpp"
 #include "abstract_syntax_tree/ASTTree.hpp"
 #include "abstract_syntax_tree/ASTWhileLoopNode.hpp"
 #include "abstract_syntax_tree/ASTCallNode.hpp"
-#include "ExecutionPath.hpp"
 
 
 ExecutionPath::ExecutionPath(std::vector<variable_name> arguments, std::vector<ASTStatementNode*> commands): commands(commands) {
