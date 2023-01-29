@@ -42,7 +42,7 @@ struct VirtualMathTerm {
 
     std::vector<VirtualMathTerm> find_calls();
 
-    bool contains_variable(std::string var_name);
+    bool contains_variable(std::string var_name) const;
 
     bool operator==(const VirtualMathTerm& other) const;
 
@@ -70,7 +70,7 @@ private:
     void turn_into_o_notation();
 };
 
-
+extern const VirtualMathTerm UNKNOWN_VAR;
 
 
 #endif //H2_VIRTUAL_MATH_TERM_HPP

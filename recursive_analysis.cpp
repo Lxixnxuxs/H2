@@ -60,7 +60,7 @@ std::vector<double> get_base_case_direction(LogicTerm base_case, std::vector<std
     auto var_term = base_case.math_children[var_index];
 
     int index = std::distance(var_names.begin(), std::find(var_names.begin(), var_names.end(), var_term.name));//extract_param_nr(var_term.name);
-    res.insert(res.end(),fmax(index-1,0),0);
+    res.insert(res.end(),fmax(index,0),0);
     int value = (base_case.type == LESS or base_case.type == LESS_EQUAL)? -1 : 1;
 
 
@@ -236,6 +236,14 @@ std::pair<bool, Complexity> analyze_execution_from_all_paths(std::string func_na
         } else {
             recursive_executions.emplace_back(e.condition, e.total_complexity, calls);
         }
+    }
+
+    // delete recursive calls from the complexity of the recursive branches, because they will be resolved now
+
+    for (auto& e: recursive_executions) {
+        VirtualMathTerm& complexity = std::get<1>(e);
+        complexity.substitude_call(func_name,{0});
+
     }
 
     return analyze_execution_paths(func_name, var_names, base_cases, recursive_executions);

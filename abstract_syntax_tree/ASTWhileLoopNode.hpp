@@ -14,12 +14,14 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
     std::vector<ASTStatementNode*> block;
     int label_id;
 
-    VirtualMathTerm body_complexity;
-    VirtualMathTerm iterations;
+    //VirtualMathTerm body_complexity;
+    //VirtualMathTerm iterations;
 
     //bool iteration_complexity_is_custom = false;
     //bool body_complexity_is_custom = false;
     ExecutionPath* initial_execution_state;
+    std::vector<std::string> altered_variables;
+
 
     ASTWhileLoopNode(ASTComparisonNode* condition, std::vector<ASTStatementNode*> &block,int label_id, std::map<std::string, VirtualMathTerm> complexity_map);
 
@@ -30,7 +32,7 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
 
     std::string to_code() override;
 
-    void set_block_level(int n);
+    void set_block_level(int n) override;
 
     std::string get_class() override;
 

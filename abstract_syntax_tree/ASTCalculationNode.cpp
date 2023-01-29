@@ -112,7 +112,11 @@ ASTCalculationNode::ASTCalculationNode(ASTCalculationNode* left, ASTCalculationN
         auto left_term = left->as_math_term();
         auto right_term = right->as_math_term();
 
-        if (comp_type == ADD) return VirtualMathTerm(ADDITION, {left_term,right_term}, false);
+        if (comp_type == ADD) {
+            auto res =  VirtualMathTerm(ADDITION, {left_term,right_term}, false);
+            return res;
+            // TODO what is the problem here???
+        }
         if (comp_type == SUB) return VirtualMathTerm(ADDITION,
                                                      {left_term, VirtualMathTerm(MULTIPLICATION,{VirtualMathTerm(-1),right_term},
                                                                                  false)},

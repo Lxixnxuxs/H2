@@ -6,6 +6,8 @@
 #include "ASTCalculationNode.hpp"
 #include "ASTCallNode.hpp"
 
+#include <cassert>
+
 
 ASTCallNode::ASTCallNode(ASTCalculationNode *left, ASTCalculationNode *right, ComputationOp compType, std::string reg, int value,
                 size_t offset, ASTFunctionNode* target_, std::vector<ASTCalculationNode*> arguments, int h) : ASTCalculationNode(
@@ -33,7 +35,7 @@ ASTCallNode::ASTCallNode(ASTCalculationNode *left, ASTCalculationNode *right, Co
             for (auto e : arguments) {
                 math_args.push_back(e->as_math_term());
             }
-            return {target_name, math_args};
+            return {target->f_name, math_args};
         }
 
 
@@ -41,7 +43,8 @@ ASTCallNode::ASTCallNode(ASTCalculationNode *left, ASTCalculationNode *right, Co
 
         // substituting all arguments in
         for (int i = 0; i<target->argument_list.size(); i++) {
-            func_complexity.substitude_variable(target->argument_list[i].first, arguments[i]->as_math_term());
+            auto temp = arguments[i]->as_math_term();
+            func_complexity.substitude_variable(target->argument_list[i].first,  temp);
         }
 
         auto res = VirtualMathTerm(ADDITION,{func_complexity});
@@ -68,5 +71,6 @@ ASTCallNode::ASTCallNode(ASTCalculationNode *left, ASTCalculationNode *right, Co
     std::string ASTCallNode::get_class() { return "Call";}
 
     VirtualMathTerm ASTCallNode::as_math_term() {
-        return VirtualMathTerm(target_name+"_return", false);
+        //assert(false); //TODO old code
+        return {target_name, (std::vector<VirtualMathTerm>){}};
     }

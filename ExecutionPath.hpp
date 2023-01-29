@@ -49,8 +49,8 @@ private:
     // returns whether a return ended the execution
     bool execute(ASTStatementNode* statement);
 
-    parameter_name get_param(int i);
-
 };
+
+parameter_name get_param(int i);
 
 #endif //H2_EXECUTIONPATH_HPP

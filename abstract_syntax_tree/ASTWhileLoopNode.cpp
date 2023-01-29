@@ -7,6 +7,7 @@
 #include "ASTCallNode.hpp"
 #include "ASTFunctionNode.hpp"
 #include "../recursive_analysis.hpp"
+#include "../ExecutionPath.hpp"
 
 #include "ASTWhileLoopNode.hpp"
 
@@ -74,8 +75,6 @@ ASTWhileLoopNode::ASTWhileLoopNode(ASTComparisonNode* condition, std::vector<AST
 
         a.children.push_back(condition->calculate_complexity());
 
-        // TODO not each iteration may have same complexity, because unknowns change (need parameter logic)
-
 
 
         auto b = VirtualMathTerm(MULTIPLICATION);
@@ -108,9 +107,8 @@ ASTWhileLoopNode::ASTWhileLoopNode(ASTComparisonNode* condition, std::vector<AST
 
     std::string ASTWhileLoopNode::get_class() { return "While";}
 
-    void ASTWhileLoopNode::virtual_execution(ExecutionPath higher_level_path) {
-        auto logic_condition = condition->as_logic_term();
 
+    void ASTWhileLoopNode::virtual_execution(ExecutionPath higher_level_path) {
 
         // imitate a function
         ASTFunctionNode pseudo_function;
@@ -126,31 +124,59 @@ ASTWhileLoopNode::ASTWhileLoopNode(ASTComparisonNode* condition, std::vector<AST
 
 
         ExecutionPath base_case = {{},{}};
-        base_case.condition = logic_condition;
+        base_case.condition = {L_NOT, {condition->as_logic_term()}};
+        base_case.condition.simplify();
 
 
-        auto path = higher_level_path;
+        ExecutionPath path = {variables, block};//higher_level_path;
 
-        path.total_complexity = VirtualMathTerm(ADDITION);
-        path.alternative_branches = {};
-        path.commands = block;  // execute the body
+        //path.total_complexity = VirtualMathTerm(ADDITION);
+        //path.alternative_branches = {};
+        //path.commands = block;  // execute the body
 
         ASTCallNode end_pseudo_call;
         end_pseudo_call.target = &pseudo_function;
+        // TODO place arguments to call with into the pseudo-call
+        for (int i = 0; i<variables.size(); i++) {
+            end_pseudo_call.arguments.push_back(new ASTCalculationNode(nullptr, nullptr,VAR,"",0,0,variables[i]));
+        }
 
         path.commands.push_back(&end_pseudo_call);
 
-        //path.commands.push_back()
-        path.condition = {L_NOT, {condition->as_logic_term()}};
+        path.condition = condition->as_logic_term();
 
         path.start();
         std::vector<ExecutionPath> all_paths = path.get_all_branches();
         all_paths.push_back(base_case);
 
-        for (auto& path : all_paths) {
-            if (path.surrendered) return; // surrender if not fully able to execute
+        altered_variables = {};
+        for (auto& m : all_paths) {
+            if (m.surrendered) return; // surrender if not fully able to execute
+            int j = 0;
+            for (auto& p : m.execution_state) {
+                if (p.second != (VirtualMathTerm){get_param(j)}) {
+                    altered_variables.push_back(p.first);
+                }
+                j++;
+            }
         }
 
         auto analysis_result = analyze_execution_from_all_paths(pseudo_function.f_name,variables,all_paths);
         complexity = analysis_result.second;
+
+
+        // temporal substitution to prevent name conflicts in next substitution
+        int j = 0;
+        for (auto& e : higher_level_path.execution_state) {
+            complexity.substitude_variable(e.first, e.second);
+            j++;
+        }
+
+        // early and finally substituting in the arguments of the original function
+        // TODO this will not work with multiple levels of loops!!!
+        j = 0;
+        for (auto& e : higher_level_path.execution_state) {
+            complexity.substitude_variable(get_param(j), higher_level_path.parameter_back_translation[get_param(j)]);
+            j++;
+        }
     }

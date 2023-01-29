@@ -37,6 +37,8 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
 
 
     void VirtualMathTerm::substitude_variable(const std::string& var_name, const VirtualMathTerm& replacement) {
+        assert(!replacement.contains_variable(var_name)); // this could lead to a recursive insertion
+
         if (type == NUMBER) return;
         if (type == VARIABLE and var_name == name) {
             copy_to_me(replacement);
@@ -112,7 +114,7 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
         return res;
     }
 
-    bool VirtualMathTerm::contains_variable(std::string var_name) {
+    bool VirtualMathTerm::contains_variable(std::string var_name) const {
 
         // does not count if it only appears inside a call !!!
         if (type == NUMBER or type == CALL) return false;
@@ -313,3 +315,4 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
     }
 
 
+const VirtualMathTerm UNKNOWN_VAR = {"UNKNOWN"};

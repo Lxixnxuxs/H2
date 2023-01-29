@@ -46,6 +46,7 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
         }
 
         total_complexity.simplify();
+        if (total_complexity.contains_variable(UNKNOWN_VAR.name)) {surrendered = true;}
         condition.simplify();
     }
 
@@ -69,7 +70,16 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
 
         // go into deeper level of analysis
         if (cls == "While") {
-            //auto node = dynamic_cast<AST *>(statement);
+            auto node = dynamic_cast<ASTWhileLoopNode *>(statement);
+            node->initial_execution_state = this;
+            total_complexity.children.push_back(node->calculate_complexity());
+
+            for (auto& var : node->altered_variables) {     // after loop, the used variables cannot be inferred to a value
+                execution_state[var] = UNKNOWN_VAR;
+            }
+
+            //TODO can I know which values the variables have after the loop?
+            // maybe forget about some, because they are not computable any further
         }
 
         // divide into branches
@@ -95,8 +105,13 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
         if (cls == "Call") {
             auto casted = dynamic_cast<ASTCallNode*>(statement);
             auto child_complexity = statement->calculate_complexity();
+            for (auto p : execution_state) {
+                child_complexity.substitude_variable(p.first,p.second);
+            }
             child_complexity.simplify();
             total_complexity.children.push_back(child_complexity);
+
+            // TODO I should substitute in the current values of the arguments, or am I wrong?
         }
 
         if (cls == "Return" or cls == "Assignment") {
@@ -143,7 +158,7 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
         return cls == "Return";
     }
 
-    parameter_name ExecutionPath::get_param(int i) {return "param_"+std::to_string(i);}
+    parameter_name get_param(int i) {return "param_"+std::to_string(i);}
 
 
 
