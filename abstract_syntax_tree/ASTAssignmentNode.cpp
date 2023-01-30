@@ -15,8 +15,8 @@ ASTAssignmentNode::ASTAssignmentNode(size_t offset, ASTComputationNode* right, s
         return code;
     }
 
-    VirtualMathTerm ASTAssignmentNode::calculate_complexity() {
-        auto a = right->calculate_complexity();
+    VirtualMathTerm ASTAssignmentNode::get_complexity() {
+        auto a = right->get_complexity();
         complexity = a;
         return a;
     }

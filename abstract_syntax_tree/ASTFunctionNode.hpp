@@ -33,18 +33,16 @@ struct ASTFunctionNode : public ASTNode {
 
     std::string compile();
 
-    VirtualMathTerm calculate_complexity() override;
+    VirtualMathTerm get_complexity() override;
 
     std::string to_code() override;
 
     void set_block_level(int n);
 
-    // wrapper function
-    void virtual_execution();
-
-    void virtual_execution_logic();
-
     std::string get_class() override;
+
+private:
+    void virtual_execution();
 };
 
 #endif //H2_ASTFUNCTIONNODE_HPP

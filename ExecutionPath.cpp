@@ -71,40 +71,34 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
         // go into deeper level of analysis
         if (cls == "While") {
             auto node = dynamic_cast<ASTWhileLoopNode *>(statement);
-            node->initial_execution_state = this;
-            total_complexity.children.push_back(node->calculate_complexity());
+            node->former_exec_state = this;
+            total_complexity.children.push_back(node->get_complexity());
 
-            for (auto& var : node->altered_variables) {     // after loop, the used variables cannot be inferred to a value
+            // after loop, the used variables cannot be inferred to a value, so set them to unknown
+            for (auto& var : node->altered_variables) {
                 execution_state[var] = UNKNOWN_VAR;
             }
-
-            //TODO can I know which values the variables have after the loop?
-            // maybe forget about some, because they are not computable any further
         }
 
         // divide into branches
         if (cls == "IfElse") {
             auto node = dynamic_cast<ASTIfElseNode *>(statement);
             ExecutionPath else_executer = *this;
-
             condition = {L_AND,{condition, node->condition->as_logic_term()}};
 
             // the current execution continues with the if-body
-
             commands.insert(commands.begin(),node->if_block.begin(), node->if_block.end());
-
 
             // the copy execution continues with the else-body
             else_executer.condition = LogicTerm(L_NOT,{condition});
             else_executer.commands.insert(else_executer.commands.begin(),node->else_block.begin(), node->else_block.end());
             else_executer.start();
             alternative_branches.push_back(else_executer);
-
         }
 
         if (cls == "Call") {
             auto casted = dynamic_cast<ASTCallNode*>(statement);
-            auto child_complexity = statement->calculate_complexity();
+            auto child_complexity = statement->get_complexity();
             for (auto p : execution_state) {
                 child_complexity.substitude_variable(p.first,p.second);
             }
@@ -132,7 +126,7 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
             }
 
 
-            VirtualMathTerm child_complexity = calc->calculate_complexity();
+            VirtualMathTerm child_complexity = calc->get_complexity();
             for (auto p : execution_state) {
                 child_complexity.substitude_variable(p.first,p.second);
             }

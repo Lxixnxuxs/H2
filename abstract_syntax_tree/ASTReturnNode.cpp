@@ -12,8 +12,8 @@ ASTReturnNode::ASTReturnNode(ASTCalculationNode* calc, std::string f_name): calc
         return code;
     }
 
-    VirtualMathTerm ASTReturnNode::calculate_complexity() {
-        auto a = calc->calculate_complexity();
+    VirtualMathTerm ASTReturnNode::get_complexity() {
+        auto a = calc->get_complexity();
         complexity = a;
         return a;
     }

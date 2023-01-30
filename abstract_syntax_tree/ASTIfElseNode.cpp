@@ -37,13 +37,13 @@ ASTIfElseNode::ASTIfElseNode(ASTComparisonNode* condition, std::vector<ASTStatem
         return code;
     }
 
-    VirtualMathTerm ASTIfElseNode::calculate_complexity() {
+    VirtualMathTerm ASTIfElseNode::get_complexity() {
         auto a = VirtualMathTerm(ADDITION);
         for (auto e : if_block) {
-            a.children.push_back(e->calculate_complexity());
+            a.children.push_back(e->get_complexity());
         }
         for (auto e : else_block) {
-            a.children.push_back(e->calculate_complexity());
+            a.children.push_back(e->get_complexity());
         }
         complexity = a;
         return a;

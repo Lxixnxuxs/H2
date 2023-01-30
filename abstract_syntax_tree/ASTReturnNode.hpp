@@ -15,7 +15,7 @@ struct ASTReturnNode : ASTStatementNode {
 
     std::string compile();
 
-    VirtualMathTerm calculate_complexity() override;
+    VirtualMathTerm get_complexity() override;
 
     std::string to_code() override;
 

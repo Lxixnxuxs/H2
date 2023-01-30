@@ -17,11 +17,11 @@ ASTRootNode::ASTRootNode(std::vector<ASTFunctionNode*>& funcs): funcs(funcs) {}
         return code;
     }
 
-    VirtualMathTerm ASTRootNode::calculate_complexity() {
+    VirtualMathTerm ASTRootNode::get_complexity() {
 
         // sub calls
         for (auto e : funcs) {
-            e->calculate_complexity();
+            e->get_complexity();
         }
 
         // only functions eg have meaningful complexity. Not the root node itself

@@ -14,12 +14,7 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
     std::vector<ASTStatementNode*> block;
     int label_id;
 
-    //VirtualMathTerm body_complexity;
-    //VirtualMathTerm iterations;
-
-    //bool iteration_complexity_is_custom = false;
-    //bool body_complexity_is_custom = false;
-    ExecutionPath* initial_execution_state;
+    ExecutionPath* former_exec_state; // execution of the parent-function until the point before while-loop started
     std::vector<std::string> altered_variables;
 
 
@@ -28,7 +23,7 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
 
     std::string compile() override;
 
-    VirtualMathTerm calculate_complexity() override;
+    VirtualMathTerm get_complexity() override;
 
     std::string to_code() override;
 
@@ -36,6 +31,7 @@ struct ASTWhileLoopNode : ASTControlFlowNode {
 
     std::string get_class() override;
 
+private:
     void virtual_execution(ExecutionPath higher_level_path);
 };
 

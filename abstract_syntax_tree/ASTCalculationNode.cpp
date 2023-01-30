@@ -77,15 +77,15 @@ ASTCalculationNode::ASTCalculationNode(ASTCalculationNode* left, ASTCalculationN
         }
     }
 
-    VirtualMathTerm ASTCalculationNode::calculate_complexity() {
+    VirtualMathTerm ASTCalculationNode::get_complexity() {
         if (comp_type == LIT or comp_type == VAR){
             complexity = VirtualMathTerm(1);
             return complexity;
         }
 
         auto a = VirtualMathTerm(ADDITION);
-        a.children.push_back(left->calculate_complexity());
-        a.children.push_back(right->calculate_complexity());
+        a.children.push_back(left->get_complexity());
+        a.children.push_back(right->get_complexity());
         complexity = a;
         return complexity;
     }

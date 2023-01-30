@@ -1,7 +1,15 @@
-def f(int x) -> int /% _O(x) %/  {
+def f(int x) -> int /% _O(SURRENDERED) %/  {
     int sum = 0;
-    while (x>=0) /% _O(x) %/  {
+    while (x>=0) /% _O(SURRENDERED) %/  {
         x = (x - 1);
+        int i = (x * x);
+        while (i>0) /% _O((param_1)^(4.000000)) %/  {
+            i = (i - 1);
+            int j = i;
+            while (j>1) /% _O(param_0) %/  {
+                j = (j - 1);
+            }
+        }
     }
     return sum;
 }

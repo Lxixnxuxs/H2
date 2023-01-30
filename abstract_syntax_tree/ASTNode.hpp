@@ -17,7 +17,7 @@ enum ASTNodeType {};
 extern std::string get_indentation(int level);
 
 struct ASTNode {
-    VirtualMathTerm complexity;
+
     bool complexity_is_custom = false;
     int block_level;
 
@@ -25,11 +25,15 @@ struct ASTNode {
 
     virtual std::string compile() = 0;
 
-    virtual VirtualMathTerm calculate_complexity() = 0;
+    virtual VirtualMathTerm get_complexity() = 0;
 
     virtual std::string to_code() = 0;
 
     virtual std::string get_class() = 0;
+
+protected:
+    VirtualMathTerm complexity;
+    bool complexity_already_calculated;
 };
 
 

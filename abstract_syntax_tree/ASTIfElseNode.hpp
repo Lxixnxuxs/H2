@@ -19,7 +19,7 @@ struct ASTIfElseNode : ASTControlFlowNode {
 
     std::string compile() override;
 
-    VirtualMathTerm calculate_complexity() override;
+    VirtualMathTerm get_complexity() override;
 
     std::string to_code() override;
 

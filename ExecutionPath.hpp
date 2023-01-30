@@ -24,6 +24,7 @@ struct ExecutionPath {
 
     bool surrendered = false;
     VirtualMathTerm total_complexity = VirtualMathTerm(ADDITION);
+
     std::map<variable_name, VirtualMathTerm> execution_state;
     std::map<parameter_name, variable_name> parameter_back_translation;
     std::vector<ASTStatementNode*> commands;
@@ -40,11 +41,9 @@ struct ExecutionPath {
 
     void start();
 
-
     std::vector<ExecutionPath> get_all_branches();
 
 private:
-
 
     // returns whether a return ended the execution
     bool execute(ASTStatementNode* statement);

@@ -15,7 +15,7 @@ int main() {
 
     CodeParser parser;
     ASTRootNode* root = parser.parse(t);
-    root->calculate_complexity();
+    root->get_complexity();
     root->set_block_level(0);
 
 

@@ -27,7 +27,7 @@ ASTCallNode::ASTCallNode(ASTCalculationNode *left, ASTCalculationNode *right, Co
         return code;
     }
 
-    VirtualMathTerm ASTCallNode::calculate_complexity() {
+    VirtualMathTerm ASTCallNode::get_complexity() {
 
         // managing recursive calls
         if (target->within_active_analysis) {
@@ -39,7 +39,7 @@ ASTCallNode::ASTCallNode(ASTCalculationNode *left, ASTCalculationNode *right, Co
         }
 
 
-        VirtualMathTerm func_complexity = target->complexity; // hopefully already calculated
+        VirtualMathTerm func_complexity = target->get_complexity(); // hopefully already calculated
 
         // substituting all arguments in
         for (int i = 0; i<target->argument_list.size(); i++) {
@@ -50,7 +50,7 @@ ASTCallNode::ASTCallNode(ASTCalculationNode *left, ASTCalculationNode *right, Co
         auto res = VirtualMathTerm(ADDITION,{func_complexity});
 
         for ( auto e : arguments) {
-            res.children.push_back(e->calculate_complexity());
+            res.children.push_back(e->get_complexity());
         }
 
         complexity = res;

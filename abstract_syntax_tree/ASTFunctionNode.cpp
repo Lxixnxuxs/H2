@@ -65,20 +65,6 @@ ASTFunctionNode::ASTFunctionNode(std::string f_name, std::vector<ASTStatementNod
         return code;
     }
 
-    VirtualMathTerm ASTFunctionNode::calculate_complexity() {
-        if (!complexity_is_custom) virtual_execution();
-        if (virtual_exec_surrendered) complexity = VirtualMathTerm("func_"+f_name); // is its own variable if surrendered
-        return complexity;
-        /*if (complexity_is_custom) return complexity;
-
-        auto a = VirtualMathTerm(ADDITION);
-        for (auto e : body) {
-            a.children.push_back(e->calculate_complexity());
-        }
-        complexity = a;
-        return a;*/
-    }
-
     std::string ASTFunctionNode::to_code() {
         auto res = "def " + f_name + "(";
         for (int i = 0; i<argument_list.size(); i++) {
@@ -106,15 +92,19 @@ ASTFunctionNode::ASTFunctionNode(std::string f_name, std::vector<ASTStatementNod
         for (auto& f: body) f->set_block_level(n+1);
     }
 
-    // wrapper function
-    void ASTFunctionNode::virtual_execution() {
+VirtualMathTerm ASTFunctionNode::get_complexity() {
+    if (!complexity_is_custom and !complexity_already_calculated) {
         within_active_analysis = true;
-        virtual_execution_logic();
+        virtual_execution();
         within_active_analysis = false;
     }
+    if (virtual_exec_surrendered) complexity = VirtualMathTerm("func_"+f_name); // is its own variable if surrendered
+    return complexity;
 
-    void ASTFunctionNode::virtual_execution_logic() {
-        virtual_exec_surrendered = true; // surrendered execpt able to come to the end
+}
+
+    void ASTFunctionNode::virtual_execution() {
+        virtual_exec_surrendered = true; // surrendered except able to come to the end
         std::vector<std::string> args;
         for (const auto& p : argument_list) {
             args.push_back(p.first);
@@ -128,34 +118,12 @@ ASTFunctionNode::ASTFunctionNode(std::string f_name, std::vector<ASTStatementNod
             if (path.surrendered) return; // surrender if not fully able to execute
         }
 
-        std::vector<std::pair<LogicTerm, VirtualMathTerm>> base_cases;
-        std::vector<std::tuple<LogicTerm, VirtualMathTerm, std::vector<VirtualMathTerm>>> recursive_executions;
-        for (auto &e: all_paths) {
-            auto calls = e.total_complexity.find_calls();
-            if (calls.empty()) {
-                base_cases.emplace_back(e.condition, e.total_complexity);
-            } else {
-                recursive_executions.emplace_back(e.condition, e.total_complexity, calls);
-            }
-        }
-
-
-        auto analysis_result = analyze_execution_paths(f_name, args, base_cases, recursive_executions);
+        auto analysis_result = analyze_execution_from_all_paths(f_name, args, all_paths);
         //if (!analysis_result.first) return; // surrender
 
         complexity = analysis_result.second;
 
-        /*
-        // not recursive
-        vector<VirtualMathTerm> complexities;
-        for (auto d : all_paths){
-            complexities.push_back(d.total_complexity);
-        }
-        complexity = VirtualMathTerm(ADDITION,complexities);
-        */
-
         virtual_exec_surrendered = !analysis_result.first; // successful virtual execution
-
     }
 
     std::string ASTFunctionNode::get_class() { return "Function";}

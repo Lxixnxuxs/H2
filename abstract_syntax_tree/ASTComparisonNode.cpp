@@ -41,10 +41,10 @@ ASTComparisonNode::ASTComparisonNode(ASTComputationNode* left, ASTComputationNod
         return code;
     }
 
-    VirtualMathTerm ASTComparisonNode::calculate_complexity() {
+    VirtualMathTerm ASTComparisonNode::get_complexity() {
         auto a = VirtualMathTerm(ADDITION);
-        a.children.push_back(left->calculate_complexity());
-        a.children.push_back(right->calculate_complexity());
+        a.children.push_back(left->get_complexity());
+        a.children.push_back(right->get_complexity());
         complexity = a;
         return a;
     }
