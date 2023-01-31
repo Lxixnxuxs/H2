@@ -1,15 +1,26 @@
-def f(int x) -> int /% _O(((x)^(2.000000)) * ((x)^(2.000000))) %/  {
-    while (x>=0) /% _O(((x)^(2.000000)) * ((x)^(2.000000))) %/  {
+def g(int x) -> int /% _O(x) %/  {
+    int sum = 0;
+    while (x>0) /% _O(x) %/  {
+        sum = (sum + x);
+        x = (x - 1);
+    }
+    return sum;
+}
+
+
+def f(int x) -> int /% _O((x)^(5.000000)) %/  {
+    while (x>=0) /% _O((x)^(5.000000)) %/  {
         x = (x - 1);
         int i = x;
-        while (i>0) /% _O(((i)^(2.000000)) * i) %/  {
+        while (i>0) /% _O(((i)^(3.000000)) * x) %/  {
             i = (i - 1);
             int j = i;
-            while (j>0) /% _O((j)^(2.000000)) %/  {
+            while (j>0) /% _O(((j)^(2.000000)) * x) %/  {
                 j = (j - 1);
                 int k = j;
-                while (k>0) /% _O(k) %/  {
+                while (k>0) /% _O(k * x) %/  {
                     k = (k - 1);
+                    int a = g[x];
                 }
             }
         }

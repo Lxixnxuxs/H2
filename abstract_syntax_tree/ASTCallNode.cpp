@@ -41,10 +41,13 @@ ASTCallNode::ASTCallNode(ASTCalculationNode *left, ASTCalculationNode *right, Co
 
         VirtualMathTerm func_complexity = target->get_complexity(); // hopefully already calculated
 
-        // substituting all arguments in
+        // substituting all arguments in (two steps to prevent errors if func-argument has same name as parameter called with)
+        auto get_temporary_name = [](int i){return "temp_"+std::to_string(i);};
+
         for (int i = 0; i<target->argument_list.size(); i++) {
-            auto temp = arguments[i]->as_math_term();
-            func_complexity.substitude_variable(target->argument_list[i].first,  temp);
+            auto current_value_in_execution = arguments[i]->as_math_term();
+            func_complexity.substitude_variable(target->argument_list[i].first, {get_temporary_name(i)});
+            func_complexity.substitude_variable(get_temporary_name(i), current_value_in_execution);
         }
 
         auto res = VirtualMathTerm(ADDITION,{func_complexity});

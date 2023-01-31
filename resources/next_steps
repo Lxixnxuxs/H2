@@ -1,4 +1,8 @@
-* analysis of while loops
+* enhance recursive analysis
+* enhance math term simplification
+
+
+
 * recursive functions like f(x/2)
 * start with function-choice interfaces
 

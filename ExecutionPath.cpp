@@ -34,7 +34,7 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
 
 
     void ExecutionPath::start() {
-        // should only be called from constructor
+
         while (!commands.empty() and !surrendered) {
             auto first = commands[0];
             commands.erase(commands.begin());

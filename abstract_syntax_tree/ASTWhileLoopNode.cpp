@@ -77,10 +77,10 @@ void ASTWhileLoopNode::virtual_execution(ExecutionPath higher_level_path) {
         pseudo_function.within_active_analysis = true;
         // okay that argument list is uninitialized?
 
-        // use all variable_order of the current state as recursion arguments
-        std::vector<std::string> variable_order = higher_level_path.variable_order;
+        // use all variables of the current state as recursion arguments
+        std::vector<std::string> variables = higher_level_path.variable_order;
         /*for (auto p:higher_level_path.execution_state){
-            variable_order.push_back(p.first);
+            variables.push_back(p.first);
         }*/
 
 
@@ -89,12 +89,12 @@ void ASTWhileLoopNode::virtual_execution(ExecutionPath higher_level_path) {
         base_case.condition.simplify();
 
 
-        ExecutionPath path = {variable_order, block};
+        ExecutionPath path = {variables, block};
 
         ASTCallNode end_pseudo_call;
         end_pseudo_call.target = &pseudo_function;
-        for (int i = 0; i < variable_order.size(); i++) {
-            end_pseudo_call.arguments.push_back(new ASTCalculationNode(nullptr, nullptr, VAR, "", 0, 0, variable_order[i]));
+        for (int i = 0; i < variables.size(); i++) {
+            end_pseudo_call.arguments.push_back(new ASTCalculationNode(nullptr, nullptr, VAR, "", 0, 0, variables[i]));
         }
 
         path.commands.push_back(&end_pseudo_call);
@@ -106,7 +106,7 @@ void ASTWhileLoopNode::virtual_execution(ExecutionPath higher_level_path) {
         all_paths.push_back(base_case);
 
 
-        // find out which variable_order have been altered
+        // find out which variables have been altered
         altered_variables = {};
         for (auto& m : all_paths) {
             if (m.surrendered) return; // surrender if not fully able to execute
@@ -119,14 +119,14 @@ void ASTWhileLoopNode::virtual_execution(ExecutionPath higher_level_path) {
             }
         }
 
-        auto analysis_result = analyze_execution_from_all_paths(pseudo_function.f_name, variable_order, all_paths);
+        auto analysis_result = analyze_execution_from_all_paths(pseudo_function.f_name, variables, all_paths);
         complexity = analysis_result.second;
 
         /*
         // substitute in the execution state of the outer context
         int j = 0;
         for (auto& e : higher_level_path.execution_state) {
-            complexity.substitude_variable(variable_order[j], higher_level_path.execution_state[variable_order[j]]);
+            complexity.substitude_variable(variables[j], higher_level_path.execution_state[variables[j]]);
             j++;
         }
         */
