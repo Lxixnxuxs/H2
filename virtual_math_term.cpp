@@ -232,16 +232,22 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
         std::vector<VirtualMathTerm> new_children;
         std::map<std::string,double> var_to_occurances;
 
+        auto add_occurance = [&](std::string name, double number){
+            bool found = false;
+
+            // does this need to be initialized first?
+            for (auto p : var_to_occurances) {
+                if (p.first == name) found = true;
+            }
+            if (!found) var_to_occurances[name] = 0;
+            var_to_occurances[name] += number;
+        };
+
         for (auto e: children) {
             if (e.type == VARIABLE) {
-                bool found = false;
-
-                // does this need to be initialized first?
-                for (auto p : var_to_occurances) {
-                    if (p.first == e.name) found = true;
-                }
-                if (!found) var_to_occurances[e.name] = 0;
-                var_to_occurances[e.name] += 1;
+                add_occurance(e.name, 1);
+            } else if (type == MULTIPLICATION and e.type == EXPONENTIAL and e.children[0].type == VARIABLE and e.children[1].type == NUMBER) {
+                add_occurance(e.children[0].name, e.children[1].value);
             } else {
                 new_children.push_back(e);
             }
