@@ -25,7 +25,10 @@ struct ExecutionPath {
     bool surrendered = false;
     VirtualMathTerm total_complexity = VirtualMathTerm(ADDITION);
 
+    // at any time, this stores the current value of the variables in terms of their original value (with which the function was called)
     std::map<variable_name, VirtualMathTerm> execution_state;
+    std::vector<variable_name> variable_order; // to ensure the parameter number of a variable is clear
+
     std::map<parameter_name, variable_name> parameter_back_translation;
     std::vector<ASTStatementNode*> commands;
     std::vector<ExecutionPath> alternative_branches;

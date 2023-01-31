@@ -1,17 +1,20 @@
-def f(int x) -> int /% _O(SURRENDERED) %/  {
-    int sum = 0;
-    while (x>=0) /% _O(SURRENDERED) %/  {
+def f(int x) -> int /% _O(((x)^(2.000000)) * ((x)^(2.000000))) %/  {
+    while (x>=0) /% _O(((x)^(2.000000)) * ((x)^(2.000000))) %/  {
         x = (x - 1);
-        int i = (x * x);
-        while (i>0) /% _O((param_1)^(4.000000)) %/  {
+        int i = x;
+        while (i>0) /% _O(((i)^(2.000000)) * i) %/  {
             i = (i - 1);
             int j = i;
-            while (j>1) /% _O(param_0) %/  {
+            while (j>0) /% _O((j)^(2.000000)) %/  {
                 j = (j - 1);
+                int k = j;
+                while (k>0) /% _O(k) %/  {
+                    k = (k - 1);
+                }
             }
         }
     }
-    return sum;
+    return 1;
 }
 
 

@@ -9,6 +9,8 @@
 
 
 ExecutionPath::ExecutionPath(std::vector<variable_name> arguments, std::vector<ASTStatementNode*> commands): commands(commands) {
+        variable_order = arguments;
+
         for (int i = 0; i<arguments.size(); i++) {
             execution_state[arguments[i]] = VirtualMathTerm(get_param(i));
         }
@@ -25,6 +27,7 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
         commands = other.commands;
         condition = other.condition;
         surrendered = other.surrendered;
+        variable_order = other.variable_order;
         // alternative branches do not need to be copied
     }
 
@@ -72,7 +75,12 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
         if (cls == "While") {
             auto node = dynamic_cast<ASTWhileLoopNode *>(statement);
             node->former_exec_state = this;
-            total_complexity.children.push_back(node->get_complexity());
+            auto child_complexity = node->get_complexity();
+            for (auto p : execution_state) {
+                child_complexity.substitude_variable(p.first,p.second);
+            }
+            total_complexity.children.push_back(child_complexity);
+
 
             // after loop, the used variables cannot be inferred to a value, so set them to unknown
             for (auto& var : node->altered_variables) {
@@ -114,10 +122,16 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
 
             if (cls == "Assignment") {
                 auto pr = dynamic_cast<ASTAssignmentNode *>(statement);
-                if (pr->is_declaration) execution_state[pr->var_name] = VirtualMathTerm(); // declaration
-
                 calc = dynamic_cast<ASTCalculationNode *>(pr->right);
                 writeback_name = pr->var_name;
+
+                // add a new parameter variable
+                if (pr->is_declaration){
+                    variable_order.push_back(writeback_name);
+                    parameter_back_translation[get_param(execution_state.size())] = writeback_name;
+                    execution_state[pr->var_name] = VirtualMathTerm(); // declaration
+
+                }
 
             }
             if (cls == "Return") {
@@ -127,6 +141,7 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
 
 
             VirtualMathTerm child_complexity = calc->get_complexity();
+            // the child complexity should be in terms of the call-values, so substitute the current state in
             for (auto p : execution_state) {
                 child_complexity.substitude_variable(p.first,p.second);
             }
@@ -134,13 +149,17 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
             child_complexity.simplify();
             total_complexity.children.push_back(child_complexity);
 
+
             VirtualMathTerm v = calc->as_math_term();
+            // substitute in the current values of the variables at this point (in order to always have terms of the calling-arguments)
             for (auto p : execution_state) {
                 v.substitude_variable(p.first,p.second);
             }
 
             // writing to the current variable state
-            if (cls == "Assignment") execution_state[writeback_name] = v;
+            if (cls == "Assignment"){
+                execution_state[writeback_name] = v;
+            }
 
         }
 

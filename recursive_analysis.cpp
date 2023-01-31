@@ -217,7 +217,7 @@ std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::
     if (recursive_calls.size() >= 2) {
         res.children.push_back({MULTIPLICATION, {tree_size,std::get<1>(recursiveExecution)}});
     }
-
+    res.simplify();
     return {true,res};
 
 }
