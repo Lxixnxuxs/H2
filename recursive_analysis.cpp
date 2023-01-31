@@ -162,6 +162,29 @@ std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::
     //assert(all_areas.type == TRUE);
 
 
+    // interlude: base case has one variable
+    auto base_case = base_cases[0];
+    if (base_case.first.is_combination()) return SURRENDERED;
+    if (recursive_calls.size() == 1 and has_simple_direction(base_case.first)) {
+        auto bc_dir = get_base_case_direction(base_case.first,var_names);
+        auto bc_var = get_base_case_variable(base_case.first);
+        auto call_ = recursive_calls[0];
+        int index = std::distance(var_names.begin(),std::find(var_names.begin(), var_names.end(),bc_var));
+        auto bc_value = bc_dir[index];
+        if (is_simple_linear(call_.children[index], bc_var)) {
+            auto direction_value = get_lin_offset(call_.children[index]);
+            if (direction_value * bc_value > 0) {
+                // ready to return early
+                VirtualMathTerm res;
+                res.children.push_back({base_case.second});
+                res.children.push_back({MULTIPLICATION, {{bc_var},std::get<1>(recursiveExecution)}});
+                return {true, res};
+            }
+        }
+    }
+
+
+
     // check if base cases can be handled. Find "directions" of simple base cases
     std::vector<std::vector<double>> base_case_directions;
     for (auto& base_case : base_cases) {
