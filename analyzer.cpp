@@ -8,7 +8,7 @@
 #include "abstract_syntax_tree/ASTRootNode.hpp"
 
 int main() {
-    std::string path = "/home/ray/CLionProjects/H2/resources/raw.txt";
+    std::string path = "./resources/raw.txt";
     std::ifstream file(path);
     std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     Tokenstream t = lexer(content);
@@ -22,9 +22,10 @@ int main() {
     auto new_code = root->to_code();
     //std::cout << new_code;
 
-    std::ofstream ofile("/home/ray/CLionProjects/H2/resources/raw.txt");
+    std::ofstream ofile("./resources/raw.txt");
     ofile << new_code;
     ofile.close();
     return 0;
 
 }
+

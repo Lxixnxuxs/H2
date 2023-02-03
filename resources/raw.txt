@@ -8,6 +8,28 @@ def g(int x) -> int /% _O(x) %/  {
 }
 
 
+def gcd(int a, int b) -> int /% _O(a + b) %/  {
+    if (b<=1) {
+        while (a>0) /% O(a) %/  {
+            while (a>0) /% _O(0.000000) %/  {
+                a = (a - 1);
+            }
+        }
+    } else {
+        return gcd[(a - 1), (b - 1)];
+    }
+}
+
+
+def fibonacci(int a) -> int /% _O((2.000000)^(a)) %/  {
+    if (a<=1) {
+        return 1;
+    } else {
+        return (fibonacci[(a - 1)] + fibonacci[(a - 2)]);
+    }
+}
+
+
 def f(int x) -> int /% _O((x)^(5.000000)) %/  {
     while (x>=0) /% _O((x)^(5.000000)) %/  {
         x = (x - 1);
@@ -26,6 +48,11 @@ def f(int x) -> int /% _O((x)^(5.000000)) %/  {
         }
     }
     return 1;
+}
+
+
+def main() -> int /% _O(INFINITY) %/  {
+    return g[g[19]];
 }
 
 
