@@ -1,9 +1,12 @@
 
-#include "global_information.hpp"
+
 
 #ifndef H2_LOCALVARIABLEMANAGER_HPP
 #define H2_LOCALVARIABLEMANAGER_HPP
 
+#include <string>
+#include <vector>
+#include <map>
 
 struct LocalVariableManager {
     std::string name;
@@ -14,12 +17,7 @@ struct LocalVariableManager {
     std::map<std::string,size_t> var_to_offset;
     int current_offset = 0;
 
-    void add_variable(std::string name, std::string type){
-        var_to_type[name] = type;
-
-        var_to_offset[name] = current_offset;
-        current_offset += type_to_size[type];
-    }
+    void add_variable(std::string name, std::string type);
 };
 
 #endif //H2_LOCALVARIABLEMANAGER_HPP

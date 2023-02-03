@@ -2,57 +2,47 @@
 #define H2_ASTFUNCTIONNODE_HPP
 
 
-#include "ASTStatementNode.hpp"
 #include <vector>
 #include "../global_information.hpp"
+#include "../virtual_math_term.hpp"
+struct ASTStatementNode;
 
-struct ASTFunctionNode : ASTNode {
+
+struct ASTFunctionNode : public ASTNode {
 
     std::string f_name;
     size_t f_stack_size;
     size_t arg_stackpart_size;
     std::vector<ASTStatementNode*> body;
-    std::vector<std::string> argument_list;
+    std::vector<std::pair<std::string,std::string>> argument_list;  // name to type
+    std::string return_type;
 
+    // not always will it be possible to figure out the runtime. Therefore the logic has the option to surrender
+    bool virtual_exec_surrendered = false;
+    bool within_active_analysis = false; // mark which functions do not have a closed form yet
 
     int callee_reg_size = 4;
     int callee_reg_count = callee_save_regs.size();
 
     ASTFunctionNode(std::string f_name, std::vector<ASTStatementNode*> body, size_t f_stack_size, size_t arg_stackpart_size,
-                    std::vector<std::string> argument_list):
-    f_name(f_name), body(body), f_stack_size(f_stack_size), arg_stackpart_size(arg_stackpart_size), argument_list(argument_list) {}
+                    std::vector<std::pair<std::string,std::string>> argument_list, std::string return_type, std::map<std::string, VirtualMathTerm> complexity_map);
 
-    std::string compile() {
-        std::string code = f_name + ":\n";
+    ASTFunctionNode()=default;
 
-        code += "sub $" + std::to_string(f_stack_size + callee_reg_count*callee_reg_size) + ", %rsp\n";
+    void initialize_with_complexity_map(std::map<std::string, VirtualMathTerm> complexity_map);
 
-        // storing all the callee-save register
-        for (int i = 0; i<callee_reg_count; i++){
-            code += "mov " + callee_save_regs[i]+ ", " + std::to_string(f_stack_size + i*callee_reg_size) +"(%rsp)\n";
-        }
+    std::string compile();
 
-        // moving arguments to stack
-        for (int i = 0; i<argument_list.size(); i++) {
-            code += "mov " + argument_regs[i]+ ", " + std::to_string( i*callee_reg_size) +"(%rsp)\n"; // f_stack_size - arg_stackpart_size +
-        }
+    VirtualMathTerm get_complexity() override;
 
-        for (ASTStatementNode* e : body) {
-            code += e->compile();
-        }
+    std::string to_code() override;
 
-        code += "END_" + f_name + ":\n";
+    void set_block_level(int n);
 
-        // restoring all the callee-save register
+    std::string get_class() override;
 
-        for (int i = 0; i<callee_reg_count; i++){
-            code += "mov " + std::to_string(f_stack_size + i*callee_reg_size) +"(%rsp), "+ callee_save_regs[i] +"\n";
-        }
-
-        code += "add $"+std::to_string(f_stack_size + callee_reg_count * callee_reg_size) + ", %rsp\nret\n\n\n";
-
-        return code;
-    }
+private:
+    void virtual_execution();
 };
 
 #endif //H2_ASTFUNCTIONNODE_HPP

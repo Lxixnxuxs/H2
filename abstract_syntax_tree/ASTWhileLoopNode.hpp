@@ -2,33 +2,37 @@
 #define H2_ASTWHILELOOPNODE_HPP
 
 #include "ASTControlFlowNode.hpp"
-#include "ASTComparisonNode.hpp"
+struct ASTComparisonNode;
+struct ASTStatementNode;
+//struct ExecutionPath;
+#include "../ExecutionPath.hpp"
+
+using std::string;
 
 struct ASTWhileLoopNode : ASTControlFlowNode {
     ASTComparisonNode* condition;
     std::vector<ASTStatementNode*> block;
     int label_id;
 
-    ASTWhileLoopNode(ASTComparisonNode* condition, std::vector<ASTStatementNode*> &block,int label_id): condition(condition),
-    block(block), label_id(label_id) {};
+    ExecutionPath* former_exec_state; // execution of the parent-function until the point before while-loop started
+    std::vector<std::string> altered_variables;
 
 
-    std::string compile() override {
-        std::string code = "jmp L_WHILE_COND_"+std::to_string(label_id) +
-                "\nL_WHILE_BODY_"+std::to_string(label_id)+":\n";
+    ASTWhileLoopNode(ASTComparisonNode* condition, std::vector<ASTStatementNode*> &block,int label_id, std::map<std::string, VirtualMathTerm> complexity_map);
 
-        for (auto& node : block) {
-            code += node->compile();
-        }
 
-        code+= "L_WHILE_COND_"+std::to_string(label_id)+":\n";
+    std::string compile() override;
 
-        code += condition->compile();
+    VirtualMathTerm get_complexity() override;
 
-        code += comp_to_jump[condition->comp_type]+" L_WHILE_BODY_" + std::to_string(label_id) + "\n";
+    std::string to_code() override;
 
-        return code;
-    }
+    void set_block_level(int n) override;
+
+    std::string get_class() override;
+
+private:
+    void virtual_execution(ExecutionPath higher_level_path);
 };
 
 #endif //H2_ASTWHILELOOPNODE_HPP

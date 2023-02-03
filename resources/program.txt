@@ -1,12 +1,71 @@
-def f(int x) -> int {
-    int y = 40;
-    if (x == 1) {
-        return 1;
-    } else {
-        return f[x-1] + x;
+/*
+def g(int a int b) -> int {
+    int res = 0;
+    int i = 0;
+
+    int d = a + b;
+    while (i < d) {
+            i = i + 1;
+            int j = 0;
+            while (j < a) {
+                res = res + ( j * b );
+            }
+        }
+
+    return res;
+}*/
+
+def f(int r) -> int {
+    int res = 0;
+    int i = r;
+    while (0 < i) {
+        res = res + i;
+        i = i + 1;
     }
+    return res;
 }
 
 def main() -> void {
-    return f[f[4]];
+    return f[4];
 }
+
+
+
+/*
+def f(int x) -> int /% _O(INFINITY) %/  {
+    return f[1];
+}
+
+
+def z(int a) -> void /% _O(a) %/  {
+    if (a<0) {
+        return a;
+    } else {
+        return z[(a - 1)];
+    }
+}
+
+
+def g(int x) -> int /% _O((((2.000000)^(x)) * x) + x) %/  {
+    if (x<5) {
+        return z[x];
+    } else {
+        int _ = z[x];
+        int _ = g[(x - 1)];
+    }
+    return g[(x - 1)];
+}
+
+
+def h(int x, int y) -> int /% _O((((y)^(2.000000)) * x) + y) %/  {
+    if (y<0) {
+        int _ = z[y];
+        return 1;
+    } else {
+        int _ = z[(x * y)];
+    }
+    return h[(x - 1), (y - 1)];
+}
+
+
+*/

@@ -155,3 +155,12 @@ TEST_F(TokenstreamTest, read_until_one_of_no_instance) {
     EXPECT_EQ(ts.empty(),true);
 
 }
+
+TEST_F(TokenstreamTest, read_inside_complexity) {
+    list<string> list = {"/%","123","=","%/","return"};
+
+    auto ts = Tokenstream(&list);
+    auto t2 = ts.read_inside_brackets();
+    EXPECT_EQ(toString(t2),"123|=|");
+    EXPECT_EQ(toString(ts),"|123");
+}

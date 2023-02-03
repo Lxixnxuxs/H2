@@ -7,51 +7,24 @@ enum LogicalOp {AND, OR, NOT, GT, LT, GT_EQ, LT_EQ, EQ};
 
 namespace ASTLogicalNodeHelper {
 
-    bool is_binary_logic_op(LogicalOp op) {
-        return op == AND || op == OR || op == NOT;
-    }
+    bool is_binary_logic_op(LogicalOp op);
 
-    bool is_binary_cmp_op(LogicalOp op) {
-        return !is_binary_logic_op(op);
-    }
+    bool is_binary_cmp_op(LogicalOp op);
 }
 
 struct ASTLogicalNode : ASTComputationNode {
     ASTComputationNode* left;
     ASTComputationNode* right;
-
     LogicalOp op_type;
-
     bool own_reg = true;
 
-    ASTLogicalNode(ASTComputationNode* left, ASTComputationNode* right, LogicalOp op_type, std::string reg=""):
-        left(left), right(right), op_type(op_type) {
-        this->reg = reg;
-        if (reg.empty() && left != nullptr) {reg = ""; own_reg = false;}
-    }
+    ASTLogicalNode(ASTComputationNode* left, ASTComputationNode* right, LogicalOp op_type, std::string reg="");
 
-    std::string compile() override {
-        std::string code = "";
-        if (right == nullptr) {
-            // Unary Logical expression
-        } else {
-            // Binary logical expression
-            code += left->compile();
-            code += right->compile();
+    std::string compile() override;
 
+    std::string logical_op_to_string();
 
-        }
-        return code;
-    }
-
-    std::string logical_op_to_string() {
-        switch (op_type) {
-            case AND: return "andq";
-            case OR: return "orq";
-            case NOT: return "notq";
-            default: return "cmp";
-        }
-    }
+    std::string get_class() override;
 };
 
 #endif //H2_ASTLOGICALNODE_HPP
