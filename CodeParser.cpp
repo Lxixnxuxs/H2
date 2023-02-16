@@ -271,6 +271,21 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
 
         if (t.size() == 1) return VirtualMathTerm(*t);
 
+        if (*t=="log") {
+            t+=1; // disregard log
+            expect(t,"(");
+            Tokenstream arg_stream = t.read_inside_brackets();
+
+            expect_empty(t); // should be empty, because log (without brackets) can only occur without any + * etc. concatenation
+
+            auto first_arg = arg_stream.read_until(",");
+            if (arg_stream.empty()) {   // only one argument -> implicit log10(arg)
+                return VirtualMathTerm(LOGARITHM, {10,parse_complexity_term(first_arg)});
+            } else {
+                return VirtualMathTerm(LOGARITHM, {parse_complexity_term(first_arg),parse_complexity_term(arg_stream)});
+            }
+        }
+
         VirtualMathTerm first;
         VirtualMathTerm second;
         string operation;

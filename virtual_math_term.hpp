@@ -7,11 +7,12 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
-enum MathTermType {ADDITION,MULTIPLICATION,EXPONENTIAL,VARIABLE,NUMBER,CALL};
+enum MathTermType {ADDITION, MULTIPLICATION, EXPONENTIAL, LOGARITHM, VARIABLE, NUMBER, CALL};
 
 struct VirtualMathTerm {
-    std::vector<VirtualMathTerm> children;   // for an exponential there are only two children
+    std::vector<VirtualMathTerm> children;   // for an exponential or logarithm there are only two children
     MathTermType type;
     std::string name;
     double value;
@@ -52,6 +53,9 @@ struct VirtualMathTerm {
     void simplify();
 
 private:
+
+    std::map<std::string,double> get_variable_occurances();
+
     void copy_to_me(VirtualMathTerm other);
 
     void simplify_same_nested_operation();
@@ -68,6 +72,10 @@ private:
 
     // this is a kind of simplification function which will cut off constants and will provide pure O-Notation
     void turn_into_o_notation();
+
+    //void simplify_addition_o_notation();
+
+    //void dominates(const VirtualMathTerm& other) const;
 };
 
 extern const VirtualMathTerm UNKNOWN_VAR;

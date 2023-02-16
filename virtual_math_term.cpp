@@ -75,6 +75,14 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
 
         if (type == EXPONENTIAL) return "("+children[0].as_string() + ")^(" + children[1].as_string()+")";
 
+        if (type == LOGARITHM) {
+            if (children[0].type == NUMBER && children[0].value == 10) {
+                return "log(" + children[1].as_string() + ")";
+            }
+            return "log("+children[0].as_string()+", " + children[1].as_string()+")";
+        }
+
+
         if (type == CALL) return "CALL_"+name;
 
         if (type == ADDITION or type == MULTIPLICATION) {
@@ -134,7 +142,7 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
 
         if (type == CALL and name != other.name) return false;
 
-        // is Addition, Multiplication or Exponential
+        // is Addition, Multiplication, Exponential or Logarithm
         if (children.size() != other.children.size()) return false;
 
         for (int i = 0; i<children.size(); i++) {
@@ -214,6 +222,8 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
         children = new_children;
     }
 
+
+
     void VirtualMathTerm::simplify_variable_occurances() {
         assert(type == ADDITION or type == MULTIPLICATION);
         double higher_default_value;
@@ -268,6 +278,7 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
     }
 
     void VirtualMathTerm::simplify_one_child() {
+        assert(type == ADDITION or type == MULTIPLICATION);
         if (children.size() == 1) {
             copy_to_me(children[0]);
             return;
@@ -292,6 +303,17 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
             return;
         }
 
+        if (type == LOGARITHM) {
+            assert(children.size() == 2);
+            if (children[0].type == NUMBER and children[1].type == NUMBER) {
+                // transform to be only one number
+                value = log(children[1].value) / log(children[0].value);
+                type = NUMBER;
+                children = {};
+            }
+            return;
+        }
+
         simplify_same_nested_operation();
         simplify_multiple_numbers();
         simplify_variable_occurances();
@@ -307,6 +329,11 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
 
         if (type == EXPONENTIAL) { return;}
 
+        if (type == LOGARITHM) {
+            if (children[0].type == NUMBER) children[0].value = 10; // log basis does not matter
+            return;
+        }
+
         // drop constants
         std::vector<VirtualMathTerm> new_children;
         for (auto e : children) {
@@ -319,6 +346,39 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
             copy_to_me(children[0]);
         }
     }
+
+    /*
+    void VirtualMathTerm::simplify_addition_o_notation() {
+    if (type == ADDITION) {
+
+    }
+
+
+}
+
+void VirtualMathTerm::dominates(const VirtualMathTerm &other) const {
+
+
+}*/
+
+    // method not ready to use
+    /*
+std::map<std::string, double> VirtualMathTerm::get_variable_occurances() {
+    std::map<std::string, double> res;
+    if (type == NUMBER) return res;
+    if (type == VARIABLE) {
+        res[name] = 1;
+        return res;
+    }
+
+    if (type == EXPONENTIAL) {
+        if (children[0].type == VARIABLE and children[1].type == NUMBER) {
+            res[children[0].name] = children[1].value;
+            return res;
+        }
+    }
+
+}*/
 
 
 const VirtualMathTerm UNKNOWN_VAR = {"UNKNOWN"};
