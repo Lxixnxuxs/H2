@@ -21,7 +21,7 @@ VirtualMathTerm::VirtualMathTerm(MathTermType type, std::vector<VirtualMathTerm>
 VirtualMathTerm::VirtualMathTerm(std::string name,  bool o_notation): o_notation(o_notation) {
         try {
             double nr = stoi(name);
-            *this = VirtualMathTerm(nr); // is this a correct way of calling another constructor?
+            *this = VirtualMathTerm(nr);
         } catch (...) {
             type = VARIABLE;
             this->name = name;
@@ -296,10 +296,24 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
             assert(children.size() == 2);
             if (children[0].type == NUMBER and children[1].type == NUMBER) {
                 // transform to be only one number
-                value = pow(children[0].value, children[1].value);
-                type = NUMBER;
-                children = {};
+                copy_to_me(VirtualMathTerm(pow(children[0].value, children[1].value)));
+                return;
             }
+
+            if (children[1].type == NUMBER and children[1].value == 0){
+                // anything^0 = 1
+                copy_to_me(VirtualMathTerm(1));
+                return;
+            }
+
+            if (children[0].type == EXPONENTIAL) {
+                // simplify nested exponential
+                copy_to_me(VirtualMathTerm(EXPONENTIAL, {children[0].children[0],
+                                                         VirtualMathTerm(MULTIPLICATION, {children[0].children[1], children[1]})
+                }));
+                return;
+            }
+
             return;
         }
 

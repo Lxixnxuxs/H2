@@ -123,5 +123,9 @@ ASTCalculationNode::ASTCalculationNode(ASTCalculationNode* left, ASTCalculationN
                                                      false);
         if (comp_type == MUL) return VirtualMathTerm(MULTIPLICATION, {left_term, right_term}, false);
         //if (comp_type == DIV) return VirtualMathTerm(MULTIPLICATION, {left_term, })
+
+        if (comp_type == DIV) return VirtualMathTerm(MULTIPLICATION, {left_term,
+                                                                      VirtualMathTerm(EXPONENTIAL,{right_term,-1},false)}, false);
+
         throw std::invalid_argument("Operation not jet convertible to math term");
     }

@@ -269,7 +269,19 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
             throw std::invalid_argument("PARSER ERROR  cannot parse empty complexity_term");
         }
 
-        if (t.size() == 1) return VirtualMathTerm(*t);
+        // variable or number (checked in the constructor)
+        if (t.size() == 1) return {*t};
+
+        // take negative numbers into account
+        if (t.size() == 2 and *t == "-") {
+            t+=1; // disregard '-'
+            try {
+                double nr = stoi(*t);
+                return {-1*nr};
+            } catch (...) {
+                throw std::invalid_argument("PARSER ERROR  cannot parse '-[non_number]' ");
+            }
+        }
 
         if (*t=="log") {
             t+=1; // disregard log

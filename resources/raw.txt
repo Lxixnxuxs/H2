@@ -1,4 +1,18 @@
-def f(int a, int b) -> void /% O(log(a)) %/  {
+def f(int n) -> void /% _O(func_f) %/  {
+    if (n<=0) {
+        return 1;
+    } else {
+        return (1 + f[(n / 2)]);
+    }
+}
+
+
+def g(int a) -> void /% _O((a)^(-1.000000)) %/  {
+    int i = (a / (a * a));
+    while (i>0) /% _O(i) %/  {
+        i = (i - 1);
+    }
+    return 1;
 }
 
 
