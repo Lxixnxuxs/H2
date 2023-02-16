@@ -1,16 +1,11 @@
-def g(int a, int b) -> void /% O((a)^(3.000000)) %/  {
-    return 1;
-}
-
-
-def h(int n) -> int /% _O(INFINITY) %/  {
-    while (n>0) /% _O(INFINITY) %/  {
+def h(int n) -> int /% _O(n) %/  {
+    while (n>0) /% _O(n) %/  {
         n = (n - 1);
     }
 }
 
 
-def f(int n) -> void /% _O(func_f) %/  {
+def f(int n) -> void /% _O(n) %/  {
     if (n<=0) {
         return 1;
     } else {
@@ -18,6 +13,11 @@ def f(int n) -> void /% _O(func_f) %/  {
         res = (res + f[(n / 2)]);
         return res;
     }
+}
+
+
+def g(int a, int b) -> void /% O((a)^(3.000000)) %/  {
+    return 1;
 }
 
 

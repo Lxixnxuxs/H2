@@ -230,7 +230,6 @@ std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::
 
             // TODO: check if this is correct
             return masters_theorem(1,2,bc_var,std::get<1>(recursiveExecution));//{true, res};
-
         }
 
     }

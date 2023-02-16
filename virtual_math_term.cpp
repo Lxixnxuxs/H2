@@ -292,11 +292,15 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
         assert(type == ADDITION);
         std::vector<ComplexityHelper> helpers;
         std::vector<VirtualMathTerm> new_children;
+        std::vector<VirtualMathTerm> temp;
 
         for (const auto& e : children) {
             ComplexityHelper r = e;
             if (r.unknown) new_children.push_back(e); // if unknown, it cant be compared
-            else helpers.push_back(r);
+            else {
+                helpers.push_back(r);
+                temp.push_back(e);
+            }
         }
 
         std::vector<bool> dominated(helpers.size(), false);
@@ -313,7 +317,7 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
         }
 
         for (int i = 0; i < helpers.size(); i++) {
-            if (!dominated[i]) new_children.push_back(children[i]);
+            if (!dominated[i]) new_children.push_back(temp[i]);
         }
         children = new_children;
     }
@@ -373,7 +377,7 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
         simplify_multiple_numbers();
         simplify_variable_occurances();
         simplify_one_child();
-        if (type == ADDITION) simplify_addition();
+
     }
 
 
@@ -389,6 +393,7 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
             if (children[0].type == NUMBER) children[0].value = 10; // log basis does not matter
             return;
         }
+        if (type == ADDITION) simplify_addition();
 
         // drop constants
         std::vector<VirtualMathTerm> new_children;
