@@ -311,7 +311,7 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
 
         } else {
             first = VirtualMathTerm(*t);
-            t+=1;
+            t+=1;  // disregard first part
             expect_one_of(t,complexity_operator_symbols);
             operation = *t;
 
@@ -319,11 +319,16 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
 
         // second part of the operation
         t+=1; // disregard operation
-        if (t.size()==1) second = parse_complexity_term(t);
+        if (t.size()==1){
+            second = parse_complexity_term(t);
+            t+=1; // disregard second part
+        }
         else {
             expect(t,"(");
             second = parse_complexity_term(t.read_inside_brackets());
         }
+
+        expect_empty(t); // there should be nothing behind the second part of the operation. Otherwise, use brackets!
 
         // putting both together
         VirtualMathTerm res;

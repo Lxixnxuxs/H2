@@ -18,18 +18,21 @@ bool is_in(const T& v, std::initializer_list<T> lst)
 //std::string get_param(int i) {return "param_"+std::to_string(i);}
 //int extract_param_nr(std::string param) {return std::stoi(std::string(param.at(6),1));} // only working if param nr has only one digit
 
-
-bool is_simple_linear(VirtualMathTerm term, std::string var_name) {
-
+// checks whether the term has the form var * number (where * can be any operation)
+bool is_simple(MathTermType operation, VirtualMathTerm term, std::string var_name) {
     auto is_this_variable = [](VirtualMathTerm term, std::string var_name){return term.type == VARIABLE and
-                                                                                  var_name == term.name;};
+                                                                                 var_name == term.name;};
 
     if (is_this_variable(term, var_name)) return true;
 
-    if (term.type != ADDITION or term.children.size() != 2) return false;
+    if (term.type != operation or term.children.size() != 2) return false;
     bool one_is_variable = is_this_variable(term.children[0], var_name) or is_this_variable(term.children[1], var_name);
     bool one_is_number = term.children[0].type == NUMBER or term.children[1].type == NUMBER;
     return  one_is_variable and one_is_number;
+}
+
+bool is_simple_linear(VirtualMathTerm term, std::string var_name) {
+    return is_simple(ADDITION, term, var_name);
 }
 
 double get_lin_offset(VirtualMathTerm term) {
@@ -48,6 +51,16 @@ bool has_simple_direction(Condition region) {
     bool has_variable = region.math_children[0].type == VARIABLE or region.math_children[1].type == VARIABLE;
     bool has_number = region.math_children[0].type == NUMBER or region.math_children[1].type == NUMBER;
     return has_variable and has_number;
+}
+
+bool simple_direction_and_includes_zero_point(Condition region) {
+    if (!has_simple_direction(region)) return false;
+
+    if (region.type == LESS and region.math_children[1].value > 0) return true;
+    if (region.type == LESS_EQUAL and region.math_children[1].value >= 0) return true;
+    if (region.type == GREATER and region.math_children[1].value < 0) return true;
+    if (region.type == GREATER_EQUAL and region.math_children[1].value <= 0) return true;
+    return false;
 }
 
 // for now treat simple one-variable cases
@@ -87,12 +100,32 @@ double scalar_product(std::vector<double> a, std::vector<double> b) {
 }
 
 
+bool is_simple_multiplicative(VirtualMathTerm term, std::string var_name) {
+    return is_simple(MULTIPLICATION, term, var_name);
+}
 
 static const std::pair<bool, VirtualMathTerm> O_INFINITY = {true,{"INFINITY"}};
 static const std::pair<bool, VirtualMathTerm> SURRENDERED = {false,{"SURRENDERED"}};
 
 
+// https://de.wikipedia.org/wiki/Master-Theorem
+std::pair<bool, Complexity> masters_theorem(int a, int b, variable_name var, Complexity f) {
+    f.simplify();
+    VirtualMathTerm comparison = {EXPONENTIAL,{VirtualMathTerm(var),VirtualMathTerm(LOGARITHM,{b,a})}};
+    comparison.simplify();
 
+    if (comparison.grows_faster_equal(f)) {
+        if (f.grows_faster_equal(comparison))
+            // case 2
+            return {true, {MULTIPLICATION, {VirtualMathTerm(EXPONENTIAL,{VirtualMathTerm(var),VirtualMathTerm(LOGARITHM,{b,a})}), VirtualMathTerm(LOGARITHM, {10,var}) }}  };
+        else
+            // case 1
+            return {true, {EXPONENTIAL,{VirtualMathTerm(var),VirtualMathTerm(LOGARITHM,{b,a})}}};
+    }
+
+    // case 3
+    return {true, f};
+}
 
 
 
@@ -162,15 +195,21 @@ std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::
     //assert(all_areas.type == TRUE);
 
 
-    // interlude: base case has one variable
+    // interlude: base case has one variable and there is only one recursive call
     auto base_case = base_cases[0];
-    if (base_case.first.is_combination()) return SURRENDERED;
-    if (recursive_calls.size() == 1 and has_simple_direction(base_case.first)) {
+    bool only_one_call = recursive_calls.size() == 1;
+    bool base_case_only_one_var = !base_case.first.is_combination();
+    bool simple_base_case_shape = has_simple_direction(base_case.first);
+
+    if (only_one_call and base_case_only_one_var and simple_base_case_shape) {
+        auto call_ = recursive_calls[0];
+
         auto bc_dir = get_base_case_direction(base_case.first,var_names);
         auto bc_var = get_base_case_variable(base_case.first);
-        auto call_ = recursive_calls[0];
         int index = std::distance(var_names.begin(),std::find(var_names.begin(), var_names.end(),bc_var));
         auto bc_value = bc_dir[index];
+
+        // linear addition case
         if (is_simple_linear(call_.children[index], bc_var)) {
             auto direction_value = get_lin_offset(call_.children[index]);
             if (direction_value * bc_value > 0) {
@@ -181,6 +220,19 @@ std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::
                 return {true, res};
             }
         }
+
+        // multiplicative case
+        if (is_simple_multiplicative(call_.children[index], bc_var) and simple_direction_and_includes_zero_point(base_case.first)) {
+            // ready to return early
+            VirtualMathTerm res;
+            res.children.push_back({base_case.second});
+            //res.children.push_back({MULTIPLICATION, { {LOGARITHM,{10,bc_var}},std::get<1>(recursiveExecution)}});
+
+            // TODO: check if this is correct
+            return masters_theorem(1,2,bc_var,std::get<1>(recursiveExecution));//{true, res};
+
+        }
+
     }
 
 

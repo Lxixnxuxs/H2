@@ -52,6 +52,9 @@ struct VirtualMathTerm {
     // method for calling simplify logic until a steady state is reached
     void simplify();
 
+    // asymtoticly faster growing?
+    bool grows_faster_equal(const VirtualMathTerm& other) const;
+
 private:
 
     std::map<std::string,double> get_variable_occurances();
@@ -67,6 +70,8 @@ private:
 
     void simplify_one_child();
 
+    void simplify_addition();
+
     void simplify_logic();
 
 
@@ -75,7 +80,7 @@ private:
 
     //void simplify_addition_o_notation();
 
-    //void dominates(const VirtualMathTerm& other) const;
+
 };
 
 extern const VirtualMathTerm UNKNOWN_VAR;

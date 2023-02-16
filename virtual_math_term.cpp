@@ -10,6 +10,9 @@
 #include <cmath>
 #include <map>
 
+#include "ComplexityHelper.hpp"
+
+
 
 
 
@@ -285,6 +288,37 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
         }
     }
 
+    void VirtualMathTerm::simplify_addition() {
+        assert(type == ADDITION);
+        std::vector<ComplexityHelper> helpers;
+        std::vector<VirtualMathTerm> new_children;
+
+        for (const auto& e : children) {
+            ComplexityHelper r = e;
+            if (r.unknown) new_children.push_back(e); // if unknown, it cant be compared
+            else helpers.push_back(r);
+        }
+
+        std::vector<bool> dominated(helpers.size(), false);
+
+        // kick dominated terms out
+        for (int i = 0; i < helpers.size(); i++) {
+            for (int j = i+1; j < helpers.size(); j++) {
+                if (helpers[i].dominates(helpers[j])) {
+                    dominated[j] = true;
+                } else if (helpers[j].dominates(helpers[i])) {
+                    dominated[i] = true;
+                }
+            }
+        }
+
+        for (int i = 0; i < helpers.size(); i++) {
+            if (!dominated[i]) new_children.push_back(children[i]);
+        }
+        children = new_children;
+    }
+
+
     void VirtualMathTerm::simplify_logic() {
         if (type == NUMBER or type == VARIABLE) return;
 
@@ -314,6 +348,13 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
                 return;
             }
 
+            //a^(log_b(term)) = term^log_b(a)
+            if (children[0].type == NUMBER and children[1].type == LOGARITHM and children[1].children[0].type == NUMBER) {
+                copy_to_me(VirtualMathTerm(EXPONENTIAL, {children[1].children[1],
+                                                         VirtualMathTerm(LOGARITHM, {children[0], children[1].children[0]})}));
+                return;
+            }
+
             return;
         }
 
@@ -332,6 +373,7 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
         simplify_multiple_numbers();
         simplify_variable_occurances();
         simplify_one_child();
+        if (type == ADDITION) simplify_addition();
     }
 
 
@@ -369,11 +411,10 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
 
 
 }
-
-void VirtualMathTerm::dominates(const VirtualMathTerm &other) const {
-
-
-}*/
+*/
+bool VirtualMathTerm::grows_faster_equal(const VirtualMathTerm &other) const {
+    return ComplexityHelper(*this).dominates(ComplexityHelper(other));
+}
 
     // method not ready to use
     /*
