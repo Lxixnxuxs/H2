@@ -5,9 +5,13 @@ def h(int n) -> int /% _O(n) %/  {
 }
 
 
+def z(int n) -> void /% O((n)^(2.000000)) %/  {
+}
+
+
 def f(int n) -> void /% _O(n) %/  {
     if (n<=0) {
-        return 1;
+        return z[n];
     } else {
         int res = h[n];
         res = (res + f[(n / 2)]);
