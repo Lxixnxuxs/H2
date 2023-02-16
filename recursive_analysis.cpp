@@ -228,7 +228,7 @@ std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::
             res.children.push_back({base_case.second});
             //res.children.push_back({MULTIPLICATION, { {LOGARITHM,{10,bc_var}},std::get<1>(recursiveExecution)}});
 
-            return {true, VirtualMathTerm(ADDITION,{std::get<1>(recursiveExecution), masters_theorem(1,2,bc_var,std::get<1>(recursiveExecution)).second}) };//{true, res};
+            return {true, VirtualMathTerm(ADDITION,{base_case.second, masters_theorem(1,2,bc_var,std::get<1>(recursiveExecution)).second}) };//{true, res};
         }
 
     }

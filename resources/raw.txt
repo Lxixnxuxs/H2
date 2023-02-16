@@ -9,7 +9,7 @@ def z(int n) -> void /% O((n)^(2.000000)) %/  {
 }
 
 
-def f(int n) -> void /% _O(n) %/  {
+def f(int n) -> void /% _O((n)^(2.000000)) %/  {
     if (n<=0) {
         return z[n];
     } else {
