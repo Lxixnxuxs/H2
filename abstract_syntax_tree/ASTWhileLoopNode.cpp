@@ -6,8 +6,8 @@
 #include "ASTComparisonNode.hpp"
 #include "ASTCallNode.hpp"
 #include "ASTFunctionNode.hpp"
-#include "../recursive_analysis.hpp"
-#include "../ExecutionPath.hpp"
+#include "../complexity_analyzer/recursive_analysis.hpp"
+#include "../complexity_analyzer/ExecutionPath.hpp"
 
 #include "ASTWhileLoopNode.hpp"
 

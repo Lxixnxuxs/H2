@@ -8,11 +8,11 @@
 #include "ASTReturnNode.hpp"
 #include <vector>
 #include "../global_information.hpp"
-#include "../virtual_math_term.hpp"
+#include "../complexity_analyzer/virtual_math_term.hpp"
 
 //extern struct ExecutionPath;
-#include "../ExecutionPath.hpp"
-#include "../recursive_analysis.hpp"
+#include "../complexity_analyzer/ExecutionPath.hpp"
+#include "../complexity_analyzer/recursive_analysis.hpp"
 
 
 #include "ASTFunctionNode.hpp"

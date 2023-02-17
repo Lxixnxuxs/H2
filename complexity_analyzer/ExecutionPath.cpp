@@ -3,9 +3,9 @@
 //
 
 #include "ExecutionPath.hpp"
-#include "abstract_syntax_tree/ASTTree.hpp"
-#include "abstract_syntax_tree/ASTWhileLoopNode.hpp"
-#include "abstract_syntax_tree/ASTCallNode.hpp"
+#include "../abstract_syntax_tree/ASTTree.hpp"
+#include "../abstract_syntax_tree/ASTWhileLoopNode.hpp"
+#include "../abstract_syntax_tree/ASTCallNode.hpp"
 
 
 ExecutionPath::ExecutionPath(std::vector<variable_name> arguments, std::vector<ASTStatementNode*> commands): commands(commands) {

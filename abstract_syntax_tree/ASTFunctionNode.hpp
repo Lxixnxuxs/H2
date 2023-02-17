@@ -4,7 +4,7 @@
 
 #include <vector>
 #include "../global_information.hpp"
-#include "../virtual_math_term.hpp"
+#include "../complexity_analyzer/virtual_math_term.hpp"
 struct ASTStatementNode;
 
 

@@ -4,7 +4,7 @@
 
 #include "ASTComparisonNode.hpp"
 #include "ASTComputationNode.hpp"
-#include "../LogicTerm.hpp"
+#include "../complexity_analyzer/LogicTerm.hpp"
 
 
 

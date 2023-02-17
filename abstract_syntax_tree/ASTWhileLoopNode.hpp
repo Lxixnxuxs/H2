@@ -5,7 +5,7 @@
 struct ASTComparisonNode;
 struct ASTStatementNode;
 //struct ExecutionPath;
-#include "../ExecutionPath.hpp"
+#include "../complexity_analyzer/ExecutionPath.hpp"
 
 using std::string;
 

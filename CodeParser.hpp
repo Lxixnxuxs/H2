@@ -5,7 +5,7 @@
 #include "Tokenstream.hpp"
 #include "LocalVariableManager.hpp"
 #include "GlobalVariableManager.hpp"
-#include "virtual_math_term.hpp"
+#include "complexity_analyzer/virtual_math_term.hpp"
 
 //#include "abstract_syntax_tree/ASTTree.hpp"
 struct ASTRootNode;

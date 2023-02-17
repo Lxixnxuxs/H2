@@ -9,7 +9,7 @@
 // TODO will this lead to problems when laying out memory? Because this has a wrong idea of how the struct looks like
 //struct VirtualMathTerm;
 
-#include "../virtual_math_term.hpp"
+#include "../complexity_analyzer/virtual_math_term.hpp"
 
 
 enum ASTNodeType {};
