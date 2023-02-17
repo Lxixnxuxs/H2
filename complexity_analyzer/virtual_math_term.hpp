@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <optional>
 
 enum MathTermType {ADDITION, MULTIPLICATION, EXPONENTIAL, LOGARITHM, VARIABLE, NUMBER, CALL};
 

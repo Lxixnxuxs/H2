@@ -7,7 +7,7 @@
 
 #include <map>
 #include "ASTStatementNode.hpp"
-#include "../LogicTerm.hpp"
+#include "../complexity_analyzer/LogicTerm.hpp"
 
 struct ASTComputationNode;
 

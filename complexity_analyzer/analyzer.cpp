@@ -3,9 +3,9 @@
 //
 #include <fstream>
 #include <iostream>
-#include "CodeParser.hpp"
-#include "lexer.hpp"
-#include "abstract_syntax_tree/ASTRootNode.hpp"
+#include "../CodeParser.hpp"
+#include "../lexer.hpp"
+#include "../abstract_syntax_tree/ASTRootNode.hpp"
 
 int main() {
     std::string path = "./resources/raw.txt";
