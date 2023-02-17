@@ -1,3 +1,14 @@
+def t(int a) -> int /% _O(while_1) %/  {
+    while (a<0) /% _O(while_1) %/  {
+        if (a>9) {
+            a = (a / 2);
+        } else {
+            a = (a - 1);
+        }
+    }
+}
+
+
 def h(int n) -> int /% _O(n) %/  {
     while (n>0) /% _O(n) %/  {
         n = (n - 1);
@@ -13,25 +24,29 @@ def z(int n) -> void /% _O(log(n)) %/  {
         e = (e + 1);
     }
     return e;
-    /* is a comment allowed here? */
 }
 
 
-def f(int n) -> void /% _O(n) %/  {
-    /* something */
+def f(int n) -> void /% _O(log(n)) %/  {
     if (n<=0) {
         return 1;
     } else {
         int res = h[n];
-        /* let's write a beautiful comment + - != nothing % 4 */
         res = (res + f[(n / 2)]);
         return res;
     }
 }
 
 
-def g(int a, int b) -> void /% O((a)^(3.000000)) %/  {
-    return 1;
+def g(int a, int b) -> void /% _O(func_g) %/  {
+    if ((a + b)<=0) {
+        return 1;
+    } else {
+        int res = h[a];
+        res = (res + g[(a - 1), b]);
+        res = (res + g[(a - 1), (b - 1)]);
+        return res;
+    }
 }
 
 

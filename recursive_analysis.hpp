@@ -41,16 +41,15 @@ extern std::string get_base_case_variable(LogicTerm region);
 extern double scalar_product(std::vector<double> a, std::vector<double> b);
 
 
-// returns: (successful, o-notation)
+// returns o-notation, if successful
 // assumes everything is in terms of the parameters
-// ATTENTION it is assumed, that only one recursive branch exists
-extern std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::vector<std::string> var_names, std::vector<std::pair<Condition, Complexity>> base_cases,
+extern std::optional<Complexity> analyze_execution_paths(std::string func_name, std::vector<std::string> var_names, std::vector<std::pair<Condition, Complexity>> base_cases,
                                                     std::vector<recursive_execution> recursive_executions);
 
 
 
 // call-helper
-extern std::pair<bool, Complexity> analyze_execution_from_all_paths(std::string func_name, std::vector<std::string> var_names, std::vector<ExecutionPath> all_paths);
+extern std::optional<Complexity> analyze_execution_from_all_paths(std::string func_name, std::vector<std::string> var_names, std::vector<ExecutionPath> all_paths);
 
 
 

@@ -308,9 +308,9 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
         // kick dominated terms out
         for (int i = 0; i < helpers.size(); i++) {
             for (int j = i+1; j < helpers.size(); j++) {
-                if (helpers[i].dominates(helpers[j])) {
+                if (helpers[i].grows_faster_equal(helpers[j])) {
                     dominated[j] = true;
-                } else if (helpers[j].dominates(helpers[i])) {
+                } else if (helpers[j].grows_faster_equal(helpers[i])) {
                     dominated[i] = true;
                 }
             }
@@ -417,8 +417,8 @@ VirtualMathTerm::VirtualMathTerm(): type(ADDITION), o_notation(true) {} // defau
 
 }
 */
-bool VirtualMathTerm::grows_faster_equal(const VirtualMathTerm &other) const {
-    return ComplexityHelper(*this).dominates(ComplexityHelper(other));
+std::optional<bool> VirtualMathTerm::grows_faster_equal(const VirtualMathTerm &other) const {
+    return ComplexityHelper(*this).grows_faster_equal(ComplexityHelper(other));
 }
 
     // method not ready to use

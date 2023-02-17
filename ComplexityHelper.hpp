@@ -27,7 +27,7 @@ struct ComplexityHelper {
 
     ComplexityHelper operator+(const ComplexityHelper& other) const;
 
-    bool dominates(const ComplexityHelper& other) const;
+    std::optional<bool> grows_faster_equal(const ComplexityHelper& other) const;
 
 private:
     ComplexityHelper combine(const ComplexityHelper& other, std::function<double(double,double)> combine_function) const;

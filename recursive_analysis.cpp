@@ -104,35 +104,37 @@ bool is_simple_multiplicative(VirtualMathTerm term, std::string var_name) {
     return is_simple(MULTIPLICATION, term, var_name);
 }
 
-static const std::pair<bool, VirtualMathTerm> O_INFINITY = {true,{"INFINITY"}};
-static const std::pair<bool, VirtualMathTerm> SURRENDERED = {false,{"SURRENDERED"}};
+static const VirtualMathTerm O_INFINITY = {"INFINITY"};
+//static const VirtualMathTerm SURRENDERED = {"SURRENDERED"};
 
 
 // https://de.wikipedia.org/wiki/Master-Theorem
-std::pair<bool, Complexity> masters_theorem(int a, int b, variable_name var, Complexity f) {
+std::optional<Complexity> masters_theorem(int a, int b, variable_name var, Complexity f) {
     f.simplify();
     VirtualMathTerm comparison = {EXPONENTIAL,{VirtualMathTerm(var),VirtualMathTerm(LOGARITHM,{b,a})}};
     comparison.simplify();
 
-    if (comparison.grows_faster_equal(f)) {
-        if (f.grows_faster_equal(comparison))
+    auto condition1 = comparison.grows_faster_equal(f);
+    auto condition2 = f.grows_faster_equal(comparison);
+    if (!condition1 or !condition2) return {}; // was not able to analyze this case
+
+    if (condition1.value()) {
+        if (condition2.value())
             // case 2
-            return {true, {MULTIPLICATION, {VirtualMathTerm(EXPONENTIAL,{VirtualMathTerm(var),VirtualMathTerm(LOGARITHM,{b,a})}), VirtualMathTerm(LOGARITHM, {10,var}) }}  };
+            return VirtualMathTerm{MULTIPLICATION, {VirtualMathTerm(EXPONENTIAL,{VirtualMathTerm(var),VirtualMathTerm(LOGARITHM,{b,a})}), VirtualMathTerm(LOGARITHM, {10,var}) }};
         else
             // case 1
-            return {true, {EXPONENTIAL,{VirtualMathTerm(var),VirtualMathTerm(LOGARITHM,{b,a})}}};
+            return VirtualMathTerm{EXPONENTIAL,{VirtualMathTerm(var),VirtualMathTerm(LOGARITHM,{b,a})}};
     }
 
     // case 3
-    return {true, f};
+    return f;
 }
 
 
 
-// returns: (successful, o-notation)
-// assumes everything is in terms of the parameters
-// ATTENTION it is assumed, that only one recursive branch exists
-std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::vector<std::string> var_names, std::vector<std::pair<Condition, Complexity>> base_cases,
+
+std::optional<Complexity> analyze_execution_paths(std::string func_name, std::vector<std::string> var_names, std::vector<std::pair<Condition, Complexity>> base_cases,
                                                     std::vector<recursive_execution> recursive_executions) {
 
     // throw recursive calls out of each complexity (because they will be resolved now)
@@ -168,7 +170,7 @@ std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::
                           total_complexity.children.push_back(b.second);
                       });
         total_complexity.simplify();
-        return {true, total_complexity};
+        return total_complexity;
     }
 
     // without base case, the recursion goes forever
@@ -176,10 +178,10 @@ std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::
 
     // do not allow multiple base cases, because not able to find out in which the recursion will terminate
     // TODO find way to do this
-    if (base_cases.size() > 1) return SURRENDERED;
+    if (base_cases.size() > 1) return {};
 
     // cannot handle multiple recursion cases
-    if (recursive_executions.size() > 1) return SURRENDERED;
+    if (recursive_executions.size() > 1) return {};
     recursive_execution recursiveExecution = recursive_executions[0];
     std::vector<Call> recursive_calls = std::get<2>(recursiveExecution);
 
@@ -217,7 +219,7 @@ std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::
                 VirtualMathTerm res;
                 res.children.push_back({base_case.second});
                 res.children.push_back({MULTIPLICATION, {{bc_var},std::get<1>(recursiveExecution)}});
-                return {true, res};
+                return res;
             }
         }
 
@@ -227,8 +229,9 @@ std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::
             VirtualMathTerm res;
             res.children.push_back({base_case.second});
             //res.children.push_back({MULTIPLICATION, { {LOGARITHM,{10,bc_var}},std::get<1>(recursiveExecution)}});
+            auto masters_result = masters_theorem(1,2,bc_var,std::get<1>(recursiveExecution));
+            if (masters_result)  return VirtualMathTerm(ADDITION,{base_case.second, masters_result.value()});
 
-            return {true, VirtualMathTerm(ADDITION,{base_case.second, masters_theorem(1,2,bc_var,std::get<1>(recursiveExecution)).second}) };//{true, res};
         }
 
     }
@@ -238,8 +241,8 @@ std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::
     // check if base cases can be handled. Find "directions" of simple base cases
     std::vector<std::vector<double>> base_case_directions;
     for (auto& base_case : base_cases) {
-        if (base_case.first.is_combination()) return SURRENDERED;
-        if (!has_simple_direction(base_case.first)) return SURRENDERED;
+        if (base_case.first.is_combination()) return {};
+        if (!has_simple_direction(base_case.first)) return {};
         base_case_directions.push_back(get_base_case_direction(base_case.first, var_names));
     }
 
@@ -252,7 +255,7 @@ std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::
 
         std::vector<double> direction;
         for (int i = 0; i < call.children.size(); i++) {
-            if (!is_simple_linear(call.children[i], var_names[i])) return SURRENDERED;
+            if (!is_simple_linear(call.children[i], var_names[i])) return {};
             direction.push_back(get_lin_offset(call.children[i]));
         }
         recursion_directions.push_back(direction);
@@ -291,7 +294,7 @@ std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::
         res.children.push_back({MULTIPLICATION, {tree_size,std::get<1>(recursiveExecution)}});
     }
     res.simplify();
-    return {true,res};
+    return res;
 
 }
 
@@ -299,7 +302,7 @@ std::pair<bool, Complexity> analyze_execution_paths(std::string func_name, std::
 
 // call-helper
 
-std::pair<bool, Complexity> analyze_execution_from_all_paths(std::string func_name, std::vector<std::string> var_names, std::vector<ExecutionPath> all_paths) {
+std::optional<Complexity> analyze_execution_from_all_paths(std::string func_name, std::vector<std::string> var_names, std::vector<ExecutionPath> all_paths) {
     std::vector<std::pair<LogicTerm, VirtualMathTerm>> base_cases;
     std::vector<std::tuple<LogicTerm, VirtualMathTerm, std::vector<VirtualMathTerm>>> recursive_executions;
     for (auto &e: all_paths) {

@@ -52,8 +52,8 @@ struct VirtualMathTerm {
     // method for calling simplify logic until a steady state is reached
     void simplify();
 
-    // asymtoticly faster growing?
-    bool grows_faster_equal(const VirtualMathTerm& other) const;
+
+    std::optional<bool> grows_faster_equal(const VirtualMathTerm& other) const;
 
 private:
 

@@ -120,7 +120,11 @@ void ASTWhileLoopNode::virtual_execution(ExecutionPath higher_level_path) {
         }
 
         auto analysis_result = analyze_execution_from_all_paths(pseudo_function.f_name, variables, all_paths);
-        complexity = analysis_result.second;
+        if (!analysis_result){
+            complexity = {"while_"+std::to_string(label_id)};
+            return;
+        }
+        complexity = analysis_result.value();
 
         /*
         // substitute in the execution state of the outer context

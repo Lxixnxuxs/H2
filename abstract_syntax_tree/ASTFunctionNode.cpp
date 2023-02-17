@@ -119,11 +119,11 @@ VirtualMathTerm ASTFunctionNode::get_complexity() {
         }
 
         auto analysis_result = analyze_execution_from_all_paths(f_name, args, all_paths);
-        //if (!analysis_result.first) return; // surrender
+        virtual_exec_surrendered = !analysis_result;
+        if (!analysis_result) return; // surrender
 
-        complexity = analysis_result.second;
+        complexity = analysis_result.value();
 
-        virtual_exec_surrendered = !analysis_result.first; // successful virtual execution
     }
 
     std::string ASTFunctionNode::get_class() { return "Function";}

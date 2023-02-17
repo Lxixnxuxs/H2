@@ -98,8 +98,11 @@ ComplexityHelper ComplexityHelper::combine(const ComplexityHelper &other, std::f
     return result;
 }
 
-bool ComplexityHelper::dominates(const ComplexityHelper &other) const {
-    if (unknown or other.unknown) return false;
+
+std::optional<bool> ComplexityHelper::grows_faster_equal(const ComplexityHelper &other) const {
+
+    // not able to decide
+    if (unknown or other.unknown) return std::nullopt;
 
     // in order to dominate, every variable of the other term must be dominated
 
