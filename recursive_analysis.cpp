@@ -107,7 +107,7 @@ bool is_simple_multiplicative(VirtualMathTerm term, std::string var_name) {
 static const VirtualMathTerm O_INFINITY = {"INFINITY"};
 //static const VirtualMathTerm SURRENDERED = {"SURRENDERED"};
 
-
+// TODO not working properly!
 // https://de.wikipedia.org/wiki/Master-Theorem
 std::optional<Complexity> masters_theorem(int a, int b, variable_name var, Complexity f) {
     f.simplify();
