@@ -17,6 +17,7 @@
 #include "ASTComparisonNode.hpp"
 #include "ASTCallNode.hpp"
 #include "ASTCommentNode.hpp"
+#include "ASTClassNode.hpp"
 
 
 #endif //H2_ASTTREE_HPP

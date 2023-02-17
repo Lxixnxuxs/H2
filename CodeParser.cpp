@@ -68,7 +68,7 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
                 end_message += " '"+*t_copy+"'";
                 t_copy+=1;
             }
-            throw std::invalid_argument("PARSER ERROR  Expected an empty stream but recieved a stream of size "+std::to_string(t.size())+" starting with " + end_message );
+            throw std::invalid_argument("PARSER ERROR  Expected an empty stream but received a stream of size "+std::to_string(t.size())+" starting with " + end_message );
         }
 
 
@@ -79,23 +79,39 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
             throw std::invalid_argument("PARSER ERROR  cannot parse empty programm");
         }
         GlobalVariableManager g;
-        std::vector<ASTFunctionNode*> funcs;
+        std::vector<ASTNode*> funcs_and_classes;
 
-        expect(t,"def");
-        t+=1; // throw away first def
+        expect_one_of(t,{"def","class"});
+        std::string token_found = *t;
+        t+=1; // throw away first def or class
 
         while (!t.empty()){
-            auto t2 = t.read_until("def");
-            if (!t2.empty()){
-                funcs.push_back(parse_function(t2, g));
-            }
+            if (token_found == "def") {
+                auto res = t.read_until_one_of({"def","class"});
+                auto t2 = res.first;
+                token_found = res.second;
+                //if (!t2.empty()) { // I think this is not needed
+                funcs_and_classes.push_back(parse_function(t2, g));
 
+            } else if (token_found == "class"){ // class definition
+                auto res = t.read_until_one_of({"def","class"});
+                auto t2 = res.first;
+                token_found = res.second;
+                //if (!t2.empty()) { // I think this is not needed
+                funcs_and_classes.push_back(parse_class(t2, g));
+            } else {
+                throw std::invalid_argument("PARSER ERROR  Expected 'def' or 'class' but received '"+*t+"'");
+            }
         }
 
-        return new ASTRootNode(funcs);
+        return new ASTRootNode(funcs_and_classes);
+    }
+    ASTClassNode* parse_class(Tokenstream t, GlobalVariableManager& g){
+
     }
 
-    ASTFunctionNode* CodeParser::parse_function(Tokenstream t, GlobalVariableManager& g) {
+
+ASTFunctionNode* CodeParser::parse_function(Tokenstream t, GlobalVariableManager& g) {
         // Note that the 'def' has already been thrown away
 
 

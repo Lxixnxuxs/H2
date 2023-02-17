@@ -50,12 +50,17 @@
         return res;
     }
 
-    Tokenstream Tokenstream::read_until_one_of(const vector<string>& token_vec){
+    // returns Tokenstream after the token found and the token found
+    std::pair<Tokenstream,string> Tokenstream::read_until_one_of(const vector<string>& token_vec){
         auto old_begin_ = begin_;
         bool found = false;
+        string token_found = "";
         while(!empty() and !found) {
             for (auto token : token_vec){
-                if (*begin_ == token) {found = true;}
+                if (*begin_ == token) {
+                    found = true;
+                    token_found = *begin_;
+                }
             }
             begin_++;
         };
@@ -73,7 +78,7 @@
 
 
 
-        return res;
+        return {res,token_found};
     }
 
     Tokenstream Tokenstream::read_inside_brackets(){

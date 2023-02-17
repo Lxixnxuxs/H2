@@ -37,7 +37,7 @@ struct Tokenstream {
 
     Tokenstream read_until(const string& token);
 
-    Tokenstream read_until_one_of(const vector<string>& token_vec);
+    std::pair<Tokenstream, std::string> read_until_one_of(const vector<string>& token_vec);
 
     Tokenstream read_inside_brackets();
 

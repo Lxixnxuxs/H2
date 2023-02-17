@@ -9,9 +9,9 @@
 struct ASTFunctionNode;
 
 struct ASTRootNode : ASTNode {
-    std::vector<ASTFunctionNode*> funcs;
+    std::vector<ASTNode*> funcs_and_classes;
 
-    ASTRootNode(std::vector<ASTFunctionNode*>& funcs);
+    ASTRootNode(std::vector<ASTNode*>& funcs_and_classes);
 
     std::string compile() override;
 

@@ -12,7 +12,7 @@ set(SOURCE_FILES lexer.cpp Tokenstream.cpp complexity_analyzer/ExecutionPath.cpp
         abstract_syntax_tree/ASTStatementNode.hpp abstract_syntax_tree/ASTRootNode.cpp abstract_syntax_tree/ASTReturnNode.cpp
         abstract_syntax_tree/ASTNode.cpp abstract_syntax_tree/ASTLogicalNode.cpp abstract_syntax_tree/ASTIfElseNode.cpp
         abstract_syntax_tree/ASTFunctionNode.cpp abstract_syntax_tree/ASTComparisonNode.cpp abstract_syntax_tree/ASTCallNode.cpp
-        abstract_syntax_tree/ASTCalculationNode.cpp abstract_syntax_tree/ASTAssignmentNode.cpp abstract_syntax_tree/ASTCommentNode.cpp)
+        abstract_syntax_tree/ASTCalculationNode.cpp abstract_syntax_tree/ASTAssignmentNode.cpp abstract_syntax_tree/ASTCommentNode.cpp abstract_syntax_tree/ASTCommentNode.cpp)
 
 add_executable(main main.cpp ${SOURCE_FILES})
 

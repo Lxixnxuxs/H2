@@ -5,12 +5,12 @@
 #include "ASTFunctionNode.hpp"
 
 
-ASTRootNode::ASTRootNode(std::vector<ASTFunctionNode*>& funcs): funcs(funcs) {}
+ASTRootNode::ASTRootNode(std::vector<ASTNode*>& funcs_and_classes): funcs_and_classes(funcs_and_classes) {}
 
     std::string ASTRootNode::compile() {
         std::string code = "jmp main\n\n"; // always starting with main function
 
-        for (auto f : funcs) {
+        for (auto f : funcs_and_classes) {
             code += f->compile();
         }
 
@@ -20,7 +20,7 @@ ASTRootNode::ASTRootNode(std::vector<ASTFunctionNode*>& funcs): funcs(funcs) {}
     VirtualMathTerm ASTRootNode::get_complexity() {
 
         // sub calls
-        for (auto e : funcs) {
+        for (auto e : funcs_and_classes) {
             e->get_complexity();
         }
 
@@ -31,7 +31,7 @@ ASTRootNode::ASTRootNode(std::vector<ASTFunctionNode*>& funcs): funcs(funcs) {}
 
     std::string ASTRootNode::to_code() {
         std::string res;
-        for (auto e : funcs) {
+        for (auto e : funcs_and_classes) {
             res += e->to_code() + "\n\n";
         }
         return res;
@@ -39,7 +39,7 @@ ASTRootNode::ASTRootNode(std::vector<ASTFunctionNode*>& funcs): funcs(funcs) {}
 
     void ASTRootNode::set_block_level(int n) {
         block_level = 0;
-        for (auto f: funcs) f->set_block_level(0);
+        for (auto f: funcs_and_classes) f->set_block_level(0);
     }
 
     std::string ASTRootNode::get_class() { return "Root";}

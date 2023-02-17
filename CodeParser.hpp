@@ -16,6 +16,7 @@ struct ASTCallNode;
 struct ASTComparisonNode;
 struct ASTCalculationNode;
 struct ASTCommentNode;
+struct ASTClassNode;
 
 
 class CodeParser {
@@ -34,6 +35,8 @@ public:
     size_t global_id_counter = 0;
 
     ASTRootNode* parse(Tokenstream t);
+
+    ASTClassNode* parse_class(Tokenstream t, GlobalVariableManager& g);
 
     ASTFunctionNode* parse_function(Tokenstream t, GlobalVariableManager& g);
 
