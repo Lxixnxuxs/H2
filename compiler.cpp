@@ -3,6 +3,8 @@
 #include <fstream>
 #include "Tokenstream.hpp"
 #include "CodeParser.hpp"
+#include "lexer.hpp"
+#include "abstract_syntax_tree/ASTRootNode.hpp"
 
 int main(int argc, char** argv) {
     if (argc < 3) {

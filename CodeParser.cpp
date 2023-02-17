@@ -9,7 +9,8 @@
 #include "CodeParser.hpp"
 
 static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-", SUB}, {"*", MUL}, {"/", DIV},
-                                                                 {"%", MOD}};
+                                                                 {"%", MOD}, {"&", BITWISE_AND}, {"|", BITWISE_OR}, {"€", BITWISE_XOR},
+                                                                 {"<<", SHIFT_L}, {">>", SHIFT_R}};
 
 
     string CodeParser::is_valid_identifier(std::string token) {
@@ -106,15 +107,14 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
 
         return new ASTRootNode(funcs_and_classes);
     }
-    ASTClassNode* parse_class(Tokenstream t, GlobalVariableManager& g){
 
+    ASTClassNode* CodeParser::parse_class(Tokenstream t, GlobalVariableManager& g){
+        return nullptr;
     }
 
 
 ASTFunctionNode* CodeParser::parse_function(Tokenstream t, GlobalVariableManager& g) {
         // Note that the 'def' has already been thrown away
-
-
 
         LocalVariableManager var_manager;
         string func_name = *t;

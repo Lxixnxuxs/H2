@@ -3,10 +3,10 @@
 //
 #include "ASTCalculationNode.hpp"
 #include <stdexcept>
-
+#include <iostream>
 
 ASTCalculationNode::ASTCalculationNode(ASTCalculationNode* left, ASTCalculationNode* right, ComputationOp comp_type, std::string reg,
-                       int value, size_t offset, std::string var_name): left(left), right(right), comp_type(comp_type), value(value), offset(offset), var_name(var_name){
+                       int value, size_t offset, std::string var_name): left(left), right(right), comp_type(comp_type), value(value), offset(offset), var_name(var_name) {
         this->reg = reg;
         if (reg.empty() && left != nullptr) {reg = left->reg; own_reg = false;}
     }
@@ -28,12 +28,20 @@ ASTCalculationNode::ASTCalculationNode(ASTCalculationNode* left, ASTCalculationN
                             "div " + (own_reg ? reg : left->reg) + "\n";*/
                     code += "mov $0, %edx\nmov " + left->reg + ", %eax\ndiv " + right->reg +
                             (own_reg ? "\nmov %eax, " + left->reg : "\nmov %eax, " + reg) + "\n";
-                }else if (comp_type == MOD) {
+                } else if (comp_type == MOD) {
                     code += "mov $0, %edx\nmov " + left->reg + ", %eax\ndiv " + right->reg +
                             (own_reg ? "\nmov %edx, " + left->reg : "\nmov %edx, " + reg) + "\n";
                 } else {
-                    code += computation_op_to_string() + " " + right->reg + "," + left->reg +
-                            (own_reg ? "\nmov " + left->reg + "," + reg + "\n" : "\n");
+                    if (comp_type == SHIFT_L || comp_type == SHIFT_R) {
+                        // shifts can only be done by 8-bit shift amount stored in the cl-register
+                        // note that the content of rcx is overwritten here
+                        code += "mov " + right->reg + ", " + "%ecx\n";
+                        code += computation_op_to_string() + " %cl, " + left->reg +
+                                (own_reg ? "\nmov " + left->reg + "," + reg + "\n" : "\n");
+                    } else {
+                        code += computation_op_to_string() + " " + right->reg + "," + left->reg +
+                                (own_reg ? "\nmov " + left->reg + "," + reg + "\n" : "\n");
+                    }
                 }
 
                 return code;
@@ -47,6 +55,11 @@ ASTCalculationNode::ASTCalculationNode(ASTCalculationNode* left, ASTCalculationN
             case SUB: return "sub";
             case MUL: return "mul";
             case DIV: return "div";
+            case BITWISE_AND: return "and";
+            case BITWISE_OR: return "or";
+            case BITWISE_XOR: return "xor";
+            case SHIFT_L: return "shl";
+            case SHIFT_R: return "shr";
         }
         return "";
     }

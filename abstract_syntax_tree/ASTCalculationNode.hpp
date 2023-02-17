@@ -4,7 +4,7 @@
 
 #include "ASTComputationNode.hpp"
 
-enum ComputationOp {LIT, VAR, ADD, SUB, MUL, DIV, MOD};
+enum ComputationOp {LIT, VAR, ADD, SUB, MUL, DIV, MOD, BITWISE_AND, BITWISE_OR, BITWISE_XOR, SHIFT_L, SHIFT_R};
 
 struct ASTCalculationNode : ASTComputationNode {
     ASTCalculationNode* left;
@@ -15,7 +15,7 @@ struct ASTCalculationNode : ASTComputationNode {
     //std::string reg;
     bool own_reg = true;
 
-    // Optional variables for cases (LIT, VAR)
+    // Optional variables for cases (LIT, VAR) and (SHIFT_L, SHIFT_R)
     int value;
     std::string var_name;
     size_t offset;
