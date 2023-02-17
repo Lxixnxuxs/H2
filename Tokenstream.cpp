@@ -113,7 +113,17 @@
         return res;
     }
 
-
+std::string Tokenstream::to_string() {
+    std::string text;
+    auto old_begin = begin_;
+    while(!empty()) {
+        text+=" ";
+        text += *begin_;
+        begin_++;
+    }
+    begin_ = old_begin;
+    return text;
+}
 
 
 template <typename a>

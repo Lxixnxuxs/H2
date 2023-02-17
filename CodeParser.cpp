@@ -215,6 +215,10 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
                 auto body_stream = t.read_inside_brackets();
                 res.push_back(parse_while(cond_stream,complexity_stream,body_stream,v,g));
 
+            } else if (*t == "/*") {
+                // a comment
+                res.push_back(parse_comment(t.read_inside_brackets()));
+
             } else {
                 // not a control structure
                 res.push_back(parse_line(t.read_until(";"), v,g));
@@ -397,6 +401,10 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
         return new ASTAssignmentNode(v.var_to_offset[var], calculation, var,type_,need_to_declare);
     }
 
+
+
+
+
     ASTCallNode* CodeParser::parse_call(Tokenstream& t, LocalVariableManager& v, GlobalVariableManager& g, int h){
         // be aware that this call changes the Tokenstream of the higher level
 
@@ -575,3 +583,9 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
 
         return new ASTCalculationNode(nullptr, nullptr, LIT, regs[h],value, 0);
     }
+
+ASTCommentNode *CodeParser::parse_comment(Tokenstream t) {
+    return new ASTCommentNode(
+            t.to_string()
+            );
+}

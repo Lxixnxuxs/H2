@@ -15,6 +15,7 @@ struct ASTWhileLoopNode;
 struct ASTCallNode;
 struct ASTComparisonNode;
 struct ASTCalculationNode;
+struct ASTCommentNode;
 
 
 class CodeParser {
@@ -49,6 +50,8 @@ public:
     VirtualMathTerm parse_complexity_term(Tokenstream t);
 
     ASTStatementNode* parse_line(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g);
+
+    ASTCommentNode* parse_comment(Tokenstream t);
 
     ASTCallNode* parse_call(Tokenstream& t, LocalVariableManager& v, GlobalVariableManager& g, int h=0);
 

@@ -71,6 +71,7 @@ list<string>* lexer(string& text) {
     // include last token which would be forgotten otherwise
     if (last_pos < i) {res->push_back(text.substr(last_pos,i-last_pos));}
 
-    remove_comments(res); // comments are removed by default
+    // translate comments into AST
+    //remove_comments(res); // comments are removed by default
     return res;
 }

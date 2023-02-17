@@ -5,15 +5,25 @@ def h(int n) -> int /% _O(n) %/  {
 }
 
 
-def z(int n) -> void /% O((n)^(2.000000)) %/  {
+def z(int n) -> void /% _O(log(n)) %/  {
+    int i = n;
+    int e = 0;
+    while (i>0) /% _O(log(i)) %/  {
+        i = (i / 2);
+        e = (e + 1);
+    }
+    return e;
+    /* is a comment allowed here? */
 }
 
 
-def f(int n) -> void /% _O((n)^(2.000000)) %/  {
+def f(int n) -> void /% _O(n) %/  {
+    /* something */
     if (n<=0) {
-        return z[n];
+        return 1;
     } else {
         int res = h[n];
+        /* let's write a beautiful comment + - != nothing % 4 */
         res = (res + f[(n / 2)]);
         return res;
     }

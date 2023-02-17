@@ -17,7 +17,7 @@ using std::map;
 using std::vector;
 
 
-static const map<string,string> corresponding_bracket = {{"(",")"},{"{","}"},{"[","]"},{"/%","%/"}};
+static const map<string,string> corresponding_bracket = {{"(",")"},{"{","}"},{"[","]"},{"/%","%/"},{"/*","*/"}};
 
 struct Tokenstream {
     list<string>::iterator begin_;
@@ -41,6 +41,7 @@ struct Tokenstream {
 
     Tokenstream read_inside_brackets();
 
+    std::string to_string();
 };
 
 
