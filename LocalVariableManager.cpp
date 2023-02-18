@@ -5,8 +5,10 @@
 #include "global_information.hpp"
 #include "GlobalVariableManager.hpp"
 
-    void LocalVariableManager::add_variable(std::string name, std::string type, GlobalVariableManager* type_context){
+    void LocalVariableManager::add_variable(std::string name, std::string type, GlobalVariableManager* type_context,
+                                            bool is_ref){
         var_to_type[name] = type;
+        var_to_is_ref[name] = is_ref;
 
         var_to_offset[name] = current_offset;
         if (type_context!= nullptr and type_context->class_exists(type)) {
