@@ -23,6 +23,8 @@ class CodeParser {
 private:
     string is_valid_identifier(std::string token);
 
+    bool is_valid_data_type(std::string token, GlobalVariableManager& g);
+
     void expect(Tokenstream t, string token);
 
     void expect_one_of(Tokenstream t, vector<string> tokens);
@@ -31,16 +33,18 @@ private:
 
     void expect_empty(Tokenstream t);
 
+    void expect_data_type(Tokenstream t, GlobalVariableManager& g);
+
 public:
     size_t global_id_counter = 0;
 
     ASTRootNode* parse(Tokenstream t);
 
-    ASTClassNode* parse_class(Tokenstream t, GlobalVariableManager& g);
+    ASTClassNode* parse_class(Tokenstream& t, GlobalVariableManager& g);
 
-    ASTFunctionNode* parse_function(Tokenstream t, GlobalVariableManager& g);
+    ASTFunctionNode* parse_function(Tokenstream& t, GlobalVariableManager& g, const LocalVariableManager& class_context = LocalVariableManager());
 
-    std::pair<int,vector<std::pair<string,string>>> parse_argument_list(Tokenstream t, LocalVariableManager& v);
+    std::pair<int,vector<std::pair<string,string>>> parse_argument_list(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g);
 
     std::vector<ASTStatementNode*> parse_subspace(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g);
 

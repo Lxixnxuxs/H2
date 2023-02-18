@@ -38,7 +38,7 @@
     Tokenstream::Tokenstream(list<string>::iterator begin_, list<string>::iterator end_): begin_(begin_), end_(end_) {}
 
     Tokenstream Tokenstream::read_until(const string& token){
-        // given back whole Tokenstream, if no instance is found
+        // gives back whole Tokenstream, if no instance is found
 
         auto old_begin_ = begin_;
         while(!empty() and *begin_ != token) {begin_++;};

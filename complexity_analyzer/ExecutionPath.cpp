@@ -140,7 +140,8 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
             }
 
 
-            VirtualMathTerm child_complexity = calc->get_complexity();
+            VirtualMathTerm child_complexity = {0};
+            if (calc!= nullptr) child_complexity = calc->get_complexity();
             // the child complexity should be in terms of the call-values, so substitute the current state in
             for (auto p : execution_state) {
                 child_complexity.substitude_variable(p.first,p.second);
@@ -150,7 +151,8 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
             total_complexity.children.push_back(child_complexity);
 
 
-            VirtualMathTerm v = calc->as_math_term();
+            VirtualMathTerm v = {0};
+            if (calc!= nullptr) v=calc->get_complexity();
             // substitute in the current values of the variables at this point (in order to always have terms of the calling-arguments)
             for (auto p : execution_state) {
                 v.substitude_variable(p.first,p.second);

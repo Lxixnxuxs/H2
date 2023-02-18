@@ -9,9 +9,10 @@ ASTAssignmentNode::ASTAssignmentNode(size_t offset, ASTComputationNode* right, s
             offset(offset), right(right), var_name(var_name), data_type(data_type), is_declaration(is_declaraion) {}
 
     std::string ASTAssignmentNode::compile() {
+        if (right== nullptr)return "";
+
         std::string code = right->compile();
         code += "mov " + right->reg + ", " + std::to_string(offset) + "(%rsp)\n";
-
         return code;
     }
 
@@ -22,7 +23,9 @@ ASTAssignmentNode::ASTAssignmentNode(size_t offset, ASTComputationNode* right, s
     }
 
     std::string ASTAssignmentNode::to_code() {
-        return get_indentation(block_level) + (is_declaration ? data_type + " " : "") + var_name + " = " + right->to_code() + ";\n";
+
+        return get_indentation(block_level) + (is_declaration ? data_type + " " : "") + var_name + ((right==
+                                                                                                   nullptr) ? "": (" = " + right->to_code())) + ";\n";
     }
 
     std::string ASTAssignmentNode::get_class() { return "Assignment";}

@@ -15,3 +15,6 @@ void ASTNode::set_block_level(int n = 0){
     block_level = n;
 }
 
+VirtualMathTerm ASTNode::get_complexity() {
+    return {0};
+}

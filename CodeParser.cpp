@@ -9,8 +9,7 @@
 #include "CodeParser.hpp"
 
 static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-", SUB}, {"*", MUL}, {"/", DIV},
-                                                                 {"%", MOD}, {"&", BITWISE_AND}, {"|", BITWISE_OR}, {"€", BITWISE_XOR},
-                                                                 {"<<", SHIFT_L}, {">>", SHIFT_R}};
+                                                                 {"%", MOD}};
 
 
     string CodeParser::is_valid_identifier(std::string token) {
@@ -29,6 +28,10 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
             return "'"+token+"' cannot be used as a identifier, because it is a lexer symbol";
         }
         return "";
+    }
+
+    bool CodeParser::is_valid_data_type(std::string token, GlobalVariableManager& g) {
+        return (g.class_exists(token) || find(data_types.begin(),data_types.end(),token) != data_types.end());
     }
 
     void CodeParser::expect(Tokenstream t, string token){
@@ -75,6 +78,12 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
 
     }
 
+    void CodeParser::expect_data_type(Tokenstream t, GlobalVariableManager &g) {
+        if (!is_valid_data_type(*t,g)){
+            throw std::invalid_argument("PARSER ERROR  Expected a data type but received '"+*t+"'");
+        }
+    }
+
     ASTRootNode* CodeParser::parse(Tokenstream t) {
         if (t.empty()) {
             throw std::invalid_argument("PARSER ERROR  cannot parse empty programm");
@@ -82,10 +91,8 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
         GlobalVariableManager g;
         std::vector<ASTNode*> funcs_and_classes;
 
-        expect_one_of(t,{"def","class"});
-        std::string token_found = *t;
-        t+=1; // throw away first def or class
 
+        /*
         while (!t.empty()){
             if (token_found == "def") {
                 auto res = t.read_until_one_of({"def","class"});
@@ -104,17 +111,95 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
                 throw std::invalid_argument("PARSER ERROR  Expected 'def' or 'class' but received '"+*t+"'");
             }
         }
+         */
+
+        while (!t.empty()) {
+            expect_one_of(t,{"def","class"});
+            std::string token_found = *t;
+            t+=1; // throw away first def or class
+
+            if (token_found == "def") {
+                funcs_and_classes.push_back(parse_function(t, g));      // ATTENTION: at this spot the tokenstream needs to be passed by value!
+            } else if (token_found == "class") {
+                funcs_and_classes.push_back(parse_class(t, g));
+            }
+        }
 
         return new ASTRootNode(funcs_and_classes);
     }
 
-    ASTClassNode* CodeParser::parse_class(Tokenstream t, GlobalVariableManager& g){
-        return nullptr;
+    ASTClassNode* CodeParser::parse_class(Tokenstream& t, GlobalVariableManager& g){
+        // ATTENTION: the tokenstream is passed by reference!
+        // Note that the 'class' has already been thrown away
+
+        expect_identifier(t);
+        string class_name = *t;
+        t+=1; // throw away class_name
+
+        // find parameters
+        expect(t,"[");
+        auto parameter_stream = t.read_inside_brackets();
+        std::vector<std::string> parameters;
+
+        while(!parameter_stream.empty()) {
+            expect_identifier(parameter_stream);
+            parameters.push_back(*parameter_stream);
+            parameter_stream+=1; // throw away parameter
+
+            if (!parameter_stream.empty()) {
+                expect(parameter_stream,",");
+                parameter_stream+=1; // throw away ','
+            }
+        }
+
+        // body
+        expect(t,"{");
+        auto class_content = t.read_inside_brackets();
+        //expect_empty(t);
+
+        // class variables
+        LocalVariableManager class_intern_offset_manager;
+
+        auto class_var_stream = class_content.read_until("def");
+
+        GlobalVariableManager useless_g;
+        while (!class_var_stream.empty()) {
+            parse_line(class_var_stream.read_until(";"), class_intern_offset_manager, useless_g); // maybe write own function instead. Otherwise wrong programm will be accepted
+        }
+
+
+        std::vector<std::shared_ptr<ASTFunctionNode>> class_functions;
+
+        // class is defined before the Functions are parsed
+        g.class_to_local_manager[class_name] = class_intern_offset_manager;
+
+        // functions
+        while (!class_content.empty()) {
+            //expect(class_content,"def");
+            //std::string token_found = *class_content;
+            //class_content+=1; // throw away first def or class
+            auto next_function = class_content.read_until("def");
+            class_functions.push_back((std::shared_ptr<ASTFunctionNode>) parse_function(next_function, g));
+
+            /*
+            // effect on parameter
+            expect(next_function, "[");
+            next_function+=1;
+            // TODO parse parameter changes
+            expect(next_function, "]");
+            next_function+=1;*/
+            expect_empty(next_function);
+        }
+
+        return new ASTClassNode(class_name, parameters, class_intern_offset_manager, class_functions);
     }
 
 
-ASTFunctionNode* CodeParser::parse_function(Tokenstream t, GlobalVariableManager& g) {
+ASTFunctionNode* CodeParser::parse_function(Tokenstream& t, GlobalVariableManager& g, const LocalVariableManager& class_context) {
+        // ATTENTION: the tokenstream is passed by reference!
         // Note that the 'def' has already been thrown away
+
+
 
         LocalVariableManager var_manager;
         string func_name = *t;
@@ -130,7 +215,7 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream t, GlobalVariableManager
         expect(t,"(");
         auto argument_stream = t.read_inside_brackets();
 
-        std::pair<int,vector<std::pair<string,string>>> temp  = parse_argument_list(argument_stream, var_manager);
+        std::pair<int,vector<std::pair<string,string>>> temp  = parse_argument_list(argument_stream, var_manager, g);
 
         res->arg_stackpart_size = temp.first;
 
@@ -143,7 +228,7 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream t, GlobalVariableManager
 
         var_manager.ret_type = *t;
 
-        expect_one_of(t,data_types);
+        expect_data_type(t, g);
         res->return_type = *t;
 
         t += 1; // discard return type
@@ -164,7 +249,7 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream t, GlobalVariableManager
         res->body = parsed_body;
 
         // expect nothing to be there after closing bracket '}'
-        expect_empty(t);
+        //expect_empty(t);
 
         size_t stack_frame_size = var_manager.current_offset;
         res->f_stack_size = stack_frame_size;
@@ -175,7 +260,7 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream t, GlobalVariableManager
         return res;
     }
 
-    std::pair<int,vector<std::pair<string,string>>> CodeParser::parse_argument_list(Tokenstream t, LocalVariableManager& v){
+    std::pair<int,vector<std::pair<string,string>>> CodeParser::parse_argument_list(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g) {
         // returns args_stack_size
 
         vector<std::pair<string,string>> type_list;
@@ -188,7 +273,8 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream t, GlobalVariableManager
                 expect(t,",");
                 t+=1; // discard ',' between arguments
             }
-            expect_one_of(t,data_types);
+            expect_data_type(t, g);
+
             string type = *t;
             t+=1; // discard type
 
@@ -377,21 +463,25 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream t, GlobalVariableManager
 
         // find out if this is a declaration
         // declare new variable later
-        for (auto type : data_types){
-
+        /*for (auto type : data_types){
             if (type == *t){
                 need_to_declare = true;
                 type_ = type;
                 t+=1; // discard type
                 break;
             }
+        }*/
+        if (is_valid_data_type(*t, g)){
+            need_to_declare = true;
+            type_ = *t;
+            t+=1; // discard type
         }
 
         // check for expression without '='. eg a funcion call or something like an unused '3+4;'
         // all this is handled in parse_calculation
         auto copy = t;
         copy+=1;
-        if (*copy != "=") {
+        if (*copy != "=" && copy.size()!=0) {
             return parse_calculation(t,v,g);
         }
 
@@ -399,6 +489,12 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream t, GlobalVariableManager
         expect_identifier(t);
         auto var = *t;
         t+=1; // discard var_name
+
+        // declaration without assignment
+        if (t.empty() && need_to_declare){
+            v.add_variable(var,type_);
+            return new ASTAssignmentNode(v.var_to_offset[var], nullptr, var,type_,need_to_declare);
+        }
 
         expect(t,"=");
         t+=1; // discard '='
@@ -605,3 +701,5 @@ ASTCommentNode *CodeParser::parse_comment(Tokenstream t) {
             t.to_string()
             );
 }
+
+

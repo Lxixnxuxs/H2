@@ -7,24 +7,29 @@
 
 #include "ASTNode.hpp"
 #include <memory>
-
-struct LocalVariableManager;
+#include "../LocalVariableManager.hpp"
+//struct LocalVariableManager;
 struct ASTFunctionNode;
 
 
 struct ASTClassNode : ASTNode {
     std::vector<std::shared_ptr<ASTFunctionNode>> methods;
     std::string name;
-    int offset;
-    //std::unique_ptr<LocalVariableManager> object_variables;
-    std::vector<std::string> runtime_parameters;
+    //int offset;
+    LocalVariableManager object_variables;
+    std::vector<std::string> complexity_parameters;
+    int size_of;
 
-    ASTClassNode(std::string name, int offset, std::vector<std::string> runtime_parameters);
+    ASTClassNode(std::string name, std::vector<std::string> runtime_parameters, LocalVariableManager object_variables,
+                 std::vector<std::shared_ptr<ASTFunctionNode>> methods);
 
     std::string compile() override;
 
     std::string to_code() override;
 
+    std::string get_class() override;
+
+    void set_block_level(int n) override;
 
 };
 

@@ -25,7 +25,7 @@ struct ASTNode {
 
     virtual std::string compile() = 0;
 
-    virtual VirtualMathTerm get_complexity() = 0;
+    virtual VirtualMathTerm get_complexity();
 
     virtual std::string to_code() = 0;
 

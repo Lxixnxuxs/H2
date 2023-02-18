@@ -66,7 +66,7 @@ ASTFunctionNode::ASTFunctionNode(std::string f_name, std::vector<ASTStatementNod
     }
 
     std::string ASTFunctionNode::to_code() {
-        auto res = "def " + f_name + "(";
+        auto res = get_indentation(block_level)+"def " + f_name + "(";
         for (int i = 0; i<argument_list.size(); i++) {
             res += argument_list[i].second + " " + argument_list[i].first;
             if (i!=argument_list.size()-1) res += ", ";
@@ -82,7 +82,7 @@ ASTFunctionNode::ASTFunctionNode(std::string f_name, std::vector<ASTStatementNod
             res += e->to_code();
         }
 
-        res += "}\n";
+        res += get_indentation(block_level)+"}\n";
 
         return res;
     }
