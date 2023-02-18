@@ -4,6 +4,6 @@
 
 #include "GlobalVariableManager.hpp"
 
-bool GlobalVariableManager::class_exists(std::string name) {
+bool GlobalVariableManager::class_exists(std::string name) const {
     return class_to_local_manager.find(name) != class_to_local_manager.end();
 }

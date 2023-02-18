@@ -21,7 +21,7 @@ struct GlobalVariableManager {
     //std::map<std::string, int> class_to_size;
     std::map<std::string, LocalVariableManager> class_to_local_manager;
 
-    bool class_exists(std::string name);
+    bool class_exists( std::string name) const;
 };
 
 #endif //H2_GLOBALVARIABLEMANAGER_HPP

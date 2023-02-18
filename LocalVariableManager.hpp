@@ -20,7 +20,7 @@ struct LocalVariableManager {
     std::map<std::string, bool> var_to_is_ref;
     int current_offset = 0;
 
-    void add_variable(std::string name, std::string type, GlobalVariableManager* type_context = nullptr, bool=false);
+    void add_variable(std::string name, std::string type, const GlobalVariableManager* type_context = nullptr, bool=false);
 
     bool variable_exists(std::string name);
 
