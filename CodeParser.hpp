@@ -42,7 +42,7 @@ public:
 
     ASTClassNode* parse_class(Tokenstream& t, GlobalVariableManager& g);
 
-    ASTFunctionNode* parse_function(Tokenstream& t, GlobalVariableManager& g, const LocalVariableManager& class_context = LocalVariableManager(), std::optional<std::string> class_name = {});
+    ASTFunctionNode* parse_function(Tokenstream& t, GlobalVariableManager& g, std::optional<std::string> class_name = {});
 
     std::pair<int,vector<std::pair<string,string>>> parse_argument_list(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g);
 

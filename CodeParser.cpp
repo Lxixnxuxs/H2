@@ -179,7 +179,7 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
             //std::string token_found = *class_content;
             //class_content+=1; // throw away first def or class
             auto next_function = class_content.read_until("def");
-            class_functions.push_back((std::shared_ptr<ASTFunctionNode>) parse_function(next_function, g));
+            class_functions.push_back((std::shared_ptr<ASTFunctionNode>) parse_function(next_function, g, {class_name}));
 
             /*
             // effect on parameter
@@ -195,7 +195,7 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
     }
 
 
-ASTFunctionNode* CodeParser::parse_function(Tokenstream& t, GlobalVariableManager& g, const LocalVariableManager& class_context, std::optional<std::string> class_name) {
+ASTFunctionNode* CodeParser::parse_function(Tokenstream& t, GlobalVariableManager& g,  std::optional<std::string> class_name) {
         // ATTENTION: the tokenstream is passed by reference!
         // Note that the 'def' has already been thrown away
 
@@ -484,6 +484,7 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream& t, GlobalVariableManage
 
         expect_identifier(t);
         if (!need_to_declare) {
+            // if it is not a declaration, check if the variable exists
             if (!v.variable_exists(*t) and !v.get_this_namespace(g).variable_exists(*t)) {
                 throw std::invalid_argument("PARSER ERROR  variable '" + *t + "' not declared");
             }
