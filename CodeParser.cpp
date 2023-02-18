@@ -203,8 +203,8 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream& t, GlobalVariableManage
 
         LocalVariableManager var_manager;
 
-        // add implicit 'this' argument
-        if (class_name) var_manager.add_variable("this",class_name.value());
+        // add implicit 'this' argument (reference)
+        if (class_name) var_manager.add_variable("this",class_name.value(),&g, true);
 
         string func_name = *t;
         var_manager.name = func_name;
@@ -286,7 +286,7 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream& t, GlobalVariableManage
             string name = *t;
             t+=1; // discard name
 
-            v.add_variable(name, type);
+            v.add_variable(name, type, &g,type!="int");
             type_list.emplace_back(name, type);
         }
         return {v.current_offset, type_list};
@@ -494,7 +494,7 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream& t, GlobalVariableManage
 
         // declaration without assignment
         if (t.empty() && need_to_declare){
-            v.add_variable(var,type_);
+            v.add_variable(var,type_, &g);
             return new ASTAssignmentNode(v.var_to_offset[var], nullptr, var,type_,need_to_declare);
         }
 
