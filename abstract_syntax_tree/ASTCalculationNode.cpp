@@ -142,3 +142,7 @@ ASTCalculationNode::ASTCalculationNode(ASTCalculationNode* left, ASTCalculationN
 
         throw std::invalid_argument("Operation not jet convertible to math term");
     }
+
+std::pair<std::string, bool> ASTCalculationNode::get_return_type() {
+    return std::pair<std::string, bool>();
+}

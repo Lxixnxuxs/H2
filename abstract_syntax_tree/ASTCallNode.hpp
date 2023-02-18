@@ -30,6 +30,9 @@ struct ASTCallNode : ASTCalculationNode{
     std::string get_class() override;
 
     VirtualMathTerm as_math_term() override;
+
+    std::pair<std::string, bool> get_return_type();
+
 };
 
 #endif //H2_ASTCALLNODE_HPP

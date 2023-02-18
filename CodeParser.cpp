@@ -286,7 +286,7 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream& t, GlobalVariableManage
             string name = *t;
             t+=1; // discard name
 
-            v.add_variable(name, type, &g,type!="int");
+            v.add_variable(name, type, &g,type!="int"); // everything except primitive types are passed by reference
             type_list.emplace_back(name, type);
         }
         return {v.current_offset, type_list};
@@ -494,7 +494,7 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream& t, GlobalVariableManage
 
         // declaration without assignment
         if (t.empty() && need_to_declare){
-            v.add_variable(var,type_, &g);
+            v.add_variable(var,type_, &g, true); // Obj a;  this creates a new object
             return new ASTAssignmentNode(v.var_to_offset[var], nullptr, var,type_,need_to_declare);
         }
 
@@ -509,8 +509,10 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream& t, GlobalVariableManage
         // declare variable only after the calculation, because the parser needs to check that this very variable is not
         // used within its own declaration
         if (need_to_declare){
-            v.add_variable(var,type_);
+            v.add_variable(var,type_, &g, false);  // Obj b = a; where a is of type Obj. This only copies the reference
         }
+
+        // TODO introduce typ checking
 
         return new ASTAssignmentNode(v.var_to_offset[var], calculation, var,type_,need_to_declare);
     }

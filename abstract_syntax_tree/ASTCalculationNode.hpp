@@ -41,6 +41,8 @@ struct ASTCalculationNode : ASTComputationNode {
     std::string get_class() override;
 
     virtual VirtualMathTerm as_math_term();
+
+    std::pair<std::string, bool> get_return_type();
 };
 
 #endif //H2_ASTCALCULATIONNODE_HPP
