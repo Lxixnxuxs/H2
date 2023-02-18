@@ -19,10 +19,17 @@
 
 
 ASTFunctionNode::ASTFunctionNode(std::string f_name, std::vector<ASTStatementNode*> body, size_t f_stack_size, size_t arg_stackpart_size,
-                    std::vector<std::pair<std::string,std::string>> argument_list, std::string return_type, std::map<std::string, VirtualMathTerm> complexity_map):
-            f_name(f_name), body(body), f_stack_size(f_stack_size), arg_stackpart_size(arg_stackpart_size), argument_list(argument_list), return_type(return_type) {
-        initialize_with_complexity_map(complexity_map);
-    }
+                    std::vector<std::pair<std::string,std::string>> argument_list, std::string return_type, std::optional<std::string> class_name, std::map<std::string, VirtualMathTerm> complexity_map):
+            f_name(f_name), body(body), f_stack_size(f_stack_size), arg_stackpart_size(arg_stackpart_size), return_type(return_type),
+            class_name(class_name) {
+
+    this->argument_list = argument_list;
+    /*if (class_name) {
+        this->argument_list.insert(this->argument_list.begin(), {"this", class_name.value()});
+    }*/
+
+    initialize_with_complexity_map(complexity_map);
+}
 
 
     void ASTFunctionNode::initialize_with_complexity_map(std::map<std::string, VirtualMathTerm> complexity_map) {
@@ -39,7 +46,7 @@ ASTFunctionNode::ASTFunctionNode(std::string f_name, std::vector<ASTStatementNod
         code += "sub $" + std::to_string(f_stack_size + callee_reg_count*callee_reg_size) + ", %rsp\n";
 
         // storing all the callee-save register
-        for (int i = 0; i<callee_reg_count; i++){
+        for (int i = 0; i<callee_reg_count; i++) {
             code += "mov " + callee_save_regs[i]+ ", " + std::to_string(f_stack_size + i*callee_reg_size) +"(%rsp)\n";
         }
 

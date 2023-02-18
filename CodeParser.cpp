@@ -195,13 +195,17 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
     }
 
 
-ASTFunctionNode* CodeParser::parse_function(Tokenstream& t, GlobalVariableManager& g, const LocalVariableManager& class_context) {
+ASTFunctionNode* CodeParser::parse_function(Tokenstream& t, GlobalVariableManager& g, const LocalVariableManager& class_context, std::optional<std::string> class_name) {
         // ATTENTION: the tokenstream is passed by reference!
         // Note that the 'def' has already been thrown away
 
 
 
         LocalVariableManager var_manager;
+
+        // add implicit 'this' argument
+        if (class_name) var_manager.add_variable("this",class_name.value());
+
         string func_name = *t;
         var_manager.name = func_name;
 
@@ -463,14 +467,6 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream& t, GlobalVariableManage
 
         // find out if this is a declaration
         // declare new variable later
-        /*for (auto type : data_types){
-            if (type == *t){
-                need_to_declare = true;
-                type_ = type;
-                t+=1; // discard type
-                break;
-            }
-        }*/
         if (is_valid_data_type(*t, g)){
             need_to_declare = true;
             type_ = *t;
@@ -487,6 +483,11 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream& t, GlobalVariableManage
 
 
         expect_identifier(t);
+        if (!need_to_declare) {
+            if (!v.variable_exists(*t) and !v.get_this_namespace(g).variable_exists(*t)) {
+                throw std::invalid_argument("PARSER ERROR  variable '" + *t + "' not declared");
+            }
+        }
         auto var = *t;
         t+=1; // discard var_name
 
@@ -676,12 +677,11 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream& t, GlobalVariableManage
     }
 
     ASTCalculationNode* CodeParser::parse_literal(std::string lit, LocalVariableManager& v, GlobalVariableManager& g, int h) {
-        for (auto pair : v.var_to_offset) {
-            if (pair.first == lit) {
-                // found a variable-definition
-                return new ASTCalculationNode(nullptr, nullptr, VAR,regs[h],0,v.var_to_offset[lit], lit);
-            }
+
+        if (v.variable_exists(lit)) {
+            return new ASTCalculationNode(nullptr, nullptr, VAR,regs[h],0,v.var_to_offset[lit], lit);
         }
+
 
         int value;
         try {

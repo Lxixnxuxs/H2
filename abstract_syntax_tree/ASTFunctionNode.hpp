@@ -17,6 +17,8 @@ struct ASTFunctionNode : public ASTNode {
     std::vector<std::pair<std::string,std::string>> argument_list;  // name to type
     std::string return_type;
 
+    std::optional<std::string> class_name;
+
     // not always will it be possible to figure out the runtime. Therefore the logic has the option to surrender
     bool virtual_exec_surrendered = false;
     bool within_active_analysis = false; // mark which functions do not have a closed form yet
@@ -25,7 +27,7 @@ struct ASTFunctionNode : public ASTNode {
     int callee_reg_count = callee_save_regs.size();
 
     ASTFunctionNode(std::string f_name, std::vector<ASTStatementNode*> body, size_t f_stack_size, size_t arg_stackpart_size,
-                    std::vector<std::pair<std::string,std::string>> argument_list, std::string return_type, std::map<std::string, VirtualMathTerm> complexity_map);
+                    std::vector<std::pair<std::string,std::string>> argument_list, std::string return_type,std::optional<std::string> class_name, std::map<std::string, VirtualMathTerm> complexity_map);
 
     ASTFunctionNode()=default;
 

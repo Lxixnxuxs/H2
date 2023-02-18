@@ -8,6 +8,8 @@
 #include <vector>
 #include <map>
 
+struct GlobalVariableManager;
+
 struct LocalVariableManager {
     std::string name;
     std::string ret_type;
@@ -17,7 +19,11 @@ struct LocalVariableManager {
     std::map<std::string,size_t> var_to_offset;
     int current_offset = 0;
 
-    void add_variable(std::string name, std::string type);
+    void add_variable(std::string name, std::string type, GlobalVariableManager* type_context = nullptr);
+
+    bool variable_exists(std::string name);
+
+    LocalVariableManager get_this_namespace(GlobalVariableManager& g);
 };
 
 #endif //H2_LOCALVARIABLEMANAGER_HPP
