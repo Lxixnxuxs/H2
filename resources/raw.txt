@@ -6,16 +6,22 @@ class SimpleBool [length, width]  {
     int r;
     int value;
 
-    def append(int value_) -> SimpleBool /% _O(0.000000) %/  {
+    def append(int value_) -> int /% _O(0.000000) %/  {
         value = (value_ + g[value_]);
         SimpleBool res;
-        return res;
     }
 
     def get() -> int /% _O(0.000000) %/  {
         value = 3;
     }
 
+}
+
+
+def main() -> void /% _O(1.000000) %/  {
+    SimpleBool a;
+    /* a'append ( 3 ) ; a'value = 3 ; */
+    return a;
 }
 
 

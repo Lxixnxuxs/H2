@@ -4,6 +4,7 @@
 #include "ASTCalculationNode.hpp"
 #include <stdexcept>
 #include <iostream>
+#include "../global_information.hpp"
 
 ASTCalculationNode::ASTCalculationNode(ASTCalculationNode* left, ASTCalculationNode* right, ComputationOp comp_type, std::string reg,
                        int value, size_t offset, std::string var_name): left(left), right(right), comp_type(comp_type), value(value), offset(offset), var_name(var_name) {
@@ -14,7 +15,7 @@ ASTCalculationNode::ASTCalculationNode(ASTCalculationNode* left, ASTCalculationN
 
     std::string ASTCalculationNode::compile() {
         if (comp_type == VAR) {
-            return "mov " + std::to_string(offset) + "(%rsp)" + ", " + reg + "\n";
+            return "mov " + std::to_string(offset) + "("+stack_pointer+")" + ", " + reg + "\n";
         } else if (comp_type == LIT) {
             return "mov $" + std::to_string(value) + "," + reg + "\n";
         } else {
@@ -142,3 +143,7 @@ ASTCalculationNode::ASTCalculationNode(ASTCalculationNode* left, ASTCalculationN
 
         throw std::invalid_argument("Operation not jet convertible to math term");
     }
+
+std::pair<std::string, bool> ASTCalculationNode::get_return_type() {
+    return std::pair<std::string, bool>();
+}

@@ -3,6 +3,7 @@
 //
 #include "ASTAssignmentNode.hpp"
 #include "ASTComputationNode.hpp"
+#include "../global_information.hpp"
 
 
 ASTAssignmentNode::ASTAssignmentNode(size_t offset, ASTComputationNode* right, std::string var_name, std::string data_type, bool is_declaraion):
@@ -12,7 +13,7 @@ ASTAssignmentNode::ASTAssignmentNode(size_t offset, ASTComputationNode* right, s
         if (right== nullptr)return "";
 
         std::string code = right->compile();
-        code += "mov " + right->reg + ", " + std::to_string(offset) + "(%rsp)\n";
+        code += "mov " + right->reg + ", " + std::to_string(offset) + "("+stack_pointer+")\n";
         return code;
     }
 

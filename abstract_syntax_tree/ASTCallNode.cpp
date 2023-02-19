@@ -77,3 +77,7 @@ ASTCallNode::ASTCallNode(ASTCalculationNode *left, ASTCalculationNode *right, Co
         //assert(false); //TODO old code
         return {target_name, (std::vector<VirtualMathTerm>){}};
     }
+
+std::pair<std::string, bool> ASTCallNode::get_return_type() {
+    return ASTCalculationNode::get_return_type();
+}

@@ -287,11 +287,11 @@ std::pair<int,vector<std::pair<string,string>>> CodeParser::parse_argument_list(
         string name = *t;
         t+=1; // discard name
 
-        v.add_variable(name, type, &g,type!="int");
-        type_list.emplace_back(name, type);
+            v.add_variable(name, type, &g,type!="int"); // everything except primitive types are passed by reference
+            type_list.emplace_back(name, type);
+        }
+        return {v.current_offset, type_list};
     }
-    return {v.current_offset, type_list};
-}
 
 std::vector<ASTStatementNode*> CodeParser::parse_subspace(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){
     std::vector<ASTStatementNode*> res;
@@ -493,11 +493,11 @@ ASTStatementNode* CodeParser::parse_line(Tokenstream t, LocalVariableManager& v,
     auto var = *t;
     t+=1; // discard var_name
 
-    // declaration without assignment
-    if (t.empty() && need_to_declare){
-        v.add_variable(var,type_, &g);
-        return new ASTAssignmentNode(v.var_to_offset[var], nullptr, var,type_,need_to_declare);
-    }
+        // declaration without assignment
+        if (t.empty() && need_to_declare){
+            v.add_variable(var,type_, &g, true); // Obj a;  this creates a new object
+            return new ASTAssignmentNode(v.var_to_offset[var], nullptr, var,type_,need_to_declare);
+        }
 
     expect(t,"=");
     t+=1; // discard '='
@@ -507,11 +507,13 @@ ASTStatementNode* CodeParser::parse_line(Tokenstream t, LocalVariableManager& v,
 
 
 
-    // declare variable only after the calculation, because the parser needs to check that this very variable is not
-    // used within its own declaration
-    if (need_to_declare){
-        v.add_variable(var,type_);
-    }
+        // declare variable only after the calculation, because the parser needs to check that this very variable is not
+        // used within its own declaration
+        if (need_to_declare){
+            v.add_variable(var,type_, &g, false);  // Obj b = a; where a is of type Obj. This only copies the reference
+        }
+
+        // TODO introduce typ checking
 
     return new ASTAssignmentNode(v.var_to_offset[var], calculation, var,type_,need_to_declare);
 }
