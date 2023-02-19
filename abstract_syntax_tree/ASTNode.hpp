@@ -10,6 +10,7 @@
 //struct VirtualMathTerm;
 
 #include "../complexity_analyzer/virtual_math_term.hpp"
+#include <memory>
 
 
 enum ASTNodeType {};

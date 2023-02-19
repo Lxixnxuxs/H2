@@ -14,7 +14,7 @@ int main() {
     Tokenstream t = lexer(content);
 
     CodeParser parser;
-    ASTRootNode* root = parser.parse(t);
+    std::shared_ptr<ASTRootNode> root = parser.parse(t);
     root->get_complexity();
     root->set_block_level(0);
 

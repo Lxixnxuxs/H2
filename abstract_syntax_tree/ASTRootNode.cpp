@@ -6,7 +6,7 @@
 
 
 
-ASTRootNode::ASTRootNode(std::vector<ASTNode*>& funcs_and_classes): funcs_and_classes(funcs_and_classes) {}
+ASTRootNode::ASTRootNode(std::vector<std::shared_ptr<ASTNode>>& funcs_and_classes): funcs_and_classes(funcs_and_classes) {}
 
     std::string ASTRootNode::compile() {
 

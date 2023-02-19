@@ -10,15 +10,15 @@ struct ASTStatementNode;
 using std::string;
 
 struct ASTWhileLoopNode : ASTControlFlowNode {
-    ASTComparisonNode* condition;
-    std::vector<ASTStatementNode*> block;
+    std::shared_ptr<ASTComparisonNode> condition;
+    std::vector<std::shared_ptr<ASTStatementNode>> block;
     int label_id;
 
     ExecutionPath* former_exec_state; // execution of the parent-function until the point before while-loop started
     std::vector<std::string> altered_variables;
 
 
-    ASTWhileLoopNode(ASTComparisonNode* condition, std::vector<ASTStatementNode*> &block,int label_id, std::map<std::string, VirtualMathTerm> complexity_map);
+    ASTWhileLoopNode(std::shared_ptr<ASTComparisonNode> condition, std::vector<std::shared_ptr<ASTStatementNode>> &block,int label_id, std::map<std::string, VirtualMathTerm> complexity_map);
 
 
     std::string compile() override;

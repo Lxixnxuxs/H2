@@ -8,14 +8,14 @@ struct ASTStatementNode;
 
 
 struct ASTIfElseNode : ASTControlFlowNode {
-    ASTComparisonNode* condition;
-    std::vector<ASTStatementNode*> if_block;
-    std::vector<ASTStatementNode*> else_block;
+    std::shared_ptr<ASTComparisonNode> condition;
+    std::vector<std::shared_ptr<ASTStatementNode>> if_block;
+    std::vector<std::shared_ptr<ASTStatementNode>> else_block;
 
     int label_id;
 
-    ASTIfElseNode(ASTComparisonNode* condition, std::vector<ASTStatementNode*> &if_block,
-                  std::vector<ASTStatementNode*> &else_block, int label_id);
+    ASTIfElseNode(std::shared_ptr<ASTComparisonNode> condition, std::vector<std::shared_ptr<ASTStatementNode>> &if_block,
+                  std::vector<std::shared_ptr<ASTStatementNode>> &else_block, int label_id);
 
     std::string compile() override;
 

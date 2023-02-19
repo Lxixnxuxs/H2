@@ -8,7 +8,7 @@
 #include "../abstract_syntax_tree/ASTCallNode.hpp"
 
 
-ExecutionPath::ExecutionPath(std::vector<variable_name> arguments, std::vector<ASTStatementNode*> commands): commands(commands) {
+ExecutionPath::ExecutionPath(std::vector<variable_name> arguments, std::vector<std::shared_ptr<ASTStatementNode>> commands): commands(commands) {
         variable_order = arguments;
 
         for (int i = 0; i<arguments.size(); i++) {
@@ -68,7 +68,8 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
 
 
     // returns whether a return ended the execution
-    bool ExecutionPath::execute(ASTStatementNode* statement) {
+    bool ExecutionPath::execute(std::shared_ptr<ASTStatementNode> statement_) {
+        ASTStatementNode* statement = statement_.get();
         auto cls = statement->get_class();
 
         // go into deeper level of analysis
@@ -122,7 +123,7 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
 
             if (cls == "Assignment") {
                 auto pr = dynamic_cast<ASTAssignmentNode *>(statement);
-                calc = dynamic_cast<ASTCalculationNode *>(pr->right);
+                calc = dynamic_cast<ASTCalculationNode *>(pr->right.get());
                 writeback_name = pr->var_name;
 
                 // add a new parameter variable
@@ -136,7 +137,7 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
             }
             if (cls == "Return") {
                 auto pr = dynamic_cast<ASTReturnNode*>(statement);
-                calc = dynamic_cast<ASTCalculationNode*>(pr->calc);
+                calc = dynamic_cast<ASTCalculationNode*>(pr->calc.get());
             }
 
 

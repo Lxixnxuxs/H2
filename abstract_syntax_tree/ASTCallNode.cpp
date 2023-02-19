@@ -9,8 +9,8 @@
 #include <cassert>
 
 
-ASTCallNode::ASTCallNode(ASTCalculationNode *left, ASTCalculationNode *right, ComputationOp compType, std::string reg, int value,
-                size_t offset, ASTFunctionNode* target_, std::vector<ASTCalculationNode*> arguments, int h) : ASTCalculationNode(
+ASTCallNode::ASTCallNode(std::shared_ptr<ASTCalculationNode> left, std::shared_ptr<ASTCalculationNode> right, ComputationOp compType, std::string reg, int value,
+                size_t offset, std::shared_ptr<ASTFunctionNode> target_, std::vector<std::shared_ptr<ASTCalculationNode>> arguments, int h) : ASTCalculationNode(
             left, right, compType, regs[h], value, offset), target(target_), target_name(target_->f_name), arguments(arguments), h(h) {}
     // call node is always taking register eax
 

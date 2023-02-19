@@ -10,8 +10,8 @@
 
 
 
-ASTIfElseNode::ASTIfElseNode(ASTComparisonNode* condition, std::vector<ASTStatementNode*> &if_block,
-                  std::vector<ASTStatementNode*> &else_block, int label_id): condition(condition),
+ASTIfElseNode::ASTIfElseNode(std::shared_ptr<ASTComparisonNode> condition, std::vector<std::shared_ptr<ASTStatementNode>> &if_block,
+                  std::vector<std::shared_ptr<ASTStatementNode>> &else_block, int label_id): condition(condition),
                                                                              if_block(if_block), else_block(else_block), label_id(label_id) {};
 
     std::string ASTIfElseNode::compile() {
