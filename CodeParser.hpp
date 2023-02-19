@@ -6,6 +6,7 @@
 #include "LocalVariableManager.hpp"
 #include "GlobalVariableManager.hpp"
 #include "complexity_analyzer/virtual_math_term.hpp"
+#include "abstract_syntax_tree/ASTVariableNode.hpp"
 
 //#include "abstract_syntax_tree/ASTTree.hpp"
 struct ASTRootNode;
@@ -67,6 +68,9 @@ public:
     ASTCalculationNode* parse_calculation(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g, int h = 0);
 
     ASTCalculationNode* parse_literal(std::string lit, LocalVariableManager& v, GlobalVariableManager& g, int h);
+
+    std::shared_ptr<ASTVariableNode> parse_class_variable(Tokenstream t, bool is_root, std::string reg, LocalVariableManager* local_vars,
+                                                          GlobalVariableManager* global_vars, std::string prev_class_name="");
 };
 
 #endif //H2_PARSER_HPP

@@ -6,6 +6,7 @@
 #include "../LocalVariableManager.hpp"
 #include "../GlobalVariableManager.hpp"
 
+
 std::string ASTVariableNode::compile(std::string last_class_name="") {
     std::string code = "";
 
