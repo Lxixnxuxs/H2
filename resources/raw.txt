@@ -21,6 +21,7 @@ class SimpleBool [length, width]  {
 def main() -> void /% _O(1.000000) %/  {
     SimpleBool a;
     /* a'append ( 3 ) ; a'value = 3 ; */
+    return a;
 }
 
 

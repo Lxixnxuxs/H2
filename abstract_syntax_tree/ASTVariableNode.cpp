@@ -5,12 +5,13 @@
 #include "ASTVariableNode.hpp"
 #include "../LocalVariableManager.hpp"
 #include "../GlobalVariableManager.hpp"
+#include "../global_information.hpp"
 
 std::string ASTVariableNode::compile(std::string last_class_name="") {
     std::string code = "";
 
     if (is_root) {
-        code += "mov %rsp, " + reg + "\n";
+        code += "mov %"+stack_pointer+", " + reg + "\n";
         code += "add $" + std::to_string(local_vars->var_to_offset[name]) + ", " + reg + "\n";
     }
 

@@ -43,16 +43,16 @@ ASTFunctionNode::ASTFunctionNode(std::string f_name, std::vector<ASTStatementNod
     std::string ASTFunctionNode::compile() {
         std::string code = f_name + ":\n";
 
-        code += "sub $" + std::to_string(f_stack_size + callee_reg_count*callee_reg_size) + ", %rsp\n";
+        code += "sub $" + std::to_string(f_stack_size + callee_reg_count*callee_reg_size) + ", "+stack_pointer+"\n";
 
         // storing all the callee-save register
         for (int i = 0; i<callee_reg_count; i++) {
-            code += "mov " + callee_save_regs[i]+ ", " + std::to_string(f_stack_size + i*callee_reg_size) +"(%rsp)\n";
+            code += "mov " + callee_save_regs[i]+ ", " + std::to_string(f_stack_size + i*callee_reg_size) +"("+stack_pointer+")\n";
         }
 
         // moving arguments to stack
         for (int i = 0; i<argument_list.size(); i++) {
-            code += "mov " + argument_regs[i]+ ", " + std::to_string( i*callee_reg_size) +"(%rsp)\n"; // f_stack_size - arg_stackpart_size +
+            code += "mov " + argument_regs[i]+ ", " + std::to_string( i*callee_reg_size) +"("+stack_pointer+")\n"; // f_stack_size - arg_stackpart_size +
         }
 
         for (ASTStatementNode* e : body) {
@@ -64,10 +64,10 @@ ASTFunctionNode::ASTFunctionNode(std::string f_name, std::vector<ASTStatementNod
         // restoring all the callee-save register
 
         for (int i = 0; i<callee_reg_count; i++){
-            code += "mov " + std::to_string(f_stack_size + i*callee_reg_size) +"(%rsp), "+ callee_save_regs[i] +"\n";
+            code += "mov " + std::to_string(f_stack_size + i*callee_reg_size) +"("+stack_pointer+"), "+ callee_save_regs[i] +"\n";
         }
 
-        code += "add $"+std::to_string(f_stack_size + callee_reg_count * callee_reg_size) + ", %rsp\nret\n\n\n";
+        code += "add $"+std::to_string(f_stack_size + callee_reg_count * callee_reg_size) + ", "+stack_pointer+"\nret\n\n\n";
 
         return code;
     }
