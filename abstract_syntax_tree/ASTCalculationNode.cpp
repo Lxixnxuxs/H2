@@ -6,7 +6,8 @@
 #include <iostream>
 #include "../global_information.hpp"
 
-ASTCalculationNode::ASTCalculationNode(ASTCalculationNode* left, ASTCalculationNode* right, ComputationOp comp_type, std::string reg,
+
+ASTCalculationNode::ASTCalculationNode(std::shared_ptr<ASTCalculationNode> left, std::shared_ptr<ASTCalculationNode> right, ComputationOp comp_type, std::string reg,
                        int value, size_t offset, std::string var_name): left(left), right(right), comp_type(comp_type), value(value), offset(offset), var_name(var_name) {
         this->reg = reg;
         if (reg.empty() && left != nullptr) {reg = left->reg; own_reg = false;}

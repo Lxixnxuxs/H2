@@ -1,4 +1,5 @@
 
+#include <memory>
 #include <stdexcept>
 #include <algorithm>
 #include "Tokenstream.hpp"
@@ -85,12 +86,12 @@ void CodeParser::expect_data_type(Tokenstream t, GlobalVariableManager &g) {
     }
 }
 
-ASTRootNode* CodeParser::parse(Tokenstream t) {
-    if (t.empty()) {
-        throw std::invalid_argument("PARSER ERROR  cannot parse empty programm");
-    }
-    GlobalVariableManager g;
-    std::vector<ASTNode*> funcs_and_classes;
+std::shared_ptr<ASTRootNode> CodeParser::parse(Tokenstream t) {
+        if (t.empty()) {
+            throw std::invalid_argument("PARSER ERROR  cannot parse empty programm");
+        }
+        GlobalVariableManager g;
+        std::vector<std::shared_ptr<ASTNode>> funcs_and_classes;
 
 
     /*
@@ -126,12 +127,12 @@ ASTRootNode* CodeParser::parse(Tokenstream t) {
         }
     }
 
-    return new ASTRootNode(funcs_and_classes);
-}
+        return std::make_shared<ASTRootNode>(funcs_and_classes);
+    }
 
-ASTClassNode* CodeParser::parse_class(Tokenstream& t, GlobalVariableManager& g){
-    // ATTENTION: the tokenstream is passed by reference!
-    // Note that the 'class' has already been thrown away
+std::shared_ptr<ASTClassNode> CodeParser::parse_class(Tokenstream& t, GlobalVariableManager& g){
+        // ATTENTION: the tokenstream is passed by reference!
+        // Note that the 'class' has already been thrown away
 
     expect_identifier(t);
     string class_name = *t;
@@ -192,27 +193,27 @@ ASTClassNode* CodeParser::parse_class(Tokenstream& t, GlobalVariableManager& g){
         expect_empty(next_function);
     }
 
-    return new ASTClassNode(class_name, parameters, class_intern_offset_manager, class_functions);
-}
+        return std::make_shared<ASTClassNode>(class_name, parameters, class_intern_offset_manager, class_functions);
+    }
 
 
-ASTFunctionNode* CodeParser::parse_function(Tokenstream& t, GlobalVariableManager& g,  std::optional<std::string> class_name) {
-    // ATTENTION: the tokenstream is passed by reference!
-    // Note that the 'def' has already been thrown away
+std::shared_ptr<ASTFunctionNode> CodeParser::parse_function(Tokenstream& t, GlobalVariableManager& g,  std::optional<std::string> class_name) {
+        // ATTENTION: the tokenstream is passed by reference!
+        // Note that the 'def' has already been thrown away
 
 
 
-    LocalVariableManager var_manager;
+    auto var_manager = std::make_shared<LocalVariableManager>();
 
     // add implicit 'this' argument (reference)
-    if (class_name) var_manager.add_variable("this",class_name.value(),&g, true);
+    if (class_name) var_manager->add_variable("this",class_name.value(),&g, true);
 
     string func_name = *t;
-    var_manager.name = func_name;
+    var_manager->name = func_name;
 
-    auto* res = new ASTFunctionNode();
-    g.var_to_node[func_name] = res; // Node Object is known to global variable manager
-    res->f_name = func_name;
+        auto res = std::make_shared<ASTFunctionNode>();
+        g.var_to_node[func_name] = res; // Node Object is known to global variable manager
+        res->f_name = func_name;
 
     expect_identifier(t);
     t += 1; // discard func_name
@@ -256,7 +257,7 @@ ASTFunctionNode* CodeParser::parse_function(Tokenstream& t, GlobalVariableManage
     // expect nothing to be there after closing bracket '}'
     //expect_empty(t);
 
-    size_t stack_frame_size = var_manager.current_offset;
+    size_t stack_frame_size = var_manager->current_offset;
     res->f_stack_size = stack_frame_size;
 
 
@@ -293,9 +294,9 @@ std::pair<int,vector<std::pair<string,string>>> CodeParser::parse_argument_list(
         return {v.current_offset, type_list};
     }
 
-std::vector<ASTStatementNode*> CodeParser::parse_subspace(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){
-    std::vector<ASTStatementNode*> res;
-    while (!t.empty()){
+    std::vector<std::shared_ptr<ASTStatementNode>> CodeParser::parse_subspace(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){
+        std::vector<std::shared_ptr<ASTStatementNode>> res;
+        while (!t.empty()){
 
         // checking for control structures
         if (*t == "if") {
@@ -335,22 +336,22 @@ std::vector<ASTStatementNode*> CodeParser::parse_subspace(Tokenstream t, LocalVa
     return res;
 }
 
-ASTIfElseNode* CodeParser::parse_if_else(Tokenstream condition, Tokenstream if_body, Tokenstream else_body, LocalVariableManager& v, GlobalVariableManager& g) {
-    // Parse condition
-    ASTComparisonNode* condition_node = parse_comparison(condition, v, g);
-    std::vector<ASTStatementNode*> if_body_nodes = parse_subspace(if_body, v, g);
-    std::vector<ASTStatementNode*> else_body_nodes = parse_subspace(else_body, v, g);
+std::shared_ptr<ASTIfElseNode> CodeParser::parse_if_else(Tokenstream condition, Tokenstream if_body, Tokenstream else_body, LocalVariableManager& v, GlobalVariableManager& g) {
+        // Parse condition
+    std::shared_ptr<ASTComparisonNode> condition_node = parse_comparison(condition, v, g);
+        std::vector<std::shared_ptr<ASTStatementNode>> if_body_nodes = parse_subspace(if_body, v, g);
+        std::vector<std::shared_ptr<ASTStatementNode>> else_body_nodes = parse_subspace(else_body, v, g);
 
-    return new ASTIfElseNode(condition_node, if_body_nodes, else_body_nodes, global_id_counter++);
-}
+        return std::make_shared<ASTIfElseNode>(condition_node, if_body_nodes, else_body_nodes, global_id_counter++);
+    }
 
-ASTWhileLoopNode* CodeParser::parse_while(Tokenstream condition,Tokenstream complexity_stream, Tokenstream body, LocalVariableManager& v, GlobalVariableManager& g) {
-    ASTComparisonNode* condition_node = parse_comparison(condition, v, g);
-    auto complexity_map = parse_complexity(complexity_stream);
-    std::vector<ASTStatementNode*> body_nodes = parse_subspace(body, v, g);
+std::shared_ptr<ASTWhileLoopNode> CodeParser::parse_while(Tokenstream condition,Tokenstream complexity_stream, Tokenstream body, LocalVariableManager& v, GlobalVariableManager& g) {
+    std::shared_ptr<ASTComparisonNode> condition_node = parse_comparison(condition, v, g);
+        auto complexity_map = parse_complexity(complexity_stream);
+        std::vector<std::shared_ptr<ASTStatementNode>> body_nodes = parse_subspace(body, v, g);
 
-    return new ASTWhileLoopNode(condition_node,body_nodes,global_id_counter++, complexity_map);
-}
+        return std::make_shared<ASTWhileLoopNode>(condition_node,body_nodes,global_id_counter++, complexity_map);
+    }
 
 std::map<string, VirtualMathTerm> CodeParser::parse_complexity(Tokenstream t) {
     // returns a map from "O" or "I" to a VirtualMathTerm
@@ -399,111 +400,111 @@ VirtualMathTerm CodeParser::parse_complexity_term(Tokenstream t) {
         expect(t,"(");
         Tokenstream arg_stream = t.read_inside_brackets();
 
-        expect_empty(t); // should be empty, because log (without brackets) can only occur without any + * etc. concatenation
+            expect_empty(t); // should be empty, because log (without brackets) can only occur without any + * etc. concatenation
 
-        auto first_arg = arg_stream.read_until(",");
-        if (arg_stream.empty()) {   // only one argument -> implicit log10(arg)
-            return VirtualMathTerm(LOGARITHM, {10,parse_complexity_term(first_arg)});
+            auto first_arg = arg_stream.read_until(",");
+            if (arg_stream.empty()) {   // only one argument -> implicit log10(arg)
+                return VirtualMathTerm(LOGARITHM, {10,parse_complexity_term(first_arg)});
+            } else {
+                return VirtualMathTerm(LOGARITHM, {parse_complexity_term(first_arg),parse_complexity_term(arg_stream)});
+            }
+        }
+
+        VirtualMathTerm first;
+        VirtualMathTerm second;
+        string operation;
+
+        // first part of the operation
+        if (*t == "(") {
+            Tokenstream t1 = t.read_inside_brackets();
+            first = parse_complexity_term(t1);
+            expect_one_of(t,complexity_operator_symbols);
+            operation = *t;
+
         } else {
-            return VirtualMathTerm(LOGARITHM, {parse_complexity_term(first_arg),parse_complexity_term(arg_stream)});
+            first = VirtualMathTerm(*t);
+            t+=1;  // disregard first part
+            expect_one_of(t,complexity_operator_symbols);
+            operation = *t;
+
         }
-    }
 
-    VirtualMathTerm first;
-    VirtualMathTerm second;
-    string operation;
-
-    // first part of the operation
-    if (*t == "(") {
-        Tokenstream t1 = t.read_inside_brackets();
-        first = parse_complexity_term(t1);
-        expect_one_of(t,complexity_operator_symbols);
-        operation = *t;
-
-    } else {
-        first = VirtualMathTerm(*t);
-        t+=1;  // disregard first part
-        expect_one_of(t,complexity_operator_symbols);
-        operation = *t;
-
-    }
-
-    // second part of the operation
-    t+=1; // disregard operation
-    if (t.size()==1){
-        second = parse_complexity_term(t);
-        t+=1; // disregard second part
-    }
-    else {
-        expect(t,"(");
-        second = parse_complexity_term(t.read_inside_brackets());
-    }
-
-    expect_empty(t); // there should be nothing behind the second part of the operation. Otherwise, use brackets!
-
-    // putting both together
-    VirtualMathTerm res;
-    if (operation == "+") res = VirtualMathTerm(ADDITION);
-    if (operation == "*") res = VirtualMathTerm(MULTIPLICATION);
-    if (operation == "^") res = VirtualMathTerm(EXPONENTIAL);
-
-    res.children.push_back(first);
-    res.children.push_back(second);
-
-    return res;
-}
-
-ASTStatementNode* CodeParser::parse_line(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){
-
-    if (*t == "return") {
-        t += 1; // discard 'return'
-        ASTCalculationNode* calc = parse_calculation(t, v, g, 0);
-        return new ASTReturnNode(calc, v.name);
-    }
-
-
-
-    bool need_to_declare = false;
-    string type_;
-
-    // find out if this is a declaration
-    // declare new variable later
-    if (is_valid_data_type(*t, g)){
-        need_to_declare = true;
-        type_ = *t;
-        t+=1; // discard type
-    }
-
-    // check for expression without '='. eg a funcion call or something like an unused '3+4;'
-    // all this is handled in parse_calculation
-    auto copy = t;
-    copy+=1;
-    if (*copy != "=" && copy.size()!=0) {
-        return parse_calculation(t,v,g);
-    }
-
-
-    expect_identifier(t);
-    if (!need_to_declare) {
-        // if it is not a declaration, check if the variable exists
-        if (!v.variable_exists(*t) and !v.get_this_namespace(g).variable_exists(*t)) {
-            throw std::invalid_argument("PARSER ERROR  variable '" + *t + "' not declared");
+        // second part of the operation
+        t+=1; // disregard operation
+        if (t.size()==1){
+            second = parse_complexity_term(t);
+            t+=1; // disregard second part
         }
+        else {
+            expect(t,"(");
+            second = parse_complexity_term(t.read_inside_brackets());
+        }
+
+        expect_empty(t); // there should be nothing behind the second part of the operation. Otherwise, use brackets!
+
+        // putting both together
+        VirtualMathTerm res;
+        if (operation == "+") res = VirtualMathTerm(ADDITION);
+        if (operation == "*") res = VirtualMathTerm(MULTIPLICATION);
+        if (operation == "^") res = VirtualMathTerm(EXPONENTIAL);
+
+        res.children.push_back(first);
+        res.children.push_back(second);
+
+        return res;
     }
-    auto var = *t;
-    t+=1; // discard var_name
+
+std::shared_ptr<ASTStatementNode> CodeParser::parse_line(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){
+
+        if (*t == "return") {
+            t += 1; // discard 'return'
+            std::shared_ptr<ASTCalculationNode> calc = parse_calculation(t, v, g, 0);
+            return std::make_shared<ASTReturnNode>(calc, v.name);
+        }
+
+
+
+        bool need_to_declare = false;
+        string type_;
+
+        // find out if this is a declaration
+        // declare new variable later
+        if (is_valid_data_type(*t, g)){
+            need_to_declare = true;
+            type_ = *t;
+            t+=1; // discard type
+        }
+
+        // check for expression without '='. eg a funcion call or something like an unused '3+4;'
+        // all this is handled in parse_calculation
+        auto copy = t;
+        copy+=1;
+        if (*copy != "=" && copy.size()!=0) {
+            return parse_calculation(t,v,g);
+        }
+
+
+        expect_identifier(t);
+        if (!need_to_declare) {
+            // if it is not a declaration, check if the variable exists
+            if (!v.variable_exists(*t) and !v.get_this_namespace(g).variable_exists(*t)) {
+                throw std::invalid_argument("PARSER ERROR  variable '" + *t + "' not declared");
+            }
+        }
+        auto var = *t;
+        t+=1; // discard var_name
 
         // declaration without assignment
         if (t.empty() && need_to_declare){
             v.add_variable(var,type_, &g, true); // Obj a;  this creates a new object
-            return new ASTAssignmentNode(v.var_to_offset[var], nullptr, var,type_,need_to_declare);
+            return std::make_shared<ASTAssignmentNode>(v.var_to_offset[var], nullptr, var,type_,need_to_declare);
         }
 
-    expect(t,"=");
-    t+=1; // discard '='
+        expect(t,"=");
+        t+=1; // discard '='
 
-    // expect the whole remaining tokens to belong to the calculation
-    auto calculation = parse_calculation(t,v,g);
+        // expect the whole remaining tokens to belong to the calculation
+        auto calculation = parse_calculation(t,v,g);
 
 
 
@@ -515,206 +516,216 @@ ASTStatementNode* CodeParser::parse_line(Tokenstream t, LocalVariableManager& v,
 
         // TODO introduce typ checking
 
-    return new ASTAssignmentNode(v.var_to_offset[var], calculation, var,type_,need_to_declare);
-}
+        return std::make_shared<ASTAssignmentNode>(v.var_to_offset[var], calculation, var,type_,need_to_declare);
+    }
 
 
 
 
 
-ASTCallNode* CodeParser::parse_call(Tokenstream& t, LocalVariableManager& v, GlobalVariableManager& g, int h){
-    // be aware that this call changes the Tokenstream of the higher level
+std::shared_ptr<ASTCallNode> CodeParser::parse_call(Tokenstream& t, LocalVariableManager& v, GlobalVariableManager& g, int h){
+        // be aware that this call changes the Tokenstream of the higher level
 
-    expect_identifier(t);
-    string func_name = *t;
-    vector<string> expected_types;
-    bool defined = false;
-    for (const auto pair : g.var_to_argument_list) {
-        //cout << "defined: "+ pair.first+" "<< pair.second.size() << endl;
-        if (pair.first == func_name){
-            defined = true;
-            expected_types;
-            for (const auto p : pair.second) {
-                expected_types.push_back(p.first);
+        expect_identifier(t);
+        string func_name = *t;
+        vector<string> expected_types;
+        bool defined = false;
+        for (const auto pair : g.var_to_argument_list) {
+            //cout << "defined: "+ pair.first+" "<< pair.second.size() << endl;
+            if (pair.first == func_name){
+                defined = true;
+                expected_types;
+                for (const auto p : pair.second) {
+                    expected_types.push_back(p.first);
+                }
+            }
+            //cout << defined << endl;
+        }
+        //cout << endl;
+
+        if (!defined) {
+            throw std::invalid_argument("PARSER ERROR  function '"+func_name+"' not defined");
+        }
+        t+=1; // discard func_name
+        expect(t, "[");
+        auto arguments_stream = t.read_inside_brackets();
+
+        vector<std::shared_ptr<ASTCalculationNode>> arguments;
+
+        int i = 0;
+        while (!arguments_stream.empty()) {
+            if (i>=expected_types.size()) throw std::invalid_argument("PARSER ERROR  '"+func_name+
+                                                                      "' was called with too many arguments (with more than "+ std::to_string(expected_types.size())+")");
+
+            auto stream = arguments_stream.read_until(",");
+            arguments.push_back(parse_calculation(stream,v,g,h+i));
+            // here should be implemented a type-check for the argument
+            i++;
+
+        }
+
+        if (i<expected_types.size()) throw std::invalid_argument("PARSER ERROR  '"+func_name+
+                                                                 "' was called with not enought arguments: "+std::to_string(i)+" instead of "+ std::to_string(expected_types.size())+"");
+
+        return std::make_shared<ASTCallNode>(nullptr, nullptr,VAR,"",0,0,g.var_to_node[func_name],arguments,h);
+
+    }
+
+std::shared_ptr<ASTComparisonNode> CodeParser::parse_comparison(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){
+    std::shared_ptr<ASTCalculationNode> left, right;
+
+        if (t.empty()){
+            throw std::invalid_argument("PARSER ERROR: trying to parse an empty comparison");
+        }
+
+        if (t.size() == 1) {
+            throw std::invalid_argument("PARSER ERROR: trying to parse an comparison, but only recieved '"+*t+"'");
+        }
+
+        // Process left side
+        if (*t == "(") {
+            Tokenstream left_stream = t.read_inside_brackets();
+            if (t.empty()) {
+                // there are top-level brackets around the comparison. Look inside
+                return parse_comparison(left_stream,v,g);
+            }
+            left = parse_calculation(left_stream, v,g, 0);
+        } else {
+            left = parse_literal(t, v,g, 0);
+            t += 1; // discard literal
+        }
+
+        std::string op = *t;
+
+        expect_one_of(t,comparison_symbols);
+        t += 1; // discard operator symbol
+
+        // Process right side
+        if (*t == "(") {
+            Tokenstream right_stream = t.read_inside_brackets();
+            right = parse_calculation(right_stream, v,g,  1);
+        } else {
+            right = parse_literal(t, v,g,  1);
+            t += 1; // discard literal
+        }
+
+        expect_empty(t);
+
+        return std::make_shared<ASTComparisonNode>(left, right, op, regs[0],regs[1]);
+    }
+
+std::shared_ptr<ASTCalculationNode> CodeParser::parse_calculation(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g, int h){
+    std::shared_ptr<ASTCalculationNode> left, right;
+
+        if (t.empty()){
+            throw std::invalid_argument("PARSER ERROR: trying to parse an empty calculation");
+        }
+
+        if (t.size() == 1) {
+            return parse_literal(t, v, g,h);
+        }
+
+        // checking for function call
+        Tokenstream copy = t;
+        copy += 1;
+        if (*copy == "[") {
+            copy.read_inside_brackets();
+            if (copy.empty()) {     // only if it is just a function call and nothing more
+                return parse_call(t,v,g,h);
             }
         }
-        //cout << defined << endl;
-    }
-    //cout << endl;
 
-    if (!defined) {
-        throw std::invalid_argument("PARSER ERROR  function '"+func_name+"' not defined");
-    }
-    t+=1; // discard func_name
-    expect(t, "[");
-    auto arguments_stream = t.read_inside_brackets();
-
-    vector<ASTCalculationNode*> arguments;
-
-    int i = 0;
-    while (!arguments_stream.empty()) {
-        if (i>=expected_types.size()) throw std::invalid_argument("PARSER ERROR  '"+func_name+
-                                                                  "' was called with too many arguments (with more than "+ std::to_string(expected_types.size())+")");
-
-        auto stream = arguments_stream.read_until(",");
-        arguments.push_back(parse_calculation(stream,v,g,h+i));
-        // here should be implemented a type-check for the argument
-        i++;
-
-    }
-
-    if (i<expected_types.size()) throw std::invalid_argument("PARSER ERROR  '"+func_name+
-                                                             "' was called with not enought arguments: "+std::to_string(i)+" instead of "+ std::to_string(expected_types.size())+"");
-
-    return new ASTCallNode(nullptr, nullptr,VAR,"",0,0,g.var_to_node[func_name],arguments,h);
-
-}
-
-ASTComparisonNode* CodeParser::parse_comparison(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){
-    ASTCalculationNode *left, *right;
-
-    if (t.empty()){
-        throw std::invalid_argument("PARSER ERROR: trying to parse an empty comparison");
-    }
-
-    if (t.size() == 1) {
-        throw std::invalid_argument("PARSER ERROR: trying to parse an comparison, but only recieved '"+*t+"'");
-    }
-
-    // Process left side
-    if (*t == "(") {
-        Tokenstream left_stream = t.read_inside_brackets();
-        if (t.empty()) {
-            // there are top-level brackets around the comparison. Look inside
-            return parse_comparison(left_stream,v,g);
-        }
-        left = parse_calculation(left_stream, v,g, 0);
-    } else {
-        left = parse_literal(*t, v,g, 0);
-        t += 1; // discard literal
-    }
-
-    std::string op = *t;
-
-    expect_one_of(t,comparison_symbols);
-    t += 1; // discard operator symbol
-
-    // Process right side
-    if (*t == "(") {
-        Tokenstream right_stream = t.read_inside_brackets();
-        right = parse_calculation(right_stream, v,g,  1);
-    } else {
-        right = parse_literal(*t, v,g,  1);
-        t += 1; // discard literal
-    }
-
-    expect_empty(t);
-
-    return new ASTComparisonNode(left, right, op, regs[0],regs[1]);
-}
-
-ASTCalculationNode* CodeParser::parse_calculation(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g, int h){
-    ASTCalculationNode *left, *right;
-
-    if (t.empty()){
-        throw std::invalid_argument("PARSER ERROR: trying to parse an empty calculation");
-    }
-
-    if (t.size() == 1) {
-        return parse_literal(*t, v, g,h);
-    }
-
-    // checking for function call
-    Tokenstream copy = t;
-    copy += 1;
-    if (*copy == "[") {
-        copy.read_inside_brackets();
-        if (copy.empty()) {     // only if it is just a function call and nothing more
-            return parse_call(t,v,g,h);
-        }
-    }
-
-    // Process left side
-    if (*t == "(") {
-        Tokenstream left_stream = t.read_inside_brackets();
-        if (t.empty()) {
-            // there are top-level brackets around the calculation. Look inside
-            return parse_calculation(left_stream,v,g,h);
-        }
-        left = parse_calculation(left_stream, v,g, h);
-    } else {
-        // checking for function call
-        Tokenstream copy = t;
-        copy += 1;
-        if (*copy == "[") {
-            left = parse_call(t,v,g,h);
+        // Process left side
+        if (*t == "(") {
+            Tokenstream left_stream = t.read_inside_brackets();
+            if (t.empty()) {
+                // there are top-level brackets around the calculation. Look inside
+                return parse_calculation(left_stream,v,g,h);
+            }
+            left = parse_calculation(left_stream, v,g, h);
         } else {
-            left = parse_literal(*t, v, g, h);
-            t += 1; // discard literal
+            // checking for function call
+            Tokenstream copy = t;
+            copy += 1;
+            if (*copy == "[") {
+                left = parse_call(t,v,g,h);
+            } else {
+                left = parse_literal(t, v, g, h);
+                t += 1; // discard literal
+            }
         }
-    }
 
-    std::string op = *t;
+        std::string op = *t;
 
-    expect_one_of(t,operator_symbols);
-    t += 1; // discard operator symbol
+        expect_one_of(t,operator_symbols);
+        t += 1; // discard operator symbol
 
-    // Process right side
-    if (*t == "(") {
-        Tokenstream right_stream = t.read_inside_brackets();
-        right = parse_calculation(right_stream, v,g, h + 1);
-    } else {
-        // checking for function call
-        Tokenstream copy = t;
-        copy += 1;
-        if (*copy == "[") {
-            right = parse_call(t,v,g, h+1);
+        // Process right side
+        if (*t == "(") {
+            Tokenstream right_stream = t.read_inside_brackets();
+            right = parse_calculation(right_stream, v,g, h + 1);
         } else {
-            right = parse_literal(*t, v, g, h + 1);
-            t += 1; // discard literal
+            // checking for function call
+            Tokenstream copy = t;
+            copy += 1;
+            if (*copy == "[") {
+                right = parse_call(t,v,g, h+1);
+            } else {
+                right = parse_literal(t, v, g, h + 1);
+                t += 1; // discard literal
+            }
         }
+
+        expect_empty(t);
+
+        return std::make_shared<ASTCalculationNode>(left, right, op_string_to_type[op], regs[h]);
     }
 
-    expect_empty(t);
+    std::shared_ptr<ASTCalculationNode> CodeParser::parse_literal(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g, int h) {
 
-    return new ASTCalculationNode(left, right, op_string_to_type[op], regs[h]);
+        // try to interpret as a number
+        int value;
+        try {
+            value = std::stoi(*t);
+            return std::make_shared<ASTCalculationNode>(nullptr, nullptr, LIT, regs[h],value, 0);
+        } catch(...){}
+
+        // hand over to parse_class_variable
+        //return parse_class_variable(t,v,g,h);
+
+        /* old
+        if (v.variable_exists(lit)) {
+            return new ASTCalculationNode(nullptr, nullptr, VAR,regs[h],0,v.var_to_offset[lit], lit);
+        }
+
+            throw std::invalid_argument("PARSER ERROR: Variable '" + lit + "' not defined");
+        }*/
+
+
+    }
+
+std::shared_ptr<ASTCommentNode> CodeParser::parse_comment(Tokenstream t) {
+    return std::make_shared<ASTCommentNode>(
+            t.to_string()
+            );
 }
 
-ASTCalculationNode* CodeParser::parse_literal(std::string lit, LocalVariableManager& v, GlobalVariableManager& g, int h) {
-
-    if (v.variable_exists(lit)) {
-        return new ASTCalculationNode(nullptr, nullptr, VAR,regs[h],0,v.var_to_offset[lit], lit);
-    }
-
-    int value;
-    try {
-        value = std::stoi(lit);
-    } catch(...){
-        // first check if this even is a valid identifier
-        //list<string> temp = {lit};
-        //expect_identifier(Tokenstream(&temp));
-        throw std::invalid_argument("PARSER ERROR: Variable '" + lit + "' not defined");
-    }
-
-    return new ASTCalculationNode(nullptr, nullptr, LIT, regs[h],value, 0);
-}
-
-std::shared_ptr<ASTVariableNode> CodeParser::parse_class_variable(Tokenstream t, bool is_root, std::string reg, LocalVariableManager* local_vars,
-                                                  GlobalVariableManager* global_vars, std::string prev_class_name) {
+std::shared_ptr<ASTVariableNode> CodeParser::parse_class_variable(Tokenstream t, bool is_root, std::string reg, LocalVariableManager& local_vars,
+                                                  GlobalVariableManager& global_vars, std::string prev_class_name) {
     // check if variable is defined
     if (is_root) {
-        if (!local_vars->variable_exists(*t)) {
+        if (!local_vars.variable_exists(*t)) {
             throw std::invalid_argument("PARSER ERROR: Variable '" + *t + "' not defined");
         }
     } else {
-        if (!global_vars->class_to_local_manager[prev_class_name].variable_exists(*t)) {
+        if (!global_vars.class_to_local_manager[prev_class_name].variable_exists(*t)) {
             throw std::invalid_argument("PARSER ERROR: Class " + prev_class_name + " has no member " + *t);
         }
     }
 
     if (t.size() == 1) {
         // base case
-        return std::shared_ptr<ASTVariableNode>(new ASTVariableNode(*t, nullptr, is_root, local_vars, global_vars, reg));
+        return std::shared_ptr<ASTVariableNode>(std::make_shared<ASTVariableNode>(*t, nullptr, is_root, local_vars, global_vars, reg));
     } else {
         std::string instance_name = *t;
         t += 1;
@@ -734,7 +745,7 @@ std::shared_ptr<ASTVariableNode> CodeParser::parse_class_variable(Tokenstream t,
     }
 }
 
-ASTCommentNode *CodeParser::parse_comment(Tokenstream t) {
+std::shared_ptr<ASTCommentNode> CodeParser::parse_comment(Tokenstream t) {
     return new ASTCommentNode(t.to_string());
 }
 

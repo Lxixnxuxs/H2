@@ -17,14 +17,14 @@ extern std::map<std::string, LogicTermType> comp_to_logic_type;
 
 
 struct ASTComparisonNode : ASTStatementNode {
-    ASTComputationNode* left;
-    ASTComputationNode* right;
+    std::shared_ptr<ASTComputationNode> left;
+    std::shared_ptr<ASTComputationNode> right;
 
     std::string comp_type;
     std::string reg1;   // two registers to compare
     std::string reg2;
 
-    ASTComparisonNode(ASTComputationNode* left, ASTComputationNode* right, std::string comp_type, std::string reg1,std::string reg2);
+    ASTComparisonNode(std::shared_ptr<ASTComputationNode> left, std::shared_ptr<ASTComputationNode> right, std::string comp_type, std::string reg1,std::string reg2);
 
     std::string compile() override;
 

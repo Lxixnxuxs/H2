@@ -11,8 +11,9 @@ class SimpleBool [length, width]  {
         SimpleBool res;
     }
 
-    def get() -> int /% _O(0.000000) %/  {
+    def get(SimpleBool b) -> int /% _O(0.000000) %/  {
         value = 3;
+        this'value =
     }
 
 }

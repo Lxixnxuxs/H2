@@ -13,7 +13,7 @@ struct ASTFunctionNode : public ASTNode {
     std::string f_name;
     size_t f_stack_size;
     size_t arg_stackpart_size;
-    std::vector<ASTStatementNode*> body;
+    std::vector<std::shared_ptr<ASTStatementNode>> body;
     std::vector<std::pair<std::string,std::string>> argument_list;  // name to type
     std::string return_type;
 
@@ -26,7 +26,7 @@ struct ASTFunctionNode : public ASTNode {
     int callee_reg_size = 4;
     int callee_reg_count = callee_save_regs.size();
 
-    ASTFunctionNode(std::string f_name, std::vector<ASTStatementNode*> body, size_t f_stack_size, size_t arg_stackpart_size,
+    ASTFunctionNode(std::string f_name, std::vector<std::shared_ptr<ASTStatementNode>> body, size_t f_stack_size, size_t arg_stackpart_size,
                     std::vector<std::pair<std::string,std::string>> argument_list, std::string return_type,std::optional<std::string> class_name, std::map<std::string, VirtualMathTerm> complexity_map);
 
     ASTFunctionNode()=default;

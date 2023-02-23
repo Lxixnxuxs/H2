@@ -2,7 +2,7 @@
 #include "ASTCalculationNode.hpp"
 
 
-ASTReturnNode::ASTReturnNode(ASTCalculationNode* calc, std::string f_name): calc(calc), f_name(f_name) {}
+ASTReturnNode::ASTReturnNode(std::shared_ptr<ASTCalculationNode> calc, std::string f_name): calc(calc), f_name(f_name) {}
 
     std::string ASTReturnNode::compile() {
         std::string code = calc->compile();

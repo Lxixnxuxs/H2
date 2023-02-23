@@ -8,10 +8,10 @@ struct ASTCalculationNode;
 
 struct ASTReturnNode : ASTStatementNode {
 
-    ASTCalculationNode* calc;
+    std::shared_ptr<ASTCalculationNode> calc;
     std::string f_name;
 
-    ASTReturnNode(ASTCalculationNode* calc, std::string f_name);
+    ASTReturnNode(std::shared_ptr<ASTCalculationNode> calc, std::string f_name);
 
     std::string compile();
 

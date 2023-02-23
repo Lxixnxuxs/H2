@@ -14,7 +14,7 @@
 using std::string;
 
 
-ASTWhileLoopNode::ASTWhileLoopNode(ASTComparisonNode* condition, std::vector<ASTStatementNode*> &block,int label_id, std::map<std::string, VirtualMathTerm> complexity_map): condition(condition),
+ASTWhileLoopNode::ASTWhileLoopNode(std::shared_ptr<ASTComparisonNode> condition, std::vector<std::shared_ptr<ASTStatementNode>> &block,int label_id, std::map<std::string, VirtualMathTerm> complexity_map): condition(condition),
                                                                                                                                                                block(block), label_id(label_id) {
         if (complexity_map.find("O") != complexity_map.end()) {
             complexity_is_custom = true;
@@ -92,12 +92,12 @@ void ASTWhileLoopNode::virtual_execution(ExecutionPath higher_level_path) {
         ExecutionPath path = {variables, block};
 
         ASTCallNode end_pseudo_call;
-        end_pseudo_call.target = &pseudo_function;
+        end_pseudo_call.target = (std::shared_ptr<ASTFunctionNode>) &pseudo_function;
         for (int i = 0; i < variables.size(); i++) {
-            end_pseudo_call.arguments.push_back(new ASTCalculationNode(nullptr, nullptr, VAR, "", 0, 0, variables[i]));
+            end_pseudo_call.arguments.push_back(std::make_shared<ASTCalculationNode>(nullptr, nullptr, VAR, "", 0, 0, variables[i]));
         }
 
-        path.commands.push_back(&end_pseudo_call);
+        path.commands.push_back((std::shared_ptr<ASTCallNode>) &end_pseudo_call);
 
         path.condition = condition->as_logic_term();
 

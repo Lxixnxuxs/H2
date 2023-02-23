@@ -25,7 +25,7 @@ std::map<std::string, LogicTermType> comp_to_logic_type = {{"==",EQUAL},
 
 
 
-ASTComparisonNode::ASTComparisonNode(ASTComputationNode* left, ASTComputationNode* right, std::string comp_type, std::string reg1,std::string reg2):
+ASTComparisonNode::ASTComparisonNode(std::shared_ptr<ASTComputationNode> left, std::shared_ptr<ASTComputationNode> right, std::string comp_type, std::string reg1,std::string reg2):
             left(left), right(right), comp_type(comp_type), reg1(reg1),reg2(reg2) {
     }
 

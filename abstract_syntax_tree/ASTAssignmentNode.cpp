@@ -6,7 +6,7 @@
 #include "../global_information.hpp"
 
 
-ASTAssignmentNode::ASTAssignmentNode(size_t offset, ASTComputationNode* right, std::string var_name, std::string data_type, bool is_declaraion):
+ASTAssignmentNode::ASTAssignmentNode(size_t offset, std::shared_ptr<ASTComputationNode> right, std::string var_name, std::string data_type, bool is_declaraion):
             offset(offset), right(right), var_name(var_name), data_type(data_type), is_declaration(is_declaraion) {}
 
     std::string ASTAssignmentNode::compile() {

@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <memory>
 //#include "abstract_syntax_tree/ASTStatementNode.hpp"
 //#include "LogicTerm.hpp"
 #include "LogicTerm.hpp"
@@ -30,13 +31,13 @@ struct ExecutionPath {
     std::vector<variable_name> variable_order; // to ensure the parameter number of a variable is clear
 
     std::map<parameter_name, variable_name> parameter_back_translation;
-    std::vector<ASTStatementNode*> commands;
+    std::vector<std::shared_ptr<ASTStatementNode>> commands;
     std::vector<ExecutionPath> alternative_branches;
 
     LogicTerm condition = {TRUE};
 
 
-    ExecutionPath(std::vector<variable_name> arguments, std::vector<ASTStatementNode*> commands);
+    ExecutionPath(std::vector<variable_name> arguments, std::vector<std::shared_ptr<ASTStatementNode>> commands);
 
     ExecutionPath(const ExecutionPath& other);
 
@@ -49,7 +50,7 @@ struct ExecutionPath {
 private:
 
     // returns whether a return ended the execution
-    bool execute(ASTStatementNode* statement);
+    bool execute(std::shared_ptr<ASTStatementNode> statement);
 
 };
 
