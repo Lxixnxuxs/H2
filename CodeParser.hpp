@@ -34,42 +34,42 @@ private:
 
     void expect_empty(Tokenstream t);
 
-    void expect_data_type(Tokenstream t, GlobalVariableManager& g);
+    void expect_data_type(Tokenstream t, std::shared_ptr<GlobalVariableManager> g);
 
 public:
     size_t global_id_counter = 0;
 
     std::shared_ptr<ASTRootNode> parse(Tokenstream t);
 
-    std::shared_ptr<ASTClassNode> parse_class(Tokenstream& t, GlobalVariableManager& g);
+    std::shared_ptr<ASTClassNode> parse_class(Tokenstream& t, std::shared_ptr<GlobalVariableManager> g);
 
-    std::shared_ptr<ASTFunctionNode> parse_function(Tokenstream& t, GlobalVariableManager& g, std::optional<std::string> class_name = {});
+    std::shared_ptr<ASTFunctionNode> parse_function(Tokenstream& t, std::shared_ptr<GlobalVariableManager> g, std::optional<std::string> class_name = {});
 
-    std::pair<int,vector<std::pair<string,string>>> parse_argument_list(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g);
+    std::pair<int,vector<std::pair<string,string>>> parse_argument_list(Tokenstream t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g);
 
-    std::vector<std::shared_ptr<ASTStatementNode>> parse_subspace(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g);
+    std::vector<std::shared_ptr<ASTStatementNode>> parse_subspace(Tokenstream t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g);
 
-    std::shared_ptr<ASTIfElseNode> parse_if_else(Tokenstream condition, Tokenstream if_body, Tokenstream else_body, LocalVariableManager& v, GlobalVariableManager& g);
+    std::shared_ptr<ASTIfElseNode> parse_if_else(Tokenstream condition, Tokenstream if_body, Tokenstream else_body, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g);
 
-    std::shared_ptr<ASTWhileLoopNode> parse_while(Tokenstream condition,Tokenstream complexity_stream, Tokenstream body, LocalVariableManager& v, GlobalVariableManager& g);
+    std::shared_ptr<ASTWhileLoopNode> parse_while(Tokenstream condition,Tokenstream complexity_stream, Tokenstream body, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g);
 
     std::map<string, VirtualMathTerm> parse_complexity(Tokenstream t);
 
     VirtualMathTerm parse_complexity_term(Tokenstream t);
 
-    std::shared_ptr<ASTStatementNode> parse_line(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g);
+    std::shared_ptr<ASTStatementNode> parse_line(Tokenstream t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g);
 
     std::shared_ptr<ASTCommentNode> parse_comment(Tokenstream t);
 
-    std::shared_ptr<ASTCallNode> parse_call(Tokenstream& t, LocalVariableManager& v, GlobalVariableManager& g, int h=0);
+    std::shared_ptr<ASTCallNode> parse_call(Tokenstream& t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g, int h=0);
 
-    std::shared_ptr<ASTComparisonNode> parse_comparison(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g);
+    std::shared_ptr<ASTComparisonNode> parse_comparison(Tokenstream t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g);
 
-    std::shared_ptr<ASTCalculationNode> parse_calculation(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g, int h = 0);
+    std::shared_ptr<ASTCalculationNode> parse_calculation(Tokenstream t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g, int h = 0);
 
-    std::shared_ptr<ASTCalculationNode> parse_literal(Tokenstream t, LocalVariableManager &v, GlobalVariableManager &g, int h);
+    std::shared_ptr<ASTCalculationNode> parse_literal(Tokenstream t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g, int h);
 
-    std::shared_ptr<ASTVariableNode> parse_class_variable(Tokenstream t, bool is_root, std::string reg, LocalVariableManager& local_vars,
+    std::shared_ptr<ASTVariableNode> parse_class_variable(Tokenstream t, bool is_root, std::string reg, std::shared_ptr<LocalVariableManager> local_vars,
                                                           GlobalVariableManager& global_vars, std::string prev_class_name="");
 };
 
