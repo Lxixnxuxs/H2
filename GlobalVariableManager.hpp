@@ -21,7 +21,7 @@ struct GlobalVariableManager {
     std::map<std::string, std::shared_ptr<ASTFunctionNode>> var_to_node;
     //std::map<std::string, std::map<std::string,int>> class_to_var_to_offset;
     //std::map<std::string, int> class_to_size;
-    std::map<std::string, LocalVariableManager> class_to_local_manager;
+    std::map<std::string, std::shared_ptr<LocalVariableManager>> class_to_local_manager;
 
     bool class_exists( std::string name) const;
 };

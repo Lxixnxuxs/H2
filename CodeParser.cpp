@@ -80,7 +80,7 @@ void CodeParser::expect_empty(Tokenstream t) {
 
 }
 
-void CodeParser::expect_data_type(Tokenstream t, GlobalVariableManager &g) {
+void CodeParser::expect_data_type(Tokenstream t, std::shared_ptr<GlobalVariableManager> g) {
     if (!is_valid_data_type(*t,g)){
         throw std::invalid_argument("PARSER ERROR  Expected a data type but received '"+*t+"'");
     }
@@ -90,7 +90,7 @@ std::shared_ptr<ASTRootNode> CodeParser::parse(Tokenstream t) {
         if (t.empty()) {
             throw std::invalid_argument("PARSER ERROR  cannot parse empty programm");
         }
-        GlobalVariableManager g;
+        auto g = std::make_shared<GlobalVariableManager>();
         std::vector<std::shared_ptr<ASTNode>> funcs_and_classes;
 
 
@@ -130,7 +130,7 @@ std::shared_ptr<ASTRootNode> CodeParser::parse(Tokenstream t) {
         return std::make_shared<ASTRootNode>(funcs_and_classes);
     }
 
-std::shared_ptr<ASTClassNode> CodeParser::parse_class(Tokenstream& t, GlobalVariableManager& g){
+std::shared_ptr<ASTClassNode> CodeParser::parse_class(Tokenstream& t, std::shared_ptr<GlobalVariableManager> g){
         // ATTENTION: the tokenstream is passed by reference!
         // Note that the 'class' has already been thrown away
 
@@ -160,11 +160,11 @@ std::shared_ptr<ASTClassNode> CodeParser::parse_class(Tokenstream& t, GlobalVari
     //expect_empty(t);
 
     // class variables
-    LocalVariableManager class_intern_offset_manager;
+    auto class_intern_offset_manager = std::make_shared<LocalVariableManager>();
 
     auto class_var_stream = class_content.read_until("def");
 
-    GlobalVariableManager useless_g;
+    auto useless_g = std::make_shared<GlobalVariableManager>();
     while (!class_var_stream.empty()) {
         parse_line(class_var_stream.read_until(";"), class_intern_offset_manager, useless_g); // maybe write own function instead. Otherwise wrong programm will be accepted
     }
@@ -173,7 +173,7 @@ std::shared_ptr<ASTClassNode> CodeParser::parse_class(Tokenstream& t, GlobalVari
     std::vector<std::shared_ptr<ASTFunctionNode>> class_functions;
 
     // class is defined before the Functions are parsed
-    g.class_to_local_manager[class_name] = class_intern_offset_manager;
+    g->class_to_local_manager[class_name] = class_intern_offset_manager;
 
     // functions
     while (!class_content.empty()) {
@@ -197,7 +197,7 @@ std::shared_ptr<ASTClassNode> CodeParser::parse_class(Tokenstream& t, GlobalVari
     }
 
 
-std::shared_ptr<ASTFunctionNode> CodeParser::parse_function(Tokenstream& t, GlobalVariableManager& g,  std::optional<std::string> class_name) {
+std::shared_ptr<ASTFunctionNode> CodeParser::parse_function(Tokenstream& t, std::shared_ptr<GlobalVariableManager> g,  std::optional<std::string> class_name) {
         // ATTENTION: the tokenstream is passed by reference!
         // Note that the 'def' has already been thrown away
 
@@ -206,13 +206,13 @@ std::shared_ptr<ASTFunctionNode> CodeParser::parse_function(Tokenstream& t, Glob
     auto var_manager = std::make_shared<LocalVariableManager>();
 
     // add implicit 'this' argument (reference)
-    if (class_name) var_manager->add_variable("this",class_name.value(),&g, true);
+    if (class_name) var_manager->add_variable("this",class_name.value(),g, true);
 
     string func_name = *t;
     var_manager->name = func_name;
 
         auto res = std::make_shared<ASTFunctionNode>();
-        g.var_to_node[func_name] = res; // Node Object is known to global variable manager
+        g->var_to_node[func_name] = res; // Node Object is known to global variable manager
         res->f_name = func_name;
 
     expect_identifier(t);
@@ -227,12 +227,12 @@ std::shared_ptr<ASTFunctionNode> CodeParser::parse_function(Tokenstream& t, Glob
 
     res->argument_list = temp.second;
 
-    g.var_to_argument_list[func_name] = res->argument_list;
+    g->var_to_argument_list[func_name] = res->argument_list;
 
     expect(t,"->");
     t += 1; //discard '->'
 
-    var_manager.ret_type = *t;
+    var_manager->ret_type = *t;
 
     expect_data_type(t, g);
     res->return_type = *t;
@@ -266,7 +266,7 @@ std::shared_ptr<ASTFunctionNode> CodeParser::parse_function(Tokenstream& t, Glob
     return res;
 }
 
-std::pair<int,vector<std::pair<string,string>>> CodeParser::parse_argument_list(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g) {
+std::pair<int,vector<std::pair<string,string>>> CodeParser::parse_argument_list(Tokenstream t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g) {
     // returns args_stack_size
 
     vector<std::pair<string,string>> type_list;
@@ -288,13 +288,13 @@ std::pair<int,vector<std::pair<string,string>>> CodeParser::parse_argument_list(
         string name = *t;
         t+=1; // discard name
 
-            v.add_variable(name, type, &g,type!="int"); // everything except primitive types are passed by reference
+            v->add_variable(name, type, g,type!="int"); // everything except primitive types are passed by reference
             type_list.emplace_back(name, type);
         }
-        return {v.current_offset, type_list};
+        return {v->current_offset, type_list};
     }
 
-    std::vector<std::shared_ptr<ASTStatementNode>> CodeParser::parse_subspace(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){
+    std::vector<std::shared_ptr<ASTStatementNode>> CodeParser::parse_subspace(Tokenstream t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g){
         std::vector<std::shared_ptr<ASTStatementNode>> res;
         while (!t.empty()){
 
@@ -336,7 +336,7 @@ std::pair<int,vector<std::pair<string,string>>> CodeParser::parse_argument_list(
     return res;
 }
 
-std::shared_ptr<ASTIfElseNode> CodeParser::parse_if_else(Tokenstream condition, Tokenstream if_body, Tokenstream else_body, LocalVariableManager& v, GlobalVariableManager& g) {
+std::shared_ptr<ASTIfElseNode> CodeParser::parse_if_else(Tokenstream condition, Tokenstream if_body, Tokenstream else_body, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g) {
         // Parse condition
     std::shared_ptr<ASTComparisonNode> condition_node = parse_comparison(condition, v, g);
         std::vector<std::shared_ptr<ASTStatementNode>> if_body_nodes = parse_subspace(if_body, v, g);
@@ -345,7 +345,7 @@ std::shared_ptr<ASTIfElseNode> CodeParser::parse_if_else(Tokenstream condition, 
         return std::make_shared<ASTIfElseNode>(condition_node, if_body_nodes, else_body_nodes, global_id_counter++);
     }
 
-std::shared_ptr<ASTWhileLoopNode> CodeParser::parse_while(Tokenstream condition,Tokenstream complexity_stream, Tokenstream body, LocalVariableManager& v, GlobalVariableManager& g) {
+std::shared_ptr<ASTWhileLoopNode> CodeParser::parse_while(Tokenstream condition,Tokenstream complexity_stream, Tokenstream body, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g) {
     std::shared_ptr<ASTComparisonNode> condition_node = parse_comparison(condition, v, g);
         auto complexity_map = parse_complexity(complexity_stream);
         std::vector<std::shared_ptr<ASTStatementNode>> body_nodes = parse_subspace(body, v, g);
@@ -723,7 +723,7 @@ std::shared_ptr<ASTVariableNode> CodeParser::parse_class_variable(Tokenstream t,
             throw std::invalid_argument("PARSER ERROR: Variable '" + *t + "' not defined");
         }
     } else {
-        if (!global_vars->class_to_local_manager[prev_class_name].variable_exists(*t)) {
+        if (!global_vars->class_to_local_manager[prev_class_name]->variable_exists(*t)) {
             throw std::invalid_argument("PARSER ERROR: Class " + prev_class_name + " has no member " + *t);
         }
     }
@@ -741,7 +741,7 @@ std::shared_ptr<ASTVariableNode> CodeParser::parse_class_variable(Tokenstream t,
             class_name = local_vars->var_to_type[instance_name];
         } else {
             // extract class out of parent class structure
-            class_name = global_vars->class_to_local_manager[prev_class_name].var_to_type[instance_name];
+            class_name = global_vars->class_to_local_manager[prev_class_name]->var_to_type[instance_name];
         }
 
         std::shared_ptr<ASTVariableNode> child = parse_class_variable(t, false, reg, local_vars, global_vars, class_name);

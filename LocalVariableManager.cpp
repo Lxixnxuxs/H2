@@ -6,7 +6,7 @@
 #include "GlobalVariableManager.hpp"
 #include <cassert>
 
-    void LocalVariableManager::add_variable(std::string name, std::string type, const GlobalVariableManager* type_context,
+    void LocalVariableManager::add_variable(std::string name, std::string type, const std::shared_ptr<GlobalVariableManager> type_context,
                                             bool is_ref){
         var_to_type[name] = type;
         var_to_is_ref[name] = is_ref;

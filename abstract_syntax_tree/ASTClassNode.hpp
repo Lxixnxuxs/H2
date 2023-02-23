@@ -16,11 +16,11 @@ struct ASTClassNode : ASTNode {
     std::vector<std::shared_ptr<ASTFunctionNode>> methods;
     std::string name;
     //int offset;
-    LocalVariableManager object_variables;
+    std::shared_ptr<LocalVariableManager> object_variables;
     std::vector<std::string> complexity_parameters;
     int size_of;
 
-    ASTClassNode(std::string name, std::vector<std::string> runtime_parameters, LocalVariableManager object_variables,
+    ASTClassNode(std::string name, std::vector<std::string> runtime_parameters, std::shared_ptr<LocalVariableManager> object_variables,
                  std::vector<std::shared_ptr<ASTFunctionNode>> methods);
 
     std::string compile() override;
