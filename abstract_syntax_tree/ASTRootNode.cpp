@@ -10,8 +10,7 @@ ASTRootNode::ASTRootNode(std::vector<std::shared_ptr<ASTNode>>& funcs_and_classe
 
     std::string ASTRootNode::compile() {
 
-        std::string code = "mov %rsp, %rbp\nsub $10000, %rsp\n"; // reserve 10000 bytes for stack and heap // TODO
-        code = "jmp main\n\n"; // always starting with main function
+        std::string code = "jmp main\n\n"; // always starting with main function
 
         for (auto f : funcs_and_classes) {
             code += f->compile();

@@ -13,7 +13,7 @@ ASTAssignmentNode::ASTAssignmentNode(size_t offset, std::shared_ptr<ASTComputati
         if (right== nullptr)return "";
 
         std::string code = right->compile();
-        code += "mov " + right->reg + ", " + std::to_string(offset) + "("+stack_pointer+")\n";
+        code += "mov " + right->reg + ", -" + std::to_string(offset) + "("+frame_pointer+")\n";
         return code;
     }
 
