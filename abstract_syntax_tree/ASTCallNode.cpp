@@ -23,7 +23,7 @@ ASTCallNode::ASTCallNode(ASTCalculationNode *left, ASTCalculationNode *right, Co
         }
 
         code += "call " + target_name + "\n";
-        code += "mov %eax, "+regs[h]+"\n";
+        code += "mov %rax, "+regs[h]+"\n";
         return code;
     }
 

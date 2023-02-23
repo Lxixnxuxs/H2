@@ -1,1 +1,1 @@
-add_executable(ast_t ast_t.cpp)
+add_executable(ast_t ast_t.cpp ASTVariableNode.cpp)

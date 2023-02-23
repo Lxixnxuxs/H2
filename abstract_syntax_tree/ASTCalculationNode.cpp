@@ -27,16 +27,16 @@ ASTCalculationNode::ASTCalculationNode(ASTCalculationNode* left, ASTCalculationN
                 if (comp_type == DIV) {
                     /*code += "mov " + left->reg + ", %eax\nmov " + right->reg + ", %edx\n" +
                             "div " + (own_reg ? reg : left->reg) + "\n";*/
-                    code += "mov $0, %edx\nmov " + left->reg + ", %eax\ndiv " + right->reg +
-                            (own_reg ? "\nmov %eax, " + left->reg : "\nmov %eax, " + reg) + "\n";
+                    code += "mov $0, %rdx\nmov " + left->reg + ", %rax\ndiv " + right->reg +
+                            (own_reg ? "\nmov %rax, " + left->reg : "\nmov %rax, " + reg) + "\n";
                 } else if (comp_type == MOD) {
-                    code += "mov $0, %edx\nmov " + left->reg + ", %eax\ndiv " + right->reg +
-                            (own_reg ? "\nmov %edx, " + left->reg : "\nmov %edx, " + reg) + "\n";
+                    code += "mov $0, %rdx\nmov " + left->reg + ", %rax\ndiv " + right->reg +
+                            (own_reg ? "\nmov %rdx, " + left->reg : "\nmov %rdx, " + reg) + "\n";
                 } else {
                     if (comp_type == SHIFT_L || comp_type == SHIFT_R) {
                         // shifts can only be done by 8-bit shift amount stored in the cl-register
                         // note that the content of rcx is overwritten here
-                        code += "mov " + right->reg + ", " + "%ecx\n";
+                        code += "mov " + right->reg + ", " + "%rcx\n";
                         code += computation_op_to_string() + " %cl, " + left->reg +
                                 (own_reg ? "\nmov " + left->reg + "," + reg + "\n" : "\n");
                     } else {
