@@ -68,9 +68,10 @@ ASTFunctionNode::ASTFunctionNode(std::string f_name, std::vector<std::shared_ptr
             code += "mov -" + std::to_string(f_stack_size + i*callee_reg_size) +"("+frame_pointer+"), "+ callee_save_regs[i] +"\n";
         }
 
-        code += "add $"+std::to_string(f_stack_size + callee_reg_count * callee_reg_size) + ", "+stack_pointer+"\nret\n\n\n";
+        code += "add $"+std::to_string(f_stack_size + callee_reg_count * callee_reg_size) + ", "+stack_pointer+"\n"
+                                                                                                               "pop %rbp\n"
+                                                                                                               "ret\n\n\n";
 
-        code += "pop %rbp\n";
         return code;
     }
 

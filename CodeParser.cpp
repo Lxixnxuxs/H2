@@ -470,6 +470,7 @@ std::shared_ptr<ASTStatementNode> CodeParser::parse_line(Tokenstream t, std::sha
 
         // find out if this is a declaration
         // declare new variable later
+
         if (is_valid_data_type(*t, g)){
             need_to_declare = true;
             type_ = *t;
@@ -484,21 +485,28 @@ std::shared_ptr<ASTStatementNode> CodeParser::parse_line(Tokenstream t, std::sha
             return parse_calculation(t,v,g);
         }
 
+        std::string var = "";
 
-        expect_identifier(t);
+    //expect_identifier(t);
         if (!need_to_declare) {
             // if it is not a declaration, check if the variable exists
-            if (!v->variable_exists(*t) and !v->get_this_namespace(g)->variable_exists(*t)) {
-                throw std::invalid_argument("PARSER ERROR  variable '" + *t + "' not declared");
-            }
-        }
-        auto var = *t;
-        t+=1; // discard var_name
+            auto target_variable_stream = t.read_while([this](string s){return (s=="'" or is_valid_identifier(s).empty());});
+            auto variable_node = parse_class_variable(target_variable_stream,true,regs[0],v,g,"");
 
-        // declaration without assignment
-        if (t.empty() && need_to_declare){
-            v->add_variable(var,type_, g, true); // Obj a;  this creates a new object
-            return std::make_shared<ASTAssignmentNode>(v->var_to_offset[var], nullptr, var,type_,need_to_declare);
+
+            //if (!v->variable_exists(*t) and !v->get_this_namespace(g)->variable_exists(*t)) {
+            //    throw std::invalid_argument("PARSER ERROR  variable '" + *t + "' not declared");
+            //}
+        } else {
+            // new declared variables cannot be inside classes, therefore only one token expected
+            var = *t;
+            t+=1; // discard var_name
+
+            // declaration without assignment
+            if (t.empty()){
+                v->add_variable(var,type_, g, true); // Obj a;  this creates a new object
+                return std::make_shared<ASTAssignmentNode>(v->var_to_offset[var], nullptr, var,type_,need_to_declare);
+            }
         }
 
         expect(t,"=");

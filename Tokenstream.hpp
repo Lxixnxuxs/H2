@@ -9,7 +9,7 @@
 #include <string>
 #include <map>
 #include <vector>
-
+#include <functional>
 
 using std::string;
 using std::list;
@@ -34,6 +34,8 @@ struct Tokenstream {
     Tokenstream(list<string>* obj);
 
     Tokenstream(list<string>::iterator begin_, list<string>::iterator end_);
+
+    Tokenstream read_while(std::function<bool(string)> predicate);
 
     Tokenstream read_until(const string& token, bool stop_at_token = false);
 

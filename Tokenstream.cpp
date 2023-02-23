@@ -131,6 +131,16 @@ std::string Tokenstream::to_string() {
 }
 
 
+Tokenstream Tokenstream::read_while(std::function<bool(string)> predicate) {
+        // note that no token is thrown away
+    auto old_begin_ = begin_;
+    while(!empty() and predicate(*begin_)) {begin_++;};
+    auto res = Tokenstream(old_begin_,begin_);
+
+    return res;
+}
+
+
 template <typename a>
 std::ostream& operator<<(std::ostream& os, std::list<a>& t){
     for (auto it = t.begin(); it != t.end(); it++){
