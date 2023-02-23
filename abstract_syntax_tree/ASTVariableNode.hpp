@@ -22,8 +22,8 @@ struct ASTVariableNode : ASTStatementNode {
     bool is_root;
 
     std::shared_ptr<ASTVariableNode> child;
-    LocalVariableManager* local_vars;
-    GlobalVariableManager* global_vars;
+    LocalVariableManager& local_vars;
+    GlobalVariableManager& global_vars;
 
     ASTVariableNode(std::string name, std::shared_ptr<ASTVariableNode> child,
                     bool is_root, LocalVariableManager* local_vars, GlobalVariableManager* global_vars,

@@ -11,7 +11,7 @@ int main() {
     Tokenstream t = lexer(content);
 
     CodeParser parser;
-    ASTRootNode* root = parser.parse(t);
+    std::shared_ptr<ASTRootNode> root = parser.parse(t);
     std::string compilation = root->compile();
 
     std::cout << compilation;

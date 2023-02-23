@@ -69,8 +69,8 @@ public:
 
     std::shared_ptr<ASTCalculationNode> parse_literal(Tokenstream t, LocalVariableManager &v, GlobalVariableManager &g, int h);
 
-    std::shared_ptr<ASTVariableNode> parse_class_variable(Tokenstream t, bool is_root, std::string reg, LocalVariableManager* local_vars,
-                                                          GlobalVariableManager* global_vars, std::string prev_class_name="");
+    std::shared_ptr<ASTVariableNode> parse_class_variable(Tokenstream t, bool is_root, std::string reg, LocalVariableManager& local_vars,
+                                                          GlobalVariableManager& global_vars, std::string prev_class_name="");
 };
 
 #endif //H2_PARSER_HPP
