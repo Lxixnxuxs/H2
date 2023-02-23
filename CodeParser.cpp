@@ -460,7 +460,9 @@ std::shared_ptr<ASTStatementNode> CodeParser::parse_line(Tokenstream t, std::sha
         if (*t == "return") {
             t += 1; // discard 'return'
             std::shared_ptr<ASTCalculationNode> calc = parse_calculation(t, v, g, 0);
-            return std::make_shared<ASTReturnNode>(calc, v->name);
+            auto tmp = new ASTReturnNode(calc, v->name);
+            auto res =  std::shared_ptr<ASTReturnNode>(tmp);
+            return res;
         }
 
         bool need_to_declare = false;
@@ -527,6 +529,9 @@ std::shared_ptr<ASTCallNode> CodeParser::parse_call(Tokenstream& t, std::shared_
         // be aware that this call changes the Tokenstream of the higher level
 
         expect_identifier(t);
+        if (!g->function_exists(*t)) {
+            throw std::invalid_argument("PARSER ERROR: trying to call function '" + *t + "', which does not exist");
+        }
         string func_name = *t;
         vector<string> expected_types;
         bool defined = false;
@@ -547,7 +552,7 @@ std::shared_ptr<ASTCallNode> CodeParser::parse_call(Tokenstream& t, std::shared_
             throw std::invalid_argument("PARSER ERROR  function '"+func_name+"' not defined");
         }
         t+=1; // discard func_name
-        expect(t, "[");
+        expect(t, "(");
         auto arguments_stream = t.read_inside_brackets();
 
         vector<std::shared_ptr<ASTCalculationNode>> arguments;
@@ -616,95 +621,145 @@ std::shared_ptr<ASTComparisonNode> CodeParser::parse_comparison(Tokenstream t, s
     }
 
 std::shared_ptr<ASTCalculationNode> CodeParser::parse_calculation(Tokenstream t, std::shared_ptr<LocalVariableManager> v,
-                                                                  std::shared_ptr<GlobalVariableManager> g, int h){
-    std::shared_ptr<ASTCalculationNode> left, right;
+                                                                  std::shared_ptr<GlobalVariableManager> g, int h) {
+    std::string most_recent_operation = "";
+    std::optional<std::shared_ptr<ASTCalculationNode>> calculation_until_now = {};
+    bool next_comes_operator = false;
 
-        if (t.empty()){
-            throw std::invalid_argument("PARSER ERROR: trying to parse an empty calculation");
+    // function to safely build the calculation tree
+    auto add_to_calculation = [&](std::shared_ptr<ASTCalculationNode> node){
+        if (!calculation_until_now) {
+            calculation_until_now = node;
+        } else {
+            calculation_until_now = std::make_shared<ASTCalculationNode>(calculation_until_now.value(), node, op_string_to_type[most_recent_operation], regs[h]);
         }
+    };
 
-        if (t.size() == 1) {
-            return parse_literal(t, v, g,h);
+    if (t.empty()) {
+        throw std::invalid_argument("PARSER ERROR: trying to parse an empty calculation");
+    }
+
+    while(!t.empty()) {
+        if (!next_comes_operator) {
+            if (*t == "(") {
+                add_to_calculation(parse_calculation(t.read_inside_brackets(), v, g, h));
+                h+=1; // reuse all but one register from sub-calculation
+            } else {
+                add_to_calculation(parse_literal(t, v, g, h));
+                h+=1; // go to next calculation register
+            }
+        } else {
+            expect_one_of(t, operator_symbols);
+            most_recent_operation = *t;
+            t+=1; // discard operator
         }
+        next_comes_operator = !next_comes_operator;
+    }
 
+    return calculation_until_now.value();
+
+    /*
+
+    if (t.size() == 1) {
+        return parse_literal(t, v, g,h);
+    }
+
+    // checking for function call
+    Tokenstream copy = t;
+    copy += 1;
+    if (*copy == "[") {
+        copy.read_inside_brackets();
+        if (copy.empty()) {     // only if it is just a function call and nothing more
+            return parse_call(t,v,g,h);
+        }
+    }
+
+    // Process left side
+    if (*t == "(") {
+        Tokenstream left_stream = t.read_inside_brackets();
+        if (t.empty()) {
+            // there are top-level brackets around the calculation. Look inside
+            return parse_calculation(left_stream,v,g,h);
+        }
+        left = parse_calculation(left_stream, v,g, h);
+    } else {
         // checking for function call
         Tokenstream copy = t;
         copy += 1;
         if (*copy == "[") {
-            copy.read_inside_brackets();
-            if (copy.empty()) {     // only if it is just a function call and nothing more
-                return parse_call(t,v,g,h);
-            }
-        }
-
-        // Process left side
-        if (*t == "(") {
-            Tokenstream left_stream = t.read_inside_brackets();
-            if (t.empty()) {
-                // there are top-level brackets around the calculation. Look inside
-                return parse_calculation(left_stream,v,g,h);
-            }
-            left = parse_calculation(left_stream, v,g, h);
+            left = parse_call(t,v,g,h);
         } else {
-            // checking for function call
-            Tokenstream copy = t;
-            copy += 1;
-            if (*copy == "[") {
-                left = parse_call(t,v,g,h);
-            } else {
-                left = parse_literal(t, v, g, h);
-                t += 1; // discard literal
-            }
+            left = parse_literal(t, v, g, h);
+            t += 1; // discard literal
         }
-
-        std::string op = *t;
-
-        expect_one_of(t,operator_symbols);
-        t += 1; // discard operator symbol
-
-        // Process right side
-        if (*t == "(") {
-            Tokenstream right_stream = t.read_inside_brackets();
-            right = parse_calculation(right_stream, v,g, h + 1);
-        } else {
-            // checking for function call
-            Tokenstream copy = t;
-            copy += 1;
-            if (*copy == "[") {
-                right = parse_call(t,v,g, h+1);
-            } else {
-                right = parse_literal(t, v, g, h + 1);
-                t += 1; // discard literal
-            }
-        }
-
-        expect_empty(t);
-
-        return std::make_shared<ASTCalculationNode>(left, right, op_string_to_type[op], regs[h]);
     }
 
-    std::shared_ptr<ASTCalculationNode> CodeParser::parse_literal(Tokenstream t, std::shared_ptr<LocalVariableManager> v,
-                                                                  std::shared_ptr<GlobalVariableManager> g, int h) {
+    std::string op = *t;
 
+    expect_one_of(t,operator_symbols);
+    t += 1; // discard operator symbol
+
+    // Process right side
+    if (*t == "(") {
+        Tokenstream right_stream = t.read_inside_brackets();
+        right = parse_calculation(right_stream, v,g, h + 1);
+    } else {
+        // checking for function call
+        Tokenstream copy = t;
+        copy += 1;
+        if (*copy == "[") {
+            right = parse_call(t,v,g, h+1);
+        } else {
+            right = parse_literal(t, v, g, h + 1);
+            t += 1; // discard literal
+        }
+    }
+
+    expect_empty(t);
+
+    return std::make_shared<ASTCalculationNode>(left, right, op_string_to_type[op], regs[h]);
+
+     */
+}
+
+    std::shared_ptr<ASTCalculationNode> CodeParser::parse_literal(Tokenstream& t, std::shared_ptr<LocalVariableManager> v,
+                                                                  std::shared_ptr<GlobalVariableManager> g, int h) {
+    // receives open stream and extracts one symbol from it
+    if (t.empty()) {
+        throw std::invalid_argument("PARSER ERROR: trying to parse an empty literal");
+    }
+
+    // try to interpret as a number
+    try {
+        int value = std::stoi(*t);  // this may cause an error, it it isn't a number
+        t+=1; // discard number
+        return std::make_shared<ASTCalculationNode>(nullptr, nullptr, LIT, regs[h], value, 0);
+    } catch (...) {}
+
+    // try to interpret as function call, by having a look at the 2. position
+    auto copy = t;
+    copy += 1;
+    if (*copy == "(") {
+        // has syntax of function call, because between identifier and bracket is no operator
+        return parse_call(t,v,g,h);
+    }
+
+    // interpret as variable
+    // read until next operator. All until it must belong to the variable
+
+    auto res = parse_class_variable(t.read_until_one_of(operator_symbols, true), true, regs[h], v, g, "");
+    return res;//std::shared_ptr<ASTCalculationNode>((ASTCalculationNode*) res.get()); // is this casting style safe?
+    /*
         // try to interpret as a number
         int value;
         try {
             value = std::stoi(*t);
-            return std::make_shared<ASTCalculationNode>(nullptr, nullptr, LIT, regs[h],value, 0);
-        } catch(...){}
+            return std::make_shared<ASTCalculationNode>(nullptr, nullptr, LIT, regs[h], value, 0);
+        } catch (...) {}
 
         // hand over to parse_class_variable
         //return parse_class_variable(t,v,g,h);
-
-        /* old
-        if (v.variable_exists(lit)) {
-            return new ASTCalculationNode(nullptr, nullptr, VAR,regs[h],0,v.var_to_offset[lit], lit);
-        }
-
-            throw std::invalid_argument("PARSER ERROR: Variable '" + lit + "' not defined");
-        }*/
-
-
+        */
     }
 
 std::shared_ptr<ASTCommentNode> CodeParser::parse_comment(Tokenstream t) {
@@ -717,6 +772,8 @@ std::shared_ptr<ASTVariableNode> CodeParser::parse_class_variable(Tokenstream t,
                                                                   std::shared_ptr<LocalVariableManager> local_vars,
                                                                   std::shared_ptr<GlobalVariableManager> global_vars,
                                                                   std::string prev_class_name) {
+    // TODO: let variable node know if it is of primitive type or not
+
     // check if variable is defined
     if (is_root) {
         if (!local_vars->variable_exists(*t)) {

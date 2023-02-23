@@ -9,10 +9,14 @@
 
 
 std::string ASTVariableNode::compile(std::string last_class_name="") {
+    if (is_primitive) {
+        return "implement primitive types";
+    }
+
     std::string code = "";
 
     if (is_root) {
-        code += "mov %"+stack_pointer+", " + reg + "\n";
+        code += "mov "+stack_pointer+", " + reg + "\n";
         code += "add $" + std::to_string(local_vars->var_to_offset[name]) + ", " + reg + "\n";
     }
 
@@ -31,4 +35,8 @@ std::string ASTVariableNode::compile(std::string last_class_name="") {
     }
 
     return code;
+}
+
+std::string ASTVariableNode::compile() {
+    return compile("");
 }

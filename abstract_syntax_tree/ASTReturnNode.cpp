@@ -1,8 +1,11 @@
 #include "ASTReturnNode.hpp"
 #include "ASTCalculationNode.hpp"
+#include <iostream>
 
 
-ASTReturnNode::ASTReturnNode(std::shared_ptr<ASTCalculationNode> calc, std::string f_name): calc(calc), f_name(f_name) {}
+ASTReturnNode::ASTReturnNode(std::shared_ptr<ASTCalculationNode> calc, std::string f_name): calc(calc), f_name(f_name) {
+    std::cout << "fun" << std::endl;
+}
 
     std::string ASTReturnNode::compile() {
         std::string code = calc->compile();

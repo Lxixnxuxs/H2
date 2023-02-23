@@ -69,3 +69,16 @@ def h(int x, int y) -> int /% _O((((y)^(2.000000)) * x) + y) %/  {
 
 
 */
+
+class SimpleBool [length, width]  {
+    int r;
+    int value;
+
+}
+
+def main() -> SimpleBool {
+    SimpleBool a;
+    int b = 1;
+    /*int c = b;
+    return a;*/
+}

@@ -10,9 +10,16 @@ ASTAssignmentNode::ASTAssignmentNode(size_t offset, std::shared_ptr<ASTComputati
             offset(offset), right(right), var_name(var_name), data_type(data_type), is_declaration(is_declaraion) {}
 
     std::string ASTAssignmentNode::compile() {
-        if (right== nullptr)return "";
+        std::string code;
 
-        std::string code = right->compile();
+        // use malloc, if it is a declaration of a class instance
+        if (is_declaration and data_type!="int") {
+            code += "call malloc    ; TODO: implement properly \n"; //TODO implement properly
+        }
+
+        if (right== nullptr)return code;
+
+        code += right->compile();
         code += "mov " + right->reg + ", -" + std::to_string(offset) + "("+frame_pointer+")\n";
         return code;
     }

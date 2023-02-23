@@ -7,8 +7,8 @@
 enum ComputationOp {LIT, VAR, ADD, SUB, MUL, DIV, MOD, BITWISE_AND, BITWISE_OR, BITWISE_XOR, SHIFT_L, SHIFT_R};
 
 struct ASTCalculationNode : ASTComputationNode {
-    std::shared_ptr<ASTCalculationNode> left;
-    std::shared_ptr<ASTCalculationNode> right;
+    std::shared_ptr<ASTCalculationNode> left = nullptr;
+    std::shared_ptr<ASTCalculationNode> right = nullptr;
 
     ComputationOp comp_type;
 

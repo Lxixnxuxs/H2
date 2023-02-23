@@ -1,31 +1,7 @@
-def main() -> void {
-    SimpleBool a;
-    a'r = 1;
 
-    return a'r;
+def g(int x, int y) -> int {
+    /*int z = x + y * 5;
+    int t = (2) * (y+x-y);*/
+    int r = g(x,x) * (g(x-2, (y+x)));
 }
-
-class SimpleBool [length, width]  {
-    int r;
-    int value;
-
-    def append(int value_) -> int /% _O(0.000000) %/  {
-        value = (value_ + g[value_]);
-        SimpleBool res;
-    }
-
-    def get(SimpleBool b) -> int /% _O(0.000000) %/  {
-        value = 3;
-        this'value =
-    }
-
-}
-
-
-def main() -> void /% _O(1.000000) %/  {
-    SimpleBool a;
-    /* a'append ( 3 ) ; a'value = 3 ; */
-    return a;
-}
-
 

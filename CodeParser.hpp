@@ -67,7 +67,7 @@ public:
 
     std::shared_ptr<ASTCalculationNode> parse_calculation(Tokenstream t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g, int h = 0);
 
-    std::shared_ptr<ASTCalculationNode> parse_literal(Tokenstream t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g, int h);
+    std::shared_ptr<ASTCalculationNode> parse_literal(Tokenstream& t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g, int h);
 
     std::shared_ptr<ASTVariableNode> parse_class_variable(Tokenstream t, bool is_root, std::string reg, std::shared_ptr<LocalVariableManager> local_vars,
                                                           std::shared_ptr<GlobalVariableManager> global_vars, std::string prev_class_name="");

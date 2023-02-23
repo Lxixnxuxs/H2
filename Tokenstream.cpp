@@ -37,21 +37,21 @@
 
     Tokenstream::Tokenstream(list<string>::iterator begin_, list<string>::iterator end_): begin_(begin_), end_(end_) {}
 
-    Tokenstream Tokenstream::read_until(const string& token){
+    Tokenstream Tokenstream::read_until(const string& token, bool stop_at_token){
         // gives back whole Tokenstream, if no instance is found
 
         auto old_begin_ = begin_;
         while(!empty() and *begin_ != token) {begin_++;};
         auto res = Tokenstream(old_begin_,begin_);
 
-        if (!empty()){
+        if (!empty() and !stop_at_token){
             begin_++;  // throwing away the token just found
         }
         return res;
     }
 
-    // returns Tokenstream after the token found and the token found
-    std::pair<Tokenstream,string> Tokenstream::read_until_one_of(const vector<string>& token_vec){
+    // returns Tokenstream after the token found (or at the token found, if stop_at_token is true)
+    Tokenstream Tokenstream::read_until_one_of(const vector<string>& token_vec, bool stop_at_token){
         auto old_begin_ = begin_;
         bool found = false;
         string token_found = "";
@@ -76,9 +76,9 @@
             res = Tokenstream(old_begin_,begin_);
         }
 
+        if (stop_at_token and found) begin_--;
 
-
-        return {res,token_found};
+        return res;
     }
 
     Tokenstream Tokenstream::read_inside_brackets(){
