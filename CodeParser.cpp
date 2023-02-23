@@ -32,8 +32,8 @@ string CodeParser::is_valid_identifier(std::string token) {
     return "";
 }
 
-bool CodeParser::is_valid_data_type(std::string token, GlobalVariableManager& g) {
-    return (g.class_exists(token) || find(data_types.begin(),data_types.end(),token) != data_types.end());
+bool CodeParser::is_valid_data_type(std::string token, std::shared_ptr<GlobalVariableManager> g) {
+    return (g->class_exists(token) || find(data_types.begin(),data_types.end(),token) != data_types.end());
 }
 
 void CodeParser::expect(Tokenstream t, string token){
@@ -454,15 +454,14 @@ VirtualMathTerm CodeParser::parse_complexity_term(Tokenstream t) {
         return res;
     }
 
-std::shared_ptr<ASTStatementNode> CodeParser::parse_line(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){
+std::shared_ptr<ASTStatementNode> CodeParser::parse_line(Tokenstream t, std::shared_ptr<LocalVariableManager> v,
+                                                         std::shared_ptr<GlobalVariableManager> g){
 
         if (*t == "return") {
             t += 1; // discard 'return'
             std::shared_ptr<ASTCalculationNode> calc = parse_calculation(t, v, g, 0);
-            return std::make_shared<ASTReturnNode>(calc, v.name);
+            return std::make_shared<ASTReturnNode>(calc, v->name);
         }
-
-
 
         bool need_to_declare = false;
         string type_;
@@ -487,7 +486,7 @@ std::shared_ptr<ASTStatementNode> CodeParser::parse_line(Tokenstream t, LocalVar
         expect_identifier(t);
         if (!need_to_declare) {
             // if it is not a declaration, check if the variable exists
-            if (!v.variable_exists(*t) and !v.get_this_namespace(g).variable_exists(*t)) {
+            if (!v->variable_exists(*t) and !v->get_this_namespace(g).variable_exists(*t)) {
                 throw std::invalid_argument("PARSER ERROR  variable '" + *t + "' not declared");
             }
         }
@@ -496,8 +495,8 @@ std::shared_ptr<ASTStatementNode> CodeParser::parse_line(Tokenstream t, LocalVar
 
         // declaration without assignment
         if (t.empty() && need_to_declare){
-            v.add_variable(var,type_, &g, true); // Obj a;  this creates a new object
-            return std::make_shared<ASTAssignmentNode>(v.var_to_offset[var], nullptr, var,type_,need_to_declare);
+            v->add_variable(var,type_, g, true); // Obj a;  this creates a new object
+            return std::make_shared<ASTAssignmentNode>(v->var_to_offset[var], nullptr, var,type_,need_to_declare);
         }
 
         expect(t,"=");
@@ -511,26 +510,27 @@ std::shared_ptr<ASTStatementNode> CodeParser::parse_line(Tokenstream t, LocalVar
         // declare variable only after the calculation, because the parser needs to check that this very variable is not
         // used within its own declaration
         if (need_to_declare){
-            v.add_variable(var,type_, &g, false);  // Obj b = a; where a is of type Obj. This only copies the reference
+            v->add_variable(var,type_, g, false);  // Obj b = a; where a is of type Obj. This only copies the reference
         }
 
         // TODO introduce typ checking
 
-        return std::make_shared<ASTAssignmentNode>(v.var_to_offset[var], calculation, var,type_,need_to_declare);
+        return std::make_shared<ASTAssignmentNode>(v->var_to_offset[var], calculation, var,type_,need_to_declare);
     }
 
 
 
 
 
-std::shared_ptr<ASTCallNode> CodeParser::parse_call(Tokenstream& t, LocalVariableManager& v, GlobalVariableManager& g, int h){
+std::shared_ptr<ASTCallNode> CodeParser::parse_call(Tokenstream& t, std::shared_ptr<LocalVariableManager> v,
+                                                    std::shared_ptr<GlobalVariableManager> g, int h){
         // be aware that this call changes the Tokenstream of the higher level
 
         expect_identifier(t);
         string func_name = *t;
         vector<string> expected_types;
         bool defined = false;
-        for (const auto pair : g.var_to_argument_list) {
+        for (const auto pair : g->var_to_argument_list) {
             //cout << "defined: "+ pair.first+" "<< pair.second.size() << endl;
             if (pair.first == func_name){
                 defined = true;
@@ -567,11 +567,12 @@ std::shared_ptr<ASTCallNode> CodeParser::parse_call(Tokenstream& t, LocalVariabl
         if (i<expected_types.size()) throw std::invalid_argument("PARSER ERROR  '"+func_name+
                                                                  "' was called with not enought arguments: "+std::to_string(i)+" instead of "+ std::to_string(expected_types.size())+"");
 
-        return std::make_shared<ASTCallNode>(nullptr, nullptr,VAR,"",0,0,g.var_to_node[func_name],arguments,h);
+        return std::make_shared<ASTCallNode>(nullptr, nullptr,VAR,"",0,0,g->var_to_node[func_name],arguments,h);
 
     }
 
-std::shared_ptr<ASTComparisonNode> CodeParser::parse_comparison(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g){
+std::shared_ptr<ASTComparisonNode> CodeParser::parse_comparison(Tokenstream t, std::shared_ptr<LocalVariableManager> v,
+                                                                std::shared_ptr<GlobalVariableManager> g){
     std::shared_ptr<ASTCalculationNode> left, right;
 
         if (t.empty()){
@@ -614,7 +615,8 @@ std::shared_ptr<ASTComparisonNode> CodeParser::parse_comparison(Tokenstream t, L
         return std::make_shared<ASTComparisonNode>(left, right, op, regs[0],regs[1]);
     }
 
-std::shared_ptr<ASTCalculationNode> CodeParser::parse_calculation(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g, int h){
+std::shared_ptr<ASTCalculationNode> CodeParser::parse_calculation(Tokenstream t, std::shared_ptr<LocalVariableManager> v,
+                                                                  std::shared_ptr<GlobalVariableManager> g, int h){
     std::shared_ptr<ASTCalculationNode> left, right;
 
         if (t.empty()){
@@ -681,7 +683,8 @@ std::shared_ptr<ASTCalculationNode> CodeParser::parse_calculation(Tokenstream t,
         return std::make_shared<ASTCalculationNode>(left, right, op_string_to_type[op], regs[h]);
     }
 
-    std::shared_ptr<ASTCalculationNode> CodeParser::parse_literal(Tokenstream t, LocalVariableManager& v, GlobalVariableManager& g, int h) {
+    std::shared_ptr<ASTCalculationNode> CodeParser::parse_literal(Tokenstream t, std::shared_ptr<LocalVariableManager> v,
+                                                                  std::shared_ptr<GlobalVariableManager> g, int h) {
 
         // try to interpret as a number
         int value;
@@ -710,15 +713,17 @@ std::shared_ptr<ASTCommentNode> CodeParser::parse_comment(Tokenstream t) {
             );
 }
 
-std::shared_ptr<ASTVariableNode> CodeParser::parse_class_variable(Tokenstream t, bool is_root, std::string reg, LocalVariableManager& local_vars,
-                                                  GlobalVariableManager& global_vars, std::string prev_class_name) {
+std::shared_ptr<ASTVariableNode> CodeParser::parse_class_variable(Tokenstream t, bool is_root, std::string reg,
+                                                                  std::shared_ptr<LocalVariableManager> local_vars,
+                                                                  std::shared_ptr<GlobalVariableManager> global_vars,
+                                                                  std::string prev_class_name) {
     // check if variable is defined
     if (is_root) {
-        if (!local_vars.variable_exists(*t)) {
+        if (!local_vars->variable_exists(*t)) {
             throw std::invalid_argument("PARSER ERROR: Variable '" + *t + "' not defined");
         }
     } else {
-        if (!global_vars.class_to_local_manager[prev_class_name].variable_exists(*t)) {
+        if (!global_vars->class_to_local_manager[prev_class_name].variable_exists(*t)) {
             throw std::invalid_argument("PARSER ERROR: Class " + prev_class_name + " has no member " + *t);
         }
     }
@@ -744,9 +749,3 @@ std::shared_ptr<ASTVariableNode> CodeParser::parse_class_variable(Tokenstream t,
         return std::shared_ptr<ASTVariableNode>(new ASTVariableNode(instance_name, child, is_root, local_vars, global_vars, reg));
     }
 }
-
-std::shared_ptr<ASTCommentNode> CodeParser::parse_comment(Tokenstream t) {
-    return new ASTCommentNode(t.to_string());
-}
-
-

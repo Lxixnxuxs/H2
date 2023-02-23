@@ -24,7 +24,7 @@ class CodeParser {
 private:
     string is_valid_identifier(std::string token);
 
-    bool is_valid_data_type(std::string token, GlobalVariableManager& g);
+    bool is_valid_data_type(std::string token, std::shared_ptr<GlobalVariableManager> g);
 
     void expect(Tokenstream t, string token);
 
@@ -70,7 +70,7 @@ public:
     std::shared_ptr<ASTCalculationNode> parse_literal(Tokenstream t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g, int h);
 
     std::shared_ptr<ASTVariableNode> parse_class_variable(Tokenstream t, bool is_root, std::string reg, std::shared_ptr<LocalVariableManager> local_vars,
-                                                          GlobalVariableManager& global_vars, std::string prev_class_name="");
+                                                          std::shared_ptr<GlobalVariableManager> global_vars, std::string prev_class_name="");
 };
 
 #endif //H2_PARSER_HPP

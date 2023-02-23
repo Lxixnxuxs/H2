@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "memory"
 
 struct GlobalVariableManager;
 
@@ -24,7 +25,7 @@ struct LocalVariableManager {
 
     bool variable_exists(std::string name);
 
-    LocalVariableManager get_this_namespace(GlobalVariableManager& g);
+    LocalVariableManager get_this_namespace(std::shared_ptr<GlobalVariableManager> g);
 };
 
 #endif //H2_LOCALVARIABLEMANAGER_HPP
