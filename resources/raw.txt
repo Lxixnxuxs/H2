@@ -1,6 +1,9 @@
-def g(int n) -> void /% O(n) %/  {
-}
+def main() -> void {
+    SimpleBool a;
+    a'r = 1;
 
+    return a'r;
+}
 
 class SimpleBool [length, width]  {
     int r;
