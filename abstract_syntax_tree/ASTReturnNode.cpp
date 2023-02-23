@@ -6,7 +6,7 @@ ASTReturnNode::ASTReturnNode(std::shared_ptr<ASTCalculationNode> calc, std::stri
 
     std::string ASTReturnNode::compile() {
         std::string code = calc->compile();
-        code += "mov " + calc->reg + ", %eax\n";
+        code += "mov " + calc->reg + ", %rax\n";
         code += "jmp END_" + f_name + '\n';
 
         return code;
