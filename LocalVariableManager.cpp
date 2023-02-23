@@ -25,14 +25,14 @@
         // prevent wrong calling conditions
         assert(type_context != nullptr);
         assert(type_context->class_exists(type));
-        current_offset += type_context->class_to_local_manager.at(type).current_offset;
+        current_offset += type_context->class_to_local_manager.at(type)->current_offset;
     }
 
     bool LocalVariableManager::variable_exists(std::string name) {
         return var_to_type.find(name) != var_to_type.end();
     }
 
-LocalVariableManager LocalVariableManager::get_this_namespace(std::shared_ptr<GlobalVariableManager> g) {
-    if (variable_exists("this")) return g.class_to_local_manager[var_to_type["this"]];
+std::shared_ptr<LocalVariableManager> LocalVariableManager::get_this_namespace(std::shared_ptr<GlobalVariableManager> g) {
+    if (variable_exists("this")) return g->class_to_local_manager[var_to_type["this"]];
     return {}; // return empty
 }

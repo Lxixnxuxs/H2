@@ -486,7 +486,7 @@ std::shared_ptr<ASTStatementNode> CodeParser::parse_line(Tokenstream t, std::sha
         expect_identifier(t);
         if (!need_to_declare) {
             // if it is not a declaration, check if the variable exists
-            if (!v->variable_exists(*t) and !v->get_this_namespace(g).variable_exists(*t)) {
+            if (!v->variable_exists(*t) and !v->get_this_namespace(g)->variable_exists(*t)) {
                 throw std::invalid_argument("PARSER ERROR  variable '" + *t + "' not declared");
             }
         }

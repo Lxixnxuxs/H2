@@ -23,7 +23,7 @@ std::string ASTVariableNode::compile(std::string last_class_name="") {
         if (local_vars->var_to_is_ref[name]) {
             code += "mov (" + reg + "), " + reg + "\n";
         } else {
-            code += "add $" + std::to_string(global_vars->class_to_local_manager[last_class_name].var_to_offset[name])
+            code += "add $" + std::to_string(global_vars->class_to_local_manager[last_class_name]->var_to_offset[name])
                     + ", " + reg + "\n";
 
             code += child->compile(local_vars->var_to_type[name]);

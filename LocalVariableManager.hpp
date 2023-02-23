@@ -25,7 +25,7 @@ struct LocalVariableManager {
 
     bool variable_exists(std::string name);
 
-    LocalVariableManager get_this_namespace(std::shared_ptr<GlobalVariableManager> g);
+    std::shared_ptr<LocalVariableManager>  get_this_namespace(std::shared_ptr<GlobalVariableManager> g);
 };
 
 #endif //H2_LOCALVARIABLEMANAGER_HPP
