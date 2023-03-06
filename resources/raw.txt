@@ -1,17 +1,15 @@
 class SimpleBool [length, width]  {
-    int r;
-    int value;
+    int r = 3;
+    int value = 4;
 
     def init(int r_, int value_) -> void{
-        /*r = r_;
-        value = value_;*/
+
     }
 }
 
 
-
 def main() -> SimpleBool {
     SimpleBool a;
-    a'r = 4;
+    a.b.c.r = 4;
     return a;
 }

@@ -15,6 +15,8 @@ set(SOURCE_FILES lexer.cpp Tokenstream.cpp complexity_analyzer/ExecutionPath.cpp
         abstract_syntax_tree/ASTCalculationNode.cpp abstract_syntax_tree/ASTAssignmentNode.cpp abstract_syntax_tree/ASTCommentNode.cpp abstract_syntax_tree/ASTClassNode.cpp
         GlobalVariableManager.cpp abstract_syntax_tree/ASTVariableNode.cpp)
 
+
+
 add_executable(main main.cpp ${SOURCE_FILES} abstract_syntax_tree/ASTVariableNode.cpp)
 
 add_executable(compiler compiler.cpp ${SOURCE_FILES} abstract_syntax_tree/ASTVariableNode.cpp)

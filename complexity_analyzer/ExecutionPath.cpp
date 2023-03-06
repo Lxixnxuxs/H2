@@ -124,13 +124,13 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
             if (cls == "Assignment") {
                 auto pr = dynamic_cast<ASTAssignmentNode *>(statement);
                 calc = dynamic_cast<ASTCalculationNode *>(pr->right.get());
-                writeback_name = pr->var_name;
+                //writeback_name = pr->var_name;  // TODO
 
                 // add a new parameter variable
                 if (pr->is_declaration){
                     variable_order.push_back(writeback_name);
                     parameter_back_translation[get_param(execution_state.size())] = writeback_name;
-                    execution_state[pr->var_name] = VirtualMathTerm(); // declaration
+                    //execution_state[pr->var_name] = VirtualMathTerm(); // declaration // TODO
 
                 }
 

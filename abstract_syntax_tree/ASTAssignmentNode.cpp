@@ -4,10 +4,11 @@
 #include "ASTAssignmentNode.hpp"
 #include "ASTComputationNode.hpp"
 #include "../global_information.hpp"
+#include "ASTVariableNode.hpp"
 
 
-ASTAssignmentNode::ASTAssignmentNode(size_t offset, std::shared_ptr<ASTComputationNode> right, std::string var_name, std::string data_type, bool is_declaraion):
-            offset(offset), right(right), var_name(var_name), data_type(data_type), is_declaration(is_declaraion) {}
+ASTAssignmentNode::ASTAssignmentNode(size_t offset, std::shared_ptr<ASTComputationNode> right, std::shared_ptr<ASTVariableNode> var, std::string data_type, bool is_declaraion):
+            offset(offset), right(right), var(var), data_type(data_type), is_declaration(is_declaraion) {}
 
     std::string ASTAssignmentNode::compile() {
         std::string code;
@@ -20,7 +21,8 @@ ASTAssignmentNode::ASTAssignmentNode(size_t offset, std::shared_ptr<ASTComputati
         if (right== nullptr)return code;
 
         code += right->compile();
-        code += "mov " + right->reg + ", -" + std::to_string(offset) + "("+frame_pointer+")\n";
+        code += var->compile();
+        code += "mov " + right->reg + ", "+ var->reg+ "\n";     // TODO how to make the move correct?
         return code;
     }
 
@@ -32,7 +34,7 @@ ASTAssignmentNode::ASTAssignmentNode(size_t offset, std::shared_ptr<ASTComputati
 
     std::string ASTAssignmentNode::to_code() {
 
-        return get_indentation(block_level) + (is_declaration ? data_type + " " : "") + var_name + ((right==
+        return get_indentation(block_level) + (is_declaration ? data_type + " " : "") + var->to_code() + ((right==
                                                                                                    nullptr) ? "": (" = " + right->to_code())) + ";\n";
     }
 

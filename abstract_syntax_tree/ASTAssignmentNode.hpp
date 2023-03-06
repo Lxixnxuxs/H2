@@ -5,18 +5,19 @@
 #include "ASTStatementNode.hpp"
 //#include "ASTCalculationNode.hpp"
 struct ASTComputationNode;
+struct ASTVariableNode;
 
 
 struct ASTAssignmentNode : ASTStatementNode {
 
     size_t offset;
-    std::string var_name;
+    std::shared_ptr<ASTVariableNode> var;
     std::string data_type;
     bool is_declaration;
 
     std::shared_ptr<ASTComputationNode> right;
 
-    ASTAssignmentNode(size_t offset, std::shared_ptr<ASTComputationNode> right, std::string var_name, std::string data_type = "", bool is_declaraion = false );
+    ASTAssignmentNode(size_t offset, std::shared_ptr<ASTComputationNode> right, std::shared_ptr<ASTVariableNode> var, std::string data_type = "", bool is_declaraion = false );
 
     std::string compile() override;
 
