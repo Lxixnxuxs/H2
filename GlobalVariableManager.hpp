@@ -25,6 +25,7 @@ struct GlobalVariableManager {
 
     bool class_exists( std::string name) const;
     bool function_exists( std::string name) const;
+    int get_type_representation_size(std::string type) const;
 };
 
 #endif //H2_GLOBALVARIABLEMANAGER_HPP

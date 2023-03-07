@@ -27,7 +27,7 @@ ASTAssignmentNode::ASTAssignmentNode(size_t offset, std::shared_ptr<ASTComputati
 
         code += right->compile();
         code += var->compile();
-        code += "mov " + right->reg + ", "+ var->reg+ "\n";     // TODO how to make the move correct?
+        code += "mov " + right->reg + ", "+ var->reg+ "\n";
         return code;
     }
 
