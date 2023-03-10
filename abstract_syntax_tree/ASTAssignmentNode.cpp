@@ -18,9 +18,9 @@ ASTAssignmentNode::ASTAssignmentNode(size_t offset, std::optional<std::shared_pt
 
         // use malloc, if it is a declaration of a class instance
         if (is_declaration and data_type != "int") {
-            code += "movl $" + std::to_string(size) + ", %edi\n";
+            code += "mov $" + std::to_string(size) + ", %edi\n";
             code += "call malloc\n";
-            code += "mov %rax, " + std::to_string(var->local_vars->var_to_offset[var->name]) + "("+ stack_pointer +")\n";
+            code += "mov %rax, -" + std::to_string(var->local_vars->var_to_offset[var->name]) + "("+ frame_pointer +")\n";
         }
 
         if (!right)
@@ -29,7 +29,14 @@ ASTAssignmentNode::ASTAssignmentNode(size_t offset, std::optional<std::shared_pt
 
         code += right.value()->compile();
         code += var->compile();
-        code += "mov " + right.value()->reg+ ", "+ var->reg+ "\n";  // TODO why does right.value()->reg always return "" ??
+        // if this path leads to an int, we will receive the reference to it.
+        // so we need to go to the value
+        if (var->get_resulting_type() == "int") {
+            code += "mov " + right.value()->reg+ ", ("+ var->reg+ ")\n";
+        } else {
+            code += "mov " + right.value()->reg+ ", "+ var->reg+ "\n";
+        }
+
         return code;
     }
 

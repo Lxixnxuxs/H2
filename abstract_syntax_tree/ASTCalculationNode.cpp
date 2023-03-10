@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <iostream>
 #include "../global_information.hpp"
+#include "ASTVariableNode.hpp"
 
 
 ASTCalculationNode::ASTCalculationNode(std::shared_ptr<ASTCalculationNode> left, std::shared_ptr<ASTCalculationNode> right, ComputationOp comp_type, std::string reg,
@@ -15,40 +16,66 @@ ASTCalculationNode::ASTCalculationNode(std::shared_ptr<ASTCalculationNode> left,
 
 
     std::string ASTCalculationNode::compile() {
-        if (comp_type == VAR) {
+        /*if (comp_type == VAR) {
             return "mov -" + std::to_string(offset) + "("+frame_pointer+")" + ", " + reg + "\n";
-        } else if (comp_type == LIT) {
-            return "mov $" + std::to_string(value) + "," + reg + "\n";
-        } else {
-            // Recursive code generation
-            if (left->comp_type == LIT && right->comp_type == LIT) {
-                return "mov $" + optimize_literal_computation() + ", " + reg + "\n";
-            } else {
-                std::string code = left->compile() + right->compile();
-                if (comp_type == DIV) {
-                    /*code += "mov " + left->reg + ", %eax\nmov " + right->reg + ", %edx\n" +
-                            "div " + (own_reg ? reg : left->reg) + "\n";*/
-                    code += "mov $0, %rdx\nmov " + left->reg + ", %rax\ndiv " + right->reg +
-                            (own_reg ? "\nmov %rax, " + left->reg : "\nmov %rax, " + reg) + "\n";
-                } else if (comp_type == MOD) {
-                    code += "mov $0, %rdx\nmov " + left->reg + ", %rax\ndiv " + right->reg +
-                            (own_reg ? "\nmov %rdx, " + left->reg : "\nmov %rdx, " + reg) + "\n";
-                } else {
-                    if (comp_type == SHIFT_L || comp_type == SHIFT_R) {
-                        // shifts can only be done by 8-bit shift amount stored in the cl-register
-                        // note that the content of rcx is overwritten here
-                        code += "mov " + right->reg + ", " + "%rcx\n";
-                        code += computation_op_to_string() + " %cl, " + left->reg +
-                                (own_reg ? "\nmov " + left->reg + "," + reg + "\n" : "\n");
-                    } else {
-                        code += computation_op_to_string() + " " + right->reg + "," + left->reg +
-                                (own_reg ? "\nmov " + left->reg + "," + reg + "\n" : "\n");
-                    }
-                }
+        } else*/
 
-                return code;
+        if (comp_type == LIT) {
+            return "mov $" + std::to_string(value) + "," + reg + "\n";
+        }
+
+        // Recursive code generation
+        /*if (left->comp_type == LIT && right->comp_type == LIT) {
+            return "mov $" + optimize_literal_computation() + ", " + reg + "\n";
+        } else {*/
+
+        std::string code;// = left->compile();
+
+        std::vector<std::shared_ptr<ASTCalculationNode>> children = {left, right};
+
+
+        for (auto child : children) {
+            code+=child->compile();
+
+            // go to value if it is a primitive variable
+            if (child->get_class() == "ASTVariableNode") {
+                auto child_var = dynamic_cast<ASTVariableNode *>(child.get());
+                if (child_var->get_resulting_type() == "int") {
+                    code += "mov (" + child->reg + "), " + child->reg + "\n";
+                }
             }
         }
+
+
+
+        if (comp_type == DIV) {
+            /*code += "mov " + left->reg + ", %eax\nmov " + right->reg + ", %edx\n" +
+                    "div " + (own_reg ? reg : left->reg) + "\n";*/
+            code += "mov $0, %rdx\nmov " + left->reg + ", %rax\ndiv " + right->reg +
+                    (own_reg ? "\nmov %rax, " + left->reg : "\nmov %rax, " + reg) + "\n";
+            return code;
+        }
+
+        if (comp_type == MOD) {
+            code += "mov $0, %rdx\nmov " + left->reg + ", %rax\ndiv " + right->reg +
+                            (own_reg ? "\nmov %rdx, " + left->reg : "\nmov %rdx, " + reg) + "\n";
+            return code;
+        }
+
+        if (comp_type == SHIFT_L || comp_type == SHIFT_R) {
+                        // shifts can only be done by 8-bit shift amount stored in the cl-register
+                        // note that the content of rcx is overwritten here
+            code += "mov " + right->reg + ", " + "%rcx\n";
+            code += computation_op_to_string() + " %cl, " + left->reg +
+                            (own_reg ? "\nmov " + left->reg + "," + reg + "\n" : "\n");
+            return code;
+        }
+
+        code += computation_op_to_string() + " " + right->reg + "," + left->reg +
+                            (own_reg ? "\nmov " + left->reg + "," + reg + "\n" : "\n");
+        return code;
+
+
     }
 
     std::string ASTCalculationNode::computation_op_to_string() {

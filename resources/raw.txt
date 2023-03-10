@@ -1,7 +1,9 @@
-def f(int a, int b) -> void {
-    return b;
+class Bool [] {
+    int data;
 }
 
 def main() -> int {
-    return f(5, 7);
+    Bool a;
+    a.data = 18;
+    return a.data + 3;
 }

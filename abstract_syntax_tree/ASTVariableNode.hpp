@@ -18,6 +18,7 @@ struct ASTVariableNode : ASTCalculationNode {
     std::string name;
 
     bool is_root;
+    bool return_primitive_by_value;
 
     std::shared_ptr<ASTVariableNode> child;
     std::shared_ptr<LocalVariableManager> local_vars;
@@ -25,7 +26,7 @@ struct ASTVariableNode : ASTCalculationNode {
 
     ASTVariableNode(std::string name, std::shared_ptr<ASTVariableNode> child,
                     bool is_root, std::shared_ptr<LocalVariableManager> local_vars, std::shared_ptr<GlobalVariableManager> global_vars,
-                    std::string reg);
+                    std::string reg, bool return_primitive_by_value = false);
 
     std::string compile_helper(std::string);
 
@@ -37,7 +38,12 @@ struct ASTVariableNode : ASTCalculationNode {
 
     std::string to_code(){};
 
-    std::string get_class(){};
+    std::string get_class(){return "ASTVariableNode";};
+
+    std::string get_resulting_type(std::string last_class_name = "");
+
+private:
+    std::string get_type(std::string last_class_name = "");
 
 };
 
