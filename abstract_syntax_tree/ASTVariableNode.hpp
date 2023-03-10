@@ -33,7 +33,7 @@ struct ASTVariableNode : ASTCalculationNode {
         comp_type = VAR;
     };
 
-    std::string compile(std::string);
+    std::string compile_helper(std::string);
 
     void set_block_level(int n){};
 

@@ -123,7 +123,7 @@ ExecutionPath::ExecutionPath(const ExecutionPath& other) {
 
             if (cls == "Assignment") {
                 auto pr = dynamic_cast<ASTAssignmentNode *>(statement);
-                calc = dynamic_cast<ASTCalculationNode *>(pr->right.get());
+                calc = dynamic_cast<ASTCalculationNode *>(pr->right.value().get());
                 //writeback_name = pr->var_name;  // TODO
 
                 // add a new parameter variable

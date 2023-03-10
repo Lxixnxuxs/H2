@@ -43,6 +43,8 @@ public:
 
     std::shared_ptr<ASTClassNode> parse_class(Tokenstream& t, std::shared_ptr<GlobalVariableManager> g);
 
+    void parse_class_variable(Tokenstream t, std::shared_ptr<LocalVariableManager> class_variable_representation, std::shared_ptr<GlobalVariableManager> g, std::optional<std::string> class_name = {});
+
     std::shared_ptr<ASTFunctionNode> parse_function(Tokenstream& t, std::shared_ptr<GlobalVariableManager> g, std::optional<std::string> class_name = {});
 
     std::pair<int,vector<std::pair<string,string>>> parse_argument_list(Tokenstream t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g);

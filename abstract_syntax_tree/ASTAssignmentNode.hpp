@@ -18,9 +18,9 @@ struct ASTAssignmentNode : ASTStatementNode {
     std::string data_type;
     bool is_declaration;
 
-    std::shared_ptr<ASTComputationNode> right;
+    std::optional<std::shared_ptr<ASTComputationNode>> right;
 
-    ASTAssignmentNode(size_t offset, std::shared_ptr<ASTComputationNode> right, std::shared_ptr<ASTVariableNode> var, std::string data_type = "", bool is_declaraion = false,
+    ASTAssignmentNode(size_t offset, std::optional<std::shared_ptr<ASTComputationNode>> right, std::shared_ptr<ASTVariableNode> var, std::string data_type = "", bool is_declaraion = false,
                       int size=0);
 
     std::string compile() override;

@@ -169,11 +169,9 @@ std::shared_ptr<ASTClassNode> CodeParser::parse_class(Tokenstream& t, std::share
 
     auto class_var_stream = class_content.read_until("def");
 
-
     while (!class_var_stream.empty()) {
-        parse_line(class_var_stream.read_until(";"), class_intern_offset_manager, g, {class_name}); // maybe write own function instead. Otherwise wrong programm will be accepted
+        parse_class_variable(class_var_stream.read_until(";"), class_intern_offset_manager, g, {class_name});
     }
-
 
     std::vector<std::shared_ptr<ASTFunctionNode>> class_functions;
 
@@ -200,6 +198,17 @@ std::shared_ptr<ASTClassNode> CodeParser::parse_class(Tokenstream& t, std::share
 
         return std::make_shared<ASTClassNode>(class_name, parameters, class_intern_offset_manager, class_functions);
     }
+
+void CodeParser::parse_class_variable(Tokenstream t, std::shared_ptr<LocalVariableManager> class_variable_representation, std::shared_ptr<GlobalVariableManager> g, std::optional<std::string> class_name){
+    expect_data_type(t,g);
+    std::string data_type = *t;
+    t+=1;
+    expect_identifier(t);
+    std::string var_name = *t;
+    t+=1;
+    expect_empty(t);
+    class_variable_representation->add_variable(var_name, data_type, g, (data_type != "int"));
+}
 
 
 std::shared_ptr<ASTFunctionNode> CodeParser::parse_function(Tokenstream& t, std::shared_ptr<GlobalVariableManager> g,  std::optional<std::string> class_name) {
@@ -473,7 +482,7 @@ std::shared_ptr<ASTStatementNode> CodeParser::parse_line(Tokenstream t, std::sha
 
         std::optional<std::string> declaration_type = (is_valid_data_type(*t, g) ? std::optional<string>(*t) : std::nullopt);
         if (declaration_type) t+=1; // discard data type
-        int type_size = (declaration_type) ? g->get_type_representation_size(declaration_type.value()) : 0;
+        int type_size = (declaration_type) ? g->get_type_size(declaration_type.value()) : 0;
 
 
         auto copy_stream = t;
@@ -501,7 +510,7 @@ std::shared_ptr<ASTStatementNode> CodeParser::parse_line(Tokenstream t, std::sha
             v->add_variable(var->name,declaration_type.value(), g, true);   // new declared variables cannot be inside classes, therefore only one token expected
 
             // converts per default into 'int x = 0;' // TODO:  will this cause trouble?
-            return std::make_shared<ASTAssignmentNode>(0, std::make_shared<ASTCalculationNode>(nullptr, nullptr, LIT, regs[0], 0),
+            return std::make_shared<ASTAssignmentNode>(0, std::nullopt,
                     var, declaration_type.value(), true, type_size);
         }
 
@@ -510,7 +519,10 @@ std::shared_ptr<ASTStatementNode> CodeParser::parse_line(Tokenstream t, std::sha
             expect(t,"=");
             t+=1;
 
-            std::shared_ptr<ASTCalculationNode> calc = parse_calculation(t, v, g, 0, class_name);
+            std::shared_ptr<ASTCalculationNode> calc = parse_calculation(t, v, g, 1, class_name);
+            // important that the calculation starts with register 1 (not 0),
+            // because register one is needed to evaluate a class variable in 'classvariable = calculation'
+
             if (declaration_type) v->add_variable(var->name,declaration_type.value(), g, true);   // new declared variables cannot be inside classes, therefore only one token expected
             return std::make_shared<ASTAssignmentNode>(0, calc, var, declaration_type.value_or(""), (bool) declaration_type, type_size);
 
