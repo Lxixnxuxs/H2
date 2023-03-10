@@ -19,7 +19,35 @@ containing H2 code as
 
 The generated
 ## Basic Control Structures
+Without specifying a complete syntax at this point, we provide a few examples of how to write valid H2 code.
+Assignment Statements, If-Statements and While-Loops are working as one could expect:
+```c++
+int a = 5;
+if (a<0) {
+    return a;
+} else {
+    return 2*a;
+}
 
+int res = 0;
+int i = r;
+while (0 < i) {
+    res = res + i;
+    i = i + 1;
+}
+    
+```
+
+
+```c++
+def exp(int a) -> void /% _O(a) %/  {
+    if (a<0) {
+        return a;
+    } else {
+        return 2 * exp(a - 1);
+    }
+}
+```
 ## Runtime Analysis
 
 ## Class System

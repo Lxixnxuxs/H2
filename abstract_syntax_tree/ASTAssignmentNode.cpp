@@ -29,7 +29,7 @@ ASTAssignmentNode::ASTAssignmentNode(size_t offset, std::optional<std::shared_pt
 
         code += right.value()->compile();
         code += var->compile();
-        code += "mov " + right.value()->reg+" TODO in Assignment " + ", "+ var->reg+ "\n";  // TODO why does right.value()->reg always return "" ??
+        code += "mov " + right.value()->reg+ ", "+ var->reg+ "\n";  // TODO why does right.value()->reg always return "" ??
         return code;
     }
 
