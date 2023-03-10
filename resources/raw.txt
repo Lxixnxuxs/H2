@@ -1,39 +1,24 @@
-class Node [] {
-    int value;
-    Node next;
+class Bool [] {
+    int data;
 }
 
-class List [length] {
-    Node head;
-    Node tail;
+def Bool_(int d) -> Bool {
+    Bool res;
+    if (d == 0) {
+        res.data = 0;
+    } else {
+        res.data = 1;
+    }
+    return res;
 }
 
-
-
-def init(List this) -> void{
-    Node n;
-    this.head = n;
-    /*this.tail = n;*/
+def and_(Bool a, Bool b) -> Bool {
+    return Bool_(a.data & b.data);
 }
-
-def append(List this, int value)-> void {
-    Node n;
-    this.tail.next = n;
-    this.tail = n;
-}
-
-
-def lastValue(List this)-> int {
-    return this.tail.value;
-}
-
-
 
 def main() -> int {
-    List l;
-    init(l);
-    append(l, 1);
-    append(l, 5);
-
-    return lastValue(l);
+    Bool a = Bool_(1);
+    Bool b = Bool_(0);
+    Bool res = and_(a, b);
+    return res.data;
 }

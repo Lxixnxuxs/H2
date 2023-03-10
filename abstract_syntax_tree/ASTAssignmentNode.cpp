@@ -1,6 +1,7 @@
 //
 // Created by ray on 29.01.23.
 //
+#include <iostream>
 #include "ASTAssignmentNode.hpp"
 #include "ASTComputationNode.hpp"
 #include "../global_information.hpp"
@@ -25,9 +26,10 @@ ASTAssignmentNode::ASTAssignmentNode(size_t offset, std::optional<std::shared_pt
         if (!right)
             return code;
 
+
         code += right.value()->compile();
         code += var->compile();
-        code += "mov " + right.value()->reg + ", "+ var->reg+ "\n";
+        code += "mov " + right.value()->reg+" TODO in Assignment " + ", "+ var->reg+ "\n";  // TODO why does right.value()->reg always return "" ??
         return code;
     }
 

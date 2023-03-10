@@ -123,3 +123,43 @@ def main() -> int {
     l.wrap_append(2);
     return l.sum();
 }
+
+class Node [] {
+    int value;
+    Node next;
+}
+
+class List [length] {
+    Node head;
+    Node tail;
+}
+
+
+
+def init(List this) -> void{
+    Node n;
+    this.head = n;
+    this.tail = n;
+}
+
+def append(List this, int value)-> void {
+    Node n;
+    this.tail.next = n;
+    this.tail = n;
+}
+
+
+def lastValue(List this)-> int {
+    return this.tail.value;
+}
+
+
+
+def main() -> int {
+    List l;
+    init(l);
+    append(l, 1);
+    append(l, 5);
+
+    return lastValue(l);
+}

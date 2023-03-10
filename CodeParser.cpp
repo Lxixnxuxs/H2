@@ -643,6 +643,15 @@ std::shared_ptr<ASTComparisonNode> CodeParser::parse_comparison(Tokenstream t, s
             throw std::invalid_argument("PARSER ERROR: trying to parse an comparison, but only recieved '"+*t+"'");
         }
 
+        auto first_calculation_stream = t.read_until_one_of(comparison_symbols, true);
+        auto operation = *t;
+        t+=1;
+
+        left = parse_calculation(first_calculation_stream,v,g,0);
+        right = parse_calculation(t,v,g,1);
+
+        return std::make_shared<ASTComparisonNode>(left, right, operation, regs[0],regs[1]);
+        /*
         // Process left side
         if (*t == "(") {
             Tokenstream left_stream = t.read_inside_brackets();
@@ -672,7 +681,9 @@ std::shared_ptr<ASTComparisonNode> CodeParser::parse_comparison(Tokenstream t, s
 
         expect_empty(t);
 
-        return std::make_shared<ASTComparisonNode>(left, right, op, regs[0],regs[1]);
+
+
+         */
     }
 
 std::shared_ptr<ASTCalculationNode> CodeParser::parse_calculation(Tokenstream t, std::shared_ptr<LocalVariableManager> v,
