@@ -37,11 +37,11 @@ def f(int x) -> int /% _O(INFINITY) %/  {
 }
 
 
-def z(int a) -> void /% _O(a) %/  {
+def exp(int a) -> void /% _O(a) %/  {
     if (a<0) {
         return a;
     } else {
-        return z[(a - 1)];
+        return 2 * exp(a - 1);
     }
 }
 
@@ -162,4 +162,18 @@ def main() -> int {
     append(l, 5);
 
     return lastValue(l);
+}
+
+def Bool_(int d) -> Bool {
+    Bool res;
+    if (d == 0) {
+        res.data = 0;
+    } else {
+        res.data = 1;
+    }
+    return res;
+}
+
+def and_(Bool a, Bool b) -> Bool {
+    return Bool_(a.data & b.data);
 }

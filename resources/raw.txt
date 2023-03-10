@@ -1,24 +1,7 @@
-class Bool [] {
-    int data;
-}
-
-def Bool_(int d) -> Bool {
-    Bool res;
-    if (d == 0) {
-        res.data = 0;
-    } else {
-        res.data = 1;
-    }
-    return res;
-}
-
-def and_(Bool a, Bool b) -> Bool {
-    return Bool_(a.data & b.data);
+def f(int a, int b) -> void {
+    return b;
 }
 
 def main() -> int {
-    Bool a = Bool_(1);
-    Bool b = Bool_(0);
-    Bool res = and_(a, b);
-    return res.data;
+    return f(5, 7);
 }

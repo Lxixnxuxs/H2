@@ -24,4 +24,4 @@ const std::vector<std::string> data_types = {"void","int"};
 
 // for analyzing
 const int block_indentation = 4;*/
-std::map<std::string, size_t> type_to_size = { {"void",0},{"int", 4} };
+std::map<std::string, size_t> type_to_size = { {"void",0},{"int", 8} };

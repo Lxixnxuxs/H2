@@ -9,6 +9,7 @@
 #include <vector>
 #include "../global_information.hpp"
 #include "../complexity_analyzer/virtual_math_term.hpp"
+#include "../LocalVariableManager.hpp"
 
 //extern struct ExecutionPath;
 #include "../complexity_analyzer/ExecutionPath.hpp"
@@ -18,12 +19,13 @@
 #include "ASTFunctionNode.hpp"
 
 
-ASTFunctionNode::ASTFunctionNode(std::string f_name, std::vector<std::shared_ptr<ASTStatementNode>> body, size_t f_stack_size, size_t arg_stackpart_size,
+ASTFunctionNode::ASTFunctionNode(std::string f_name, std::vector<std::shared_ptr<ASTStatementNode>> body, std::shared_ptr<LocalVariableManager> stack_frame, size_t arg_stackpart_size,
                     std::vector<std::pair<std::string,std::string>> argument_list, std::string return_type, std::optional<std::string> class_name, std::map<std::string, VirtualMathTerm> complexity_map):
-            f_name(f_name), body(body), f_stack_size(f_stack_size), arg_stackpart_size(arg_stackpart_size), return_type(return_type),
+            f_name(f_name), body(body), stack_frame(stack_frame), arg_stackpart_size(arg_stackpart_size), return_type(return_type),
             class_name(class_name) {
 
     this->argument_list = argument_list;
+
     /*if (class_name) {
         this->argument_list.insert(this->argument_list.begin(), {"this", class_name.value()});
     }*/
@@ -44,16 +46,18 @@ ASTFunctionNode::ASTFunctionNode(std::string f_name, std::vector<std::shared_ptr
         std::string code = f_name + ":\n";
 
         code += "push %rbp\nmov %rsp, %rbp\n";
-        code += "sub $" + std::to_string(f_stack_size + callee_reg_count*callee_reg_size) + ", "+stack_pointer+"\n";
+        code += "sub $" + std::to_string(stack_frame->current_offset + callee_reg_count*callee_reg_size) + ", "+stack_pointer+"\n";
 
         // storing all the callee-save register
         for (int i = 0; i<callee_reg_count; i++) {
-            code += "mov " + callee_save_regs[i]+ ", -" + std::to_string(f_stack_size + i*callee_reg_size) +"("+frame_pointer+")\n";
+            code += "mov " + callee_save_regs[i]+ ", -" + std::to_string(stack_frame->current_offset + i*callee_reg_size) +"("+frame_pointer+")\n";
         }
 
         // moving arguments to stack
-        for (int i = 0; i<argument_list.size(); i++) {
-            code += "mov " + argument_regs[i]+ ", -" + std::to_string( i*callee_reg_size) +"("+frame_pointer+")\n"; // f_stack_size - arg_stackpart_size +
+        auto current_var =stack_frame->var_to_offset.begin();
+        for (int i = 0; i<argument_list.size(); i++) {      // reading the offsets of the first elements in stack_frame
+            code += "mov " + argument_regs[i]+ ", -" + std::to_string( current_var->second) +"("+frame_pointer+")\n";
+            current_var++;
         }
 
         for (auto e : body) {
@@ -65,10 +69,10 @@ ASTFunctionNode::ASTFunctionNode(std::string f_name, std::vector<std::shared_ptr
         // restoring all the callee-save register
 
         for (int i = 0; i<callee_reg_count; i++){
-            code += "mov -" + std::to_string(f_stack_size + i*callee_reg_size) +"("+frame_pointer+"), "+ callee_save_regs[i] +"\n";
+            code += "mov -" + std::to_string(stack_frame->current_offset + i*callee_reg_size) +"("+frame_pointer+"), "+ callee_save_regs[i] +"\n";
         }
 
-        code += "add $"+std::to_string(f_stack_size + callee_reg_count * callee_reg_size) + ", "+stack_pointer+"\n"
+        code += "add $"+std::to_string(stack_frame->current_offset + callee_reg_count * callee_reg_size) + ", "+stack_pointer+"\n"
                                                                                                                "pop %rbp\n"
                                                                                                                "ret\n\n\n";
 

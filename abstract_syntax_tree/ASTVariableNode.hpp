@@ -17,10 +17,7 @@ struct GlobalVariableManager;
 struct ASTVariableNode : ASTCalculationNode {
     std::string name;
 
-    std::string reg;
-
     bool is_root;
-    bool is_primitive;
 
     std::shared_ptr<ASTVariableNode> child;
     std::shared_ptr<LocalVariableManager> local_vars;
@@ -28,10 +25,7 @@ struct ASTVariableNode : ASTCalculationNode {
 
     ASTVariableNode(std::string name, std::shared_ptr<ASTVariableNode> child,
                     bool is_root, std::shared_ptr<LocalVariableManager> local_vars, std::shared_ptr<GlobalVariableManager> global_vars,
-                    std::string reg): name(name), child(child), is_root(is_root), local_vars(local_vars),
-                                      global_vars(global_vars), reg(reg) {
-        comp_type = VAR;
-    };
+                    std::string reg);
 
     std::string compile_helper(std::string);
 

@@ -271,8 +271,7 @@ std::shared_ptr<ASTFunctionNode> CodeParser::parse_function(Tokenstream& t, std:
     // expect nothing to be there after closing bracket '}'
     //expect_empty(t);
 
-    size_t stack_frame_size = var_manager->current_offset;
-    res->f_stack_size = stack_frame_size;
+    res->stack_frame = var_manager;
 
 
     //auto res = new ASTFunctionNode(func_name, parsed_body, stack_frame_size, arg_stack_size,arg_list, return_type, complexity_map);
