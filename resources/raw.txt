@@ -1,15 +1,24 @@
-class SimpleBool [length, width]  {
-    int r = 3;
-    int value = 4;
-
-    def init(int r_, int value_) -> void{
-
-    }
+class Bool [] {
+    int data;
 }
 
+def Bool_(int d) -> Bool {
+    Bool res;
+    if (d == 0) {
+        res.data = 0;
+    } else {
+        res.data = 1;
+    }
+    return res;
+}
 
-def main() -> SimpleBool {
-    SimpleBool a;
-    a.b.c.r = 4;
-    return a;
+def and_(Bool a, Bool b) -> Bool {
+    return Bool_(a.data & b.data);
+}
+
+def main() -> int {
+    Bool a = Bool_(1);
+    Bool b = Bool_(0);
+    Bool res = and_(a, b);
+    return res.data;
 }

@@ -43,6 +43,8 @@ public:
 
     std::shared_ptr<ASTClassNode> parse_class(Tokenstream& t, std::shared_ptr<GlobalVariableManager> g);
 
+    void parse_class_variable(Tokenstream t, std::shared_ptr<LocalVariableManager> class_variable_representation, std::shared_ptr<GlobalVariableManager> g, std::optional<std::string> class_name = {});
+
     std::shared_ptr<ASTFunctionNode> parse_function(Tokenstream& t, std::shared_ptr<GlobalVariableManager> g, std::optional<std::string> class_name = {});
 
     std::pair<int,vector<std::pair<string,string>>> parse_argument_list(Tokenstream t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g);
@@ -70,7 +72,7 @@ public:
     std::shared_ptr<ASTCalculationNode> parse_literal(Tokenstream& t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g, int h, std::optional<std::string> class_name = {});
 
     std::shared_ptr<ASTVariableNode> parse_class_variable(Tokenstream t, bool is_root, std::string reg, std::shared_ptr<LocalVariableManager> local_vars,
-                                                          std::shared_ptr<GlobalVariableManager> global_vars, std::optional<std::string> prev_class_name="");
+                                                          std::shared_ptr<GlobalVariableManager> global_vars, std::optional<std::string> prev_class_name="", bool is_declaration=false);
 };
 
 #endif //H2_PARSER_HPP

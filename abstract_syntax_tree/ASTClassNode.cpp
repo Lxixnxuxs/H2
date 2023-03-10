@@ -7,10 +7,11 @@
 #include "../LocalVariableManager.hpp"
 
 std::string ASTClassNode::compile() {
-    std::string code = "; " + name + "\n";
+    std::string code = "; start " + name + "\n";
     for (auto method : methods) {
         code += method->compile();
     }
+    code += "; end " + name + "\n\n";
     return code;
 }
 

@@ -8,14 +8,16 @@
 
     void LocalVariableManager::add_variable(std::string name, std::string type, const std::shared_ptr<GlobalVariableManager> type_context,
                                             bool is_ref){
+        // TODO remove is_ref, as it is old and not relevant any more
+
         var_to_type[name] = type;
         var_to_is_ref[name] = is_ref;
 
         var_to_offset[name] = current_offset;
-        if (is_ref) {
-            current_offset += type_to_size["int"]; // int should be 64 bit and will be used as an address
+        /*if (is_ref) {
+            current_offset += 8;//type_to_size["int"]; // int should be 64 bit and will be used as an address
             return;
-        }
+        }*/
 
         if (type == "int") {    // primitive types (int is only primitive)
             current_offset += type_to_size["int"];
@@ -25,7 +27,9 @@
         // prevent wrong calling conditions
         assert(type_context != nullptr);
         assert(type_context->class_exists(type));
-        current_offset += type_context->class_to_local_manager.at(type)->current_offset;
+
+        // Important: a contained type will always be by reference. Hence, 8 byte are required for the pointer
+        current_offset += 8;  //type_context->class_to_local_manager.at(type)->current_offset;
     }
 
     bool LocalVariableManager::variable_exists(std::string name) {
