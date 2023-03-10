@@ -5,6 +5,7 @@
 #include "ASTComparisonNode.hpp"
 #include "ASTComputationNode.hpp"
 #include "../complexity_analyzer/LogicTerm.hpp"
+#include "ASTVariableNode.hpp"
 
 
 
@@ -33,7 +34,9 @@ ASTComparisonNode::ASTComparisonNode(std::shared_ptr<ASTComputationNode> left, s
         std::string code = "";
 
         code += left->compile();
+        follow_variable_reference_if_applying(left,code);
         code += right->compile();
+        follow_variable_reference_if_applying(right,code);
         code += "cmp "+reg1+", "+reg2+"\n";
         //code += comp_to_jump[comp_type] + " "
         // figuring out the kind of jump is part of the controll-structures job

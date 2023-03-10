@@ -28,13 +28,16 @@ ASTAssignmentNode::ASTAssignmentNode(size_t offset, std::optional<std::shared_pt
 
 
         code += right.value()->compile();
+        follow_variable_reference_if_applying(right.value(),code);
+
         code += var->compile();
-        // if this path leads to an int, we will receive the reference to it.
-        // so we need to go to the value
+
+
+        // special treatment for references of primitive type
         if (var->get_resulting_type() == "int") {
-            code += "mov " + right.value()->reg+ ", ("+ var->reg+ ")\n";
+             code += "mov " + right.value()->reg + ", ("+ var->reg+ ")\n";
         } else {
-            code += "mov " + right.value()->reg+ ", "+ var->reg+ "\n";
+            code += "mov " + right.value()->reg + ", "+ var->reg+ "\n";
         }
 
         return code;

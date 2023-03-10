@@ -65,3 +65,14 @@ std::string ASTVariableNode::get_resulting_type(std::string last_class_name) {
 }
 
 
+// if this is a primitive type variable, in many cases the value and not a reference to the value is needed
+// this function is for unpacking those primitive values, if the given calculation node meets this context
+// call to unpack primitive value
+void follow_variable_reference_if_applying(std::shared_ptr<ASTComputationNode> node, std::string& code){
+    if (node->get_class() == "ASTVariableNode") {
+        auto node_var = dynamic_cast<ASTVariableNode *>(node.get());
+        if (node_var->get_resulting_type() == "int") {
+            code += "mov (" + node->reg + "), " + node->reg + "\n";
+        }
+    }
+}

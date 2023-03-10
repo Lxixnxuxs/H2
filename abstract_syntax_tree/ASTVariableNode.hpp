@@ -47,4 +47,6 @@ private:
 
 };
 
+void follow_variable_reference_if_applying(std::shared_ptr<ASTComputationNode> node, std::string& code);
+
 #endif //H2_ASTVARIABLENODE_HPP

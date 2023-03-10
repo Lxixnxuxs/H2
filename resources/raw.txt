@@ -2,8 +2,21 @@ class Bool [] {
     int data;
 }
 
+def not_(Bool a) -> Bool {
+    if (a.data == 0) {
+        a.data = 1;
+    } else {
+        a.data = 0;
+    }
+    return a;
+}
+
 def main() -> int {
     Bool a;
     a.data = 18;
-    return a.data + 3;
+    not_(a);
+    not_(a);
+    not_(a);
+    not_(a);
+    return a.data;
 }

@@ -36,14 +36,7 @@ ASTCalculationNode::ASTCalculationNode(std::shared_ptr<ASTCalculationNode> left,
 
         for (auto child : children) {
             code+=child->compile();
-
-            // go to value if it is a primitive variable
-            if (child->get_class() == "ASTVariableNode") {
-                auto child_var = dynamic_cast<ASTVariableNode *>(child.get());
-                if (child_var->get_resulting_type() == "int") {
-                    code += "mov (" + child->reg + "), " + child->reg + "\n";
-                }
-            }
+            follow_variable_reference_if_applying(child,code);
         }
 
 
