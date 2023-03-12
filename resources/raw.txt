@@ -8,17 +8,51 @@ class List [length] {
     Node tail;
 }
 
+def Node_(int v) -> Node {
+    Node n;
+    n.value = v;
+    return n;
+}
 
-def g(int v, int t, int r)-> Node {
-    Node d;
-    d.value = v;
-    t = r;
-    return d;
+def List_()->List {
+    Node dummy = Node_(0);
+    List l;
+    l.head = dummy;
+    l.tail = dummy;
+    return l;
+}
+
+def append(List l, int v) -> void {
+    Node n = Node_(v);
+    l.tail.next = n;
+    l.tail = n;
+}
+
+def length(List l) -> int {
+    int res = 0;
+    Node cur = l.head;
+    while (cur != l.tail) {
+        res = res + 1;
+        cur = cur.next;
     }
+    return res;
+}
+
+def sum(List l) -> int {
+    int res = 0;
+    Node cur = l.head;
+    while (cur != l.tail) {
+        cur = cur.next;
+        res = res +  cur.value;
+    }
+    return res;
+}
 
 def main() -> int {
-
-    Node n = g(3, 7, 11);
-
-    return n.value;
+    List l = List_();
+    append(l, 5);
+    append(l, 2);
+    append(l, 7);
+    append(l, 3);
+    return sum(l);
 }
