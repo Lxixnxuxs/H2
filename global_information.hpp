@@ -28,7 +28,7 @@ extern const int block_indentation;
 */
 // for compiling
 const std::vector<std::string> callee_save_regs = {"%r12","%r13","%r14","%r15","%rcx", "%r11"};
-const std::vector<std::string> argument_regs = {"%rdi","%rsi","rdx","rsx","r8","r9", "rcx"};
+const std::vector<std::string> argument_regs = {"%rdi","%rsi","%rdx","%rsx","%r8","%r9", "%rcx"};
 
 // all the callee-save regs are saved and can therefore be used
 const std::vector<std::string> regs = {"%r12","%r13","%r14","%r15", "%r11"};
