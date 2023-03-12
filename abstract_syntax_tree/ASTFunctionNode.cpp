@@ -54,10 +54,10 @@ ASTFunctionNode::ASTFunctionNode(std::string f_name, std::vector<std::shared_ptr
         }
 
         // moving arguments to stack
-        auto current_var =stack_frame->var_to_offset.begin();
+        //auto current_var =stack_frame->var_to_offset.begin();
         for (int i = 0; i<argument_list.size(); i++) {      // reading the offsets of the first elements in stack_frame
-            code += "mov " + argument_regs[i]+ ", -" + std::to_string( current_var->second) +"("+frame_pointer+")\n";
-            current_var++;
+            code += "mov " + argument_regs[i]+ ", -" + std::to_string( stack_frame->var_to_offset[argument_list[i].first]) +"("+frame_pointer+")\n";
+            //current_var++;
         }
 
         for (auto e : body) {

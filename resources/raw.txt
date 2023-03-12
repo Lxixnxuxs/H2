@@ -1,22 +1,24 @@
-class Bool [] {
-    int data;
+class Node [] {
+    int value;
+    Node next;
 }
 
-def not_(Bool a) -> Bool {
-    if (a.data == 0) {
-        a.data = 1;
-    } else {
-        a.data = 0;
-    }
-    return a;
+class List [length] {
+    Node head;
+    Node tail;
 }
+
+
+def g(int v, int t, int r)-> Node {
+    Node d;
+    d.value = v;
+    t = r;
+    return d;
+    }
 
 def main() -> int {
-    Bool a;
-    a.data = 18;
-    not_(a);
-    not_(a);
-    not_(a);
-    not_(a);
-    return a.data;
+
+    Node n = g(3, 7, 11);
+
+    return n.value;
 }

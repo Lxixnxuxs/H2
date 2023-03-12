@@ -37,7 +37,7 @@ ASTAssignmentNode::ASTAssignmentNode(size_t offset, std::optional<std::shared_pt
         if (var->get_resulting_type() == "int") {
              code += "mov " + right.value()->reg + ", ("+ var->reg+ ")\n";
         } else {
-            code += "mov " + right.value()->reg + ", "+ var->reg+ "\n";
+            code += "mov " + right.value()->reg + ", ("+ var->reg+ ")\n";  // (reg) to actually change the content of memory, not just the register!
         }
 
         return code;

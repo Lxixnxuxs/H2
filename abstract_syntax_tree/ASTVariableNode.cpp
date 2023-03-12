@@ -42,7 +42,7 @@ std::string ASTVariableNode::compile_helper(std::string last_class_name="") {
                 + ", " + reg + "\n";
     }
 
-    if (needs_dereferentiation()) code += "mov (" + reg + "), " + reg + "\n";
+    if (needs_dereferentiation() and child!=nullptr) code += "mov (" + reg + "), " + reg + "\n";
 
     // Base Case
     if (child == nullptr) {
@@ -71,8 +71,8 @@ std::string ASTVariableNode::get_resulting_type(std::string last_class_name) {
 void follow_variable_reference_if_applying(std::shared_ptr<ASTComputationNode> node, std::string& code){
     if (node->get_class() == "ASTVariableNode") {
         auto node_var = dynamic_cast<ASTVariableNode *>(node.get());
-        if (node_var->get_resulting_type() == "int") {
-            code += "mov (" + node->reg + "), " + node->reg + "\n";
-        }
+        //if (node_var->get_resulting_type() == "int") {
+        code += "mov (" + node->reg + "), " + node->reg + "\n";
+
     }
 }

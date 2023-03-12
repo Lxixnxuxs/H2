@@ -5,8 +5,8 @@
 #include "ASTFunctionNode.hpp"
 #include "ASTCalculationNode.hpp"
 #include "ASTCallNode.hpp"
+#include "ASTVariableNode.hpp"
 
-#include <cassert>
 
 
 ASTCallNode::ASTCallNode(std::shared_ptr<ASTCalculationNode> left, std::shared_ptr<ASTCalculationNode> right, ComputationOp compType, std::string reg, int value,
@@ -19,6 +19,7 @@ ASTCallNode::ASTCallNode(std::shared_ptr<ASTCalculationNode> left, std::shared_p
         std::string code;
         for (int i = 0; i<arguments.size(); i++) {
             code += arguments[i]->compile();
+            follow_variable_reference_if_applying(arguments[i],code);
             code += "mov "+regs[i+h]+", "+argument_regs[i]+"\n";   // put subcalculation-result in corresponding argument place
         }
 

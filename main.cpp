@@ -14,6 +14,26 @@ int main() {
     std::shared_ptr<ASTRootNode> root = parser.parse(t);
     std::string compilation = root->compile();
 
+    // add some printing logic
+    compilation += "putchar:\n"
+                   "sub $8, %rsp\n"
+                   "mov %rdi, %r12\n"
+                   "mov %r12, (%rsp)        \n"
+                   "mov     $1, %rax    \n"
+                   "mov     $1, %edi      \n"
+                   "mov     %rsp , %rsi  \n"
+                   "mov     $1, %rdx      \n"
+                   "syscall            \n"
+                   "add     $8, %rsp\n"
+                   "\n"
+                   "ret\n"
+                   "\n"
+                   "shownr: \n"
+                   "add $48, %rdi\n"
+                   "call putchar\n"
+                   "ret\n"
+                   "";
+
     std::cout << compilation;
 
     std::ofstream ofile("./as.s");
