@@ -15,7 +15,7 @@ int main() {
     std::string compilation = root->compile();
 
     // add some printing logic
-    compilation += "putchar:\n"
+    compilation += "putChar:\n"
                    "sub $8, %rsp\n"
                    "mov %rdi, %r12\n"
                    "mov %r12, (%rsp)        \n"
@@ -28,10 +28,6 @@ int main() {
                    "\n"
                    "ret\n"
                    "\n"
-                   "shownr: \n"
-                   "add $48, %rdi\n"
-                   "call putchar\n"
-                   "ret\n"
                    "";
 
     std::cout << compilation;

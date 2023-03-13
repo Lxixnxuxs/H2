@@ -93,6 +93,18 @@ std::shared_ptr<ASTRootNode> CodeParser::parse(Tokenstream t) {
             throw std::invalid_argument("PARSER ERROR  cannot parse empty programm");
         }
         auto g = std::make_shared<GlobalVariableManager>();
+
+
+        //declaring default functions, which can be called from any context
+        std::string default_print_name = "putChar";
+        auto default_print_func = std::make_shared<ASTFunctionNode>();
+        default_print_func->f_name = default_print_name;
+        default_print_func->argument_list = {{"int","a"}};
+        g->var_to_argument_list[default_print_name] = default_print_func->argument_list;
+        g->var_to_node[default_print_name] = default_print_func;
+
+
+
         std::vector<std::shared_ptr<ASTNode>> funcs_and_classes;
 
 

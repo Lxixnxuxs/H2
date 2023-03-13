@@ -1,58 +1,30 @@
-class Node [] {
-    int value;
-    Node next;
+
+def showDigit(int a) -> void {
+    putChar(a+48);
 }
 
-class List [length] {
-    Node head;
-    Node tail;
+def recursivePrint(int a)-> void {
+    if (a!=0) {
+         int b = a % 10;
+         a = a/10;
+         recursivePrint(a);
+         showDigit(b);
+    } else {}
 }
 
-def Node_(int v) -> Node {
-    Node n;
-    n.value = v;
-    return n;
+def print(int a)->void {
+    if (a==0) {
+        showDigit(0);
+    } else {}
+
+    recursivePrint(a);
 }
 
-def List_()->List {
-    Node dummy = Node_(0);
-    List l;
-    l.head = dummy;
-    l.tail = dummy;
-    return l;
+def printLn(int a) -> void {
+    print(a);
+    putChar(11);
 }
 
-def append(List l, int v) -> void {
-    Node n = Node_(v);
-    l.tail.next = n;
-    l.tail = n;
-}
-
-def length(List l) -> int {
-    int res = 0;
-    Node cur = l.head;
-    while (cur != l.tail) {
-        res = res + 1;
-        cur = cur.next;
-    }
-    return res;
-}
-
-def sum(List l) -> int {
-    int res = 0;
-    Node cur = l.head;
-    while (cur != l.tail) {
-        cur = cur.next;
-        res = res +  cur.value;
-    }
-    return res;
-}
-
-def main() -> int {
-    List l = List_();
-    append(l, 5);
-    append(l, 2);
-    append(l, 7);
-    append(l, 3);
-    return sum(l);
+def main()->int{
+    printLn(1);
 }
