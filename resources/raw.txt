@@ -22,9 +22,174 @@ def print(int a)->void {
 
 def printLn(int a) -> void {
     print(a);
-    putChar(11);
+    putChar(10);
 }
 
-def main()->int{
-    printLn(1);
+def printError(int a) -> void {
+    putChar(69);
+    putChar(114);
+    putChar(114);
+    putChar(111);
+    putChar(114);
+    putChar(58);
+    putChar(32);
+    printLn(a);
+}
+
+class Node [] {
+    int value;
+    Node next;
+}
+
+class List [size] {
+    Node head;
+    Node tail;
+    int size;
+}
+
+def Node_(int v) -> Node {
+    Node n;
+    n.value = v;
+    return n;
+}
+
+def List_()->List {
+    Node dummy = Node_(0);
+    List l;
+    l.size = 0;
+    l.head = dummy;
+    l.tail = dummy;
+    return l;
+}
+
+def addLast(List l, int v) -> void {
+    Node n = Node_(v);
+    l.tail.next = n;
+    l.tail = n;
+    l.size = l.size + 1;
+}
+
+def popFirst(List l) -> int {
+    if (l.size <= 0) {printError(9901);} else {}
+    /*return the error code for pop from empty list of bounds*/
+
+    Node res = l.head.next;
+    l.head = l.head.next;
+    l.size = l.size - 1;
+    return res.value;
+}
+
+def getNode(List l, int nr) -> Node {
+    if (nr >= l.size) {printError(9902);} else {}
+        /*return the error code for out of bounds*/
+
+    Node cur = l.head;
+    while (nr>=0) {
+        nr = nr - 1;
+        cur = cur.next;
+    }
+    return cur;
+}
+
+def get(List l, int nr) -> int {
+    Node n = getNode(l, nr);
+    return n.value;
+}
+
+def set(List l, int nr, int value) -> void {
+    Node n = getNode(l, nr);
+    n.value = value;
+}
+
+def printList(List l) -> void {
+    putChar(91);
+    if (l.size != 0){
+    Node cur = l.head;
+    while (cur != l.tail) {
+        cur = cur.next;
+        print(cur.value);
+        putChar(32);
+
+    }} else {}
+    putChar(93);
+    putChar(10);
+}
+
+
+def createGraph() -> List {
+    /* within this function, a adjacency-list from some graph is created */
+
+    List one= List_();
+    /*addLast(one, 1);*/
+
+    List two = List_();
+    /*addLast(two, 0);*/
+    addLast(two, 2);
+    addLast(two, 3);
+
+    List three= List_();
+    addLast(three, 1);
+    addLast(three, 3);
+
+    List four= List_();
+    addLast(four, 1);
+    addLast(four, 2);
+
+    List adj= List_();
+    addLast(adj, one);
+    addLast(adj, two);
+    addLast(adj, three);
+    addLast(adj, four);
+
+    return adj;
+}
+
+
+def pathExists(List adj, int start, int goal) -> int {
+    List queue = List_();
+    addLast(queue, start);
+
+    List alreadyVisited = List_();
+
+    /* initialize all vertices to visited = false */
+    int i = 0;
+    while(i<adj.size) {
+        addLast(alreadyVisited, 0);
+        i = i + 1;
+    }
+
+    /* starting vertex has already been visited*/
+    set(alreadyVisited, start, 1);
+
+
+    while (queue.size > 0) {
+        int currentlyProcessed = popFirst(queue);
+
+        /* if the vertex has been reached, return true */
+        if (currentlyProcessed == goal) {return 1;} else {}
+
+
+        set(alreadyVisited, currentlyProcessed, 1);
+        List neighbors = get(adj, currentlyProcessed);
+        int j = 0;
+
+        while (j<neighbors.size) {
+            int neighbor = get(neighbors, j);
+
+            if (get(alreadyVisited, neighbor) == 0) {
+                addLast(queue, neighbor);
+            } else {}
+            j = j + 1;
+        }
+    }
+
+    /* vertex not found, return false */
+    return 0;
+}
+
+def main() -> int {
+    List adj = createGraph();
+    int result = pathExists(adj, 1, 2);
+    putChar(10);
+    printLn(result);
 }
