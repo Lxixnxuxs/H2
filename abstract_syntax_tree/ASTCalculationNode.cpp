@@ -45,13 +45,13 @@ ASTCalculationNode::ASTCalculationNode(std::shared_ptr<ASTCalculationNode> left,
             /*code += "mov " + left->reg + ", %eax\nmov " + right->reg + ", %edx\n" +
                     "div " + (own_reg ? reg : left->reg) + "\n";*/
             code += "mov $0, %rdx\nmov " + left->reg + ", %rax\ndiv " + right->reg +
-                    (own_reg ? "\nmov %rax, " + left->reg : "\nmov %rax, " + reg) + "\n";
+                    (own_reg ? "\nmov %rax, " + reg : "\nmov %rax, " + left->reg) + "\n"; // TODO may the order in the ternary operator be wrong?
             return code;
         }
 
         if (comp_type == MOD) {
             code += "mov $0, %rdx\nmov " + left->reg + ", %rax\ndiv " + right->reg +
-                            (own_reg ? "\nmov %rdx, " + left->reg : "\nmov %rdx, " + reg) + "\n";
+                            (own_reg ? "\nmov %rdx, " + reg : "\nmov %rdx, " + left->reg) + "\n";
             return code;
         }
 
