@@ -16,8 +16,8 @@ ASTAssignmentNode::ASTAssignmentNode(size_t offset, std::optional<std::shared_pt
     std::string ASTAssignmentNode::compile() {
         std::string code;
 
-        // use malloc, if it is a declaration of a class instance
-        if (is_declaration and data_type != "int") {
+        // use malloc, if it is a declaration of a class instance (but not in cases like: 'class var = ...' where the malloc would be overwritten immediately)
+        if (is_declaration and data_type != "int" and !right) {
             code += "mov $" + std::to_string(size) + ", %edi\n";
             code += "call malloc\n";
             code += "mov %rax, -" + std::to_string(var->local_vars->var_to_offset[var->name]) + "("+ frame_pointer +")\n";
