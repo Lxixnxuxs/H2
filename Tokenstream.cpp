@@ -4,6 +4,8 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <memory>
+#include <list>
 
 #include "Tokenstream.hpp"
 
@@ -139,6 +141,13 @@ Tokenstream Tokenstream::read_while(std::function<bool(string)> predicate) {
 
     return res;
 }
+
+/*Tokenstream::Tokenstream(const string& only_token) {
+    auto liste = new std::list<string>();
+    liste->push_back(only_token);
+    begin_ = liste->begin();
+    end_ = liste->end();
+}*/
 
 
 template <typename a>

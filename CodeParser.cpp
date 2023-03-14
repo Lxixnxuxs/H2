@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <list>
 #include "Tokenstream.hpp"
 #include "abstract_syntax_tree/ASTTree.hpp"
 #include "lexer.hpp"
@@ -227,12 +228,8 @@ std::shared_ptr<ASTFunctionNode> CodeParser::parse_function(Tokenstream& t, std:
         // ATTENTION: the tokenstream is passed by reference!
         // Note that the 'def' has already been thrown away
 
-
-
     auto var_manager = std::make_shared<LocalVariableManager>();
 
-    // add implicit 'this' argument (reference)
-    if (class_name) var_manager->add_variable("this",class_name.value(),g, true);
 
     string func_name = *t;
     var_manager->name = func_name;
@@ -247,7 +244,7 @@ std::shared_ptr<ASTFunctionNode> CodeParser::parse_function(Tokenstream& t, std:
     expect(t,"(");
     auto argument_stream = t.read_inside_brackets();
 
-    std::pair<int,vector<std::pair<string,string>>> temp  = parse_argument_list(argument_stream, var_manager, g);
+    std::pair<int,vector<std::pair<string,string>>> temp  = parse_argument_list(argument_stream, var_manager, g, class_name);
 
     res->arg_stackpart_size = temp.first;
 
@@ -291,11 +288,22 @@ std::shared_ptr<ASTFunctionNode> CodeParser::parse_function(Tokenstream& t, std:
     return res;
 }
 
-std::pair<int,vector<std::pair<string,string>>> CodeParser::parse_argument_list(Tokenstream t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g) {
+std::pair<int,vector<std::pair<string,string>>> CodeParser::parse_argument_list(Tokenstream t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g,  std::optional<std::string> class_name) {
     // returns args_stack_size
 
+
+
     vector<std::pair<string,string>> type_list;
+
+    auto addVar = [&](std::string name, std::string type){
+        v->add_variable(name, type, g,type!="int"); // everything except primitive types are passed by reference
+        type_list.emplace_back(name, type);
+    };
+
     bool is_first_iteration = true;
+
+    // if class function, define 'this' variable for all purposes
+    if (class_name) addVar("this",class_name.value());
 
     while (!t.empty()) {
         if (is_first_iteration) {
@@ -313,8 +321,7 @@ std::pair<int,vector<std::pair<string,string>>> CodeParser::parse_argument_list(
         string name = *t;
         t+=1; // discard name
 
-            v->add_variable(name, type, g,type!="int"); // everything except primitive types are passed by reference
-            type_list.emplace_back(name, type);
+        addVar(name,type);
         }
         return {v->current_offset, type_list};
     }
@@ -508,7 +515,7 @@ std::shared_ptr<ASTStatementNode> CodeParser::parse_line(Tokenstream t, std::sha
 
         // class variable access only consists of '.' and valid identifiers
         auto target_variable_stream = t.read_while([this](string s){return (s=="." or is_valid_identifier(s).empty());});
-        auto var = parse_class_variable(target_variable_stream,true,regs[0],v,g,class_name, (bool) declaration_type);
+        auto var = parse_variable(target_variable_stream, true, regs[0], v, g, class_name, (bool) declaration_type);
 
         // new pure declaration, e.g.: 'int x;'
         if (!is_assignment && declaration_type) {
@@ -548,7 +555,7 @@ std::shared_ptr<ASTStatementNode> CodeParser::parse_line(Tokenstream t, std::sha
         if (!need_to_declare) {
             // if it is not a declaration, check if the variable exists
             auto target_variable_stream = t.read_while([this](string s){return (s=="." or is_valid_identifier(s).empty());});
-            auto variable_node = parse_class_variable(target_variable_stream,true,regs[0],v,g,class_name);
+            auto variable_node = parse_variable(target_variable_stream,true,regs[0],v,g,class_name);
 
 
             //if (!v->variable_exists(*t) and !v->get_this_namespace(g)->variable_exists(*t)) {
@@ -594,53 +601,78 @@ std::shared_ptr<ASTCallNode> CodeParser::parse_call(Tokenstream& t, std::shared_
                                                     std::shared_ptr<GlobalVariableManager> g, int h, std::optional<std::string> class_name){
         // be aware that this call changes the Tokenstream of the higher level
 
-        expect_identifier(t);
-        if (!g->function_exists(*t)) {
-            throw std::invalid_argument("PARSER ERROR: trying to call function '" + *t + "', which does not exist");
-        }
-        string func_name = *t;
-        vector<string> expected_types;
-        bool defined = false;
-        for (const auto pair : g->var_to_argument_list) {
-            //cout << "defined: "+ pair.first+" "<< pair.second.size() << endl;
-            if (pair.first == func_name){
-                defined = true;
-                expected_types;
-                for (const auto p : pair.second) {
-                    expected_types.push_back(p.first);
-                }
-            }
-            //cout << defined << endl;
-        }
-        //cout << endl;
 
-        if (!defined) {
-            throw std::invalid_argument("PARSER ERROR  function '"+func_name+"' not defined");
+        auto var_stream = t.read_while([this](std::string token){return (token=="." or is_valid_identifier(token).empty());});
+        if (var_stream.empty()) throw std::invalid_argument("PARSER ERROR: trying to parse function without name");
+
+        string func_name;
+        std::optional<Tokenstream> implicit_argument_stream = {};
+
+        // in case it is not just a normal call f(), but something like a.b.f()
+        if (var_stream.size() != 1) {
+            auto copy = var_stream;
+            while (copy.size() > 2) copy += 1;
+            implicit_argument_stream = Tokenstream(var_stream.begin_, copy.begin_);
+            expect(copy,".");
+            copy+=1;
+            expect_identifier(copy);
+            func_name = *copy;
+        } else {func_name = *var_stream;}
+
+
+        if (!g->function_exists(func_name)) {
+            throw std::invalid_argument("PARSER ERROR: trying to call function '" + func_name + "', which does not exist");
         }
-        t+=1; // discard func_name
+        auto argument_list = g->var_to_argument_list[func_name];
+
+
         expect(t, "(");
         auto arguments_stream = t.read_inside_brackets();
 
         vector<std::shared_ptr<ASTCalculationNode>> arguments;
 
-        int i = 0;
-        while (!arguments_stream.empty()) {
-            if (i>=expected_types.size()) throw std::invalid_argument("PARSER ERROR  '"+func_name+
-                                                                      "' was called with too many arguments (with more than "+ std::to_string(expected_types.size())+")");
 
-            auto stream = arguments_stream.read_until(",");
-            arguments.push_back(parse_calculation(stream,v,g,h+i));
-            // here should be implemented a type-check for the argument
-            i++;
 
+        // check number of arguments in advance
+        auto arguments_stream_copy = arguments_stream;
+        int argument_count = 0;
+
+    if (implicit_argument_stream) { // optionally adding implicit argument
+        arguments.push_back(parse_calculation(implicit_argument_stream.value(),v,g,h + arguments.size(), class_name));
+        argument_count++;
+    }
+
+        while (!arguments_stream_copy.empty()) {
+            argument_count++;
+            arguments_stream_copy.read_until(",");
         }
 
-        if (i<expected_types.size()) throw std::invalid_argument("PARSER ERROR  '"+func_name+
-                                                                 "' was called with not enought arguments: "+std::to_string(i)+" instead of "+ std::to_string(expected_types.size())+"");
+        if (argument_count == argument_list.size() - 1 and !implicit_argument_stream and class_name) {
+            // there may be one argument missing, because 'f()' instead of 'this.f()' was written
+            std::list<std::string> l = {"this"};
+            Tokenstream tmp = &l;
+
+            auto temp = parse_calculation(tmp,v,g,h, class_name);
+            arguments.insert(arguments.begin(), temp);
+        }
+
+        while (!arguments_stream.empty()) {
+            if (arguments.size()>=argument_list.size()) throw std::invalid_argument("PARSER ERROR  '"+func_name+
+                          "' was called with too many arguments (with more than "+ std::to_string(argument_list.size())+")");
+
+            auto stream = arguments_stream.read_until(",");
+            arguments.push_back(parse_calculation(stream,v,g,h + arguments.size(), class_name));
+            // here should be implemented a type-check for the argument
+        }
+
+        if (arguments.size()<argument_list.size()) throw std::invalid_argument("PARSER ERROR  '"+func_name+
+                           "' was called with not enough arguments: "+std::to_string(arguments.size())+" instead of "+ std::to_string(argument_list.size())+"");
 
         return std::make_shared<ASTCallNode>(nullptr, nullptr,VAR,"",0,0,g->var_to_node[func_name],arguments,h);
 
     }
+
+
 
 std::shared_ptr<ASTComparisonNode> CodeParser::parse_comparison(Tokenstream t, std::shared_ptr<LocalVariableManager> v,
                                                                 std::shared_ptr<GlobalVariableManager> g, std::optional<std::string> class_name){
@@ -658,43 +690,11 @@ std::shared_ptr<ASTComparisonNode> CodeParser::parse_comparison(Tokenstream t, s
         auto operation = *t;
         t+=1;
 
-        left = parse_calculation(first_calculation_stream,v,g,0);
-        right = parse_calculation(t,v,g,1);
+        left = parse_calculation(first_calculation_stream,v,g,0, class_name);
+        right = parse_calculation(t,v,g,1, class_name);
 
         return std::make_shared<ASTComparisonNode>(left, right, operation, regs[0],regs[1]);
-        /*
-        // Process left side
-        if (*t == "(") {
-            Tokenstream left_stream = t.read_inside_brackets();
-            if (t.empty()) {
-                // there are top-level brackets around the comparison. Look inside
-                return parse_comparison(left_stream,v,g);
-            }
-            left = parse_calculation(left_stream, v,g, 0);
-        } else {
-            left = parse_literal(t, v,g, 0);
-            t += 1; // discard literal
-        }
 
-        std::string op = *t;
-
-        expect_one_of(t,comparison_symbols);
-        t += 1; // discard operator symbol
-
-        // Process right side
-        if (*t == "(") {
-            Tokenstream right_stream = t.read_inside_brackets();
-            right = parse_calculation(right_stream, v,g,  1);
-        } else {
-            right = parse_literal(t, v,g,  1);
-            t += 1; // discard literal
-        }
-
-        expect_empty(t);
-
-
-
-         */
     }
 
 std::shared_ptr<ASTCalculationNode> CodeParser::parse_calculation(Tokenstream t, std::shared_ptr<LocalVariableManager> v,
@@ -719,10 +719,10 @@ std::shared_ptr<ASTCalculationNode> CodeParser::parse_calculation(Tokenstream t,
     while(!t.empty()) {
         if (!next_comes_operator) {
             if (*t == "(") {
-                add_to_calculation(parse_calculation(t.read_inside_brackets(), v, g, h));
+                add_to_calculation(parse_calculation(t.read_inside_brackets(), v, g, h, class_name));
                 h+=1; // reuse all but one register from sub-calculation
             } else {
-                add_to_calculation(parse_literal(t, v, g, h));
+                add_to_calculation(parse_literal(t, v, g, h, class_name));
                 h+=1; // go to next calculation register
             }
         } else {
@@ -752,19 +752,21 @@ std::shared_ptr<ASTCalculationNode> CodeParser::parse_calculation(Tokenstream t,
         return std::make_shared<ASTCalculationNode>(nullptr, nullptr, LIT, regs[h], value, 0);
     } catch (...) {}
 
-    // try to interpret as function call, by having a look at the 2. position
+
     auto copy = t;
-    copy += 1;
-    if (*copy == "(") {
+    copy.read_while([this](std::string token){return (token=="." or is_valid_identifier(token).empty());});
+    if (!copy.empty() && *copy == "(") {
         // has syntax of function call, because between identifier and bracket is no operator
-        return parse_call(t,v,g,h);
+        return parse_call(t,v,g,h, class_name);
     }
 
     // interpret as variable
     // read until next operator. All until it must belong to the variable
 
-        auto res = parse_class_variable(t.read_while([this](std::string token){return (token=="." or is_valid_identifier(token).empty());}), true, regs[h], v, g, class_name);
-    return res;//std::shared_ptr<ASTCalculationNode>((ASTCalculationNode*) res.get()); // is this casting style safe?
+        auto res = parse_variable(t.read_while(
+                                          [this](std::string token) { return (token == "." or is_valid_identifier(token).empty()); }), true,
+                                  regs[h], v, g, class_name);
+    return res;
 
     }
 
@@ -774,13 +776,14 @@ std::shared_ptr<ASTCommentNode> CodeParser::parse_comment(Tokenstream t) {
             );
 }
 
-std::shared_ptr<ASTVariableNode> CodeParser::parse_class_variable(Tokenstream t, bool is_root, std::string reg,
-                                                                  std::shared_ptr<LocalVariableManager> local_vars,
-                                                                  std::shared_ptr<GlobalVariableManager> global_vars,
-                                                                  std::optional<std::string> prev_class_name, bool is_declaration) {
-    // TODO: let variable node know if it is of primitive type or not
+std::shared_ptr<ASTVariableNode> CodeParser::parse_variable(Tokenstream t, bool is_root, std::string reg,
+                                                            std::shared_ptr<LocalVariableManager> local_vars,
+                                                            std::shared_ptr<GlobalVariableManager> global_vars,
+                                                            std::optional<std::string> prev_class_name, bool is_declaration, bool comes_after_implicit_this) {
 
-    if (!is_root) {
+
+
+    if (!is_root && !comes_after_implicit_this) {
         expect(t, ".");
         t+=1; // discard dot
     }
@@ -794,11 +797,16 @@ std::shared_ptr<ASTVariableNode> CodeParser::parse_class_variable(Tokenstream t,
         if (!(is_declaration && t.size()==1 /*last level may be undefined for declarations*/) && !local_vars->variable_exists(*t)) {
 
             // maybe it is a class variable ( 'attr' instead of 'this.attr')
+            // this late check makes sure that local variables will shadow class variable
             if (prev_class_name and global_vars->class_to_local_manager[prev_class_name.value()]->variable_exists(*t)) {
-                // TODO capture implicit 'this' argument in a function. Reference to 'this' must be known
-            }
+                // start this function again at same point, but know that a 'this' is inserted above
+                auto child = parse_variable(t, false, reg, local_vars, global_vars, prev_class_name, is_declaration,
+                                            true);
+                return std::make_shared<ASTVariableNode>("this", child, is_root, local_vars, global_vars, reg);
 
-            throw std::invalid_argument("PARSER ERROR: Variable '" + *t + "' not defined");
+            } else {
+                throw std::invalid_argument("PARSER ERROR: Variable '" + *t + "' not defined");
+            }
         }
     } else {
         if (!global_vars->class_to_local_manager[prev_class_name.value()]->variable_exists(*t)) {
@@ -823,8 +831,8 @@ std::shared_ptr<ASTVariableNode> CodeParser::parse_class_variable(Tokenstream t,
             class_name = global_vars->class_to_local_manager[prev_class_name.value()]->var_to_type[instance_name];
         }
 
-        std::shared_ptr<ASTVariableNode> child = parse_class_variable(t, false, reg, local_vars, global_vars, class_name);
+        std::shared_ptr<ASTVariableNode> child = parse_variable(t, false, reg, local_vars, global_vars, class_name);
 
-        return std::shared_ptr<ASTVariableNode>(new ASTVariableNode(instance_name, child, is_root, local_vars, global_vars, reg));
+        return std::make_shared<ASTVariableNode>(instance_name, child, is_root, local_vars, global_vars, reg);
     }
 }

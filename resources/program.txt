@@ -1,190 +1,127 @@
-/*
-def g(int a int b) -> int {
-    int res = 0;
-    int i = 0;
 
-    int d = a + b;
-    while (i < d) {
-            i = i + 1;
-            int j = 0;
-            while (j < a) {
-                res = res + ( j * b );
-            }
-        }
-
-    return res;
-}*/
-
-def f(int r) -> int {
-    int res = 0;
-    int i = r;
-    while (0 < i) {
-        res = res + i;
-        i = i + 1;
-    }
-    return res;
+def showDigit(int a) -> void {
+    putChar(a+48);
 }
 
-def main() -> void {
-    return f[4];
+def recursivePrint(int a)-> void {
+    if (a!=0) {
+         int b = a % 10;
+         a = a/10;
+         recursivePrint(a);
+         showDigit(b);
+    } else {}
 }
 
+def print(int a)->void {
+    if (a==0) {
+        showDigit(0);
+    } else {}
 
-
-/*
-def f(int x) -> int /% _O(INFINITY) %/  {
-    return f[1];
+    recursivePrint(a);
 }
 
-
-def exp(int a) -> void /% _O(a) %/  {
-    if (a<0) {
-        return a;
-    } else {
-        return 2 * exp(a - 1);
-    }
+def printLn(int a) -> void {
+    print(a);
+    putChar(10);
 }
 
-
-def g(int x) -> int /% _O((((2.000000)^(x)) * x) + x) %/  {
-    if (x<5) {
-        return z[x];
-    } else {
-        int _ = z[x];
-        int _ = g[(x - 1)];
-    }
-    return g[(x - 1)];
+def printError(int a) -> void {
+    putChar(69);
+    putChar(114);
+    putChar(114);
+    putChar(111);
+    putChar(114);
+    putChar(58);
+    putChar(32);
+    printLn(a);
 }
-
-
-def h(int x, int y) -> int /% _O((((y)^(2.000000)) * x) + y) %/  {
-    if (y<0) {
-        int _ = z[y];
-        return 1;
-    } else {
-        int _ = z[(x * y)];
-    }
-    return h[(x - 1), (y - 1)];
-}
-
-
-*/
 
 class Node [] {
     int value;
     Node next;
 
-    def construct(int v)->void{
+    def construct(int v) -> void {
         value = v;
-        next = 0;
     }
+
 }
 
-class List [length] {
-    Node head = 0;
-    Node tail = 0;
-
-    def construct()->void{
-        head = tail;
-        head.constructor(0);
-    }
-
-    def append(Node n)->void{
-        tail.next = n;
-        tail = n;
-    }
-
-    def wrap_append(int v)->void{
-        Node n;
-        n.constructor(v);
-        append(n);
-    }
-
-    def sum() -> int {
-        int sum = 0;
-        Node c = head;
-        while(c.next != 0){
-            sum = sum + c.value;
-            c = c.next;
-        }
-        return sum;
-
-
-    }
-}
-
-
-
-
-def main() -> int {
-    List l;
-    l.constructor();
-    l.wrap_append(5);
-    l.wrap_append(2);
-    return l.sum();
-}
-
-class Node [] {
-    int value;
-    Node next;
-}
-
-class List [length] {
+class List [size] {
     Node head;
     Node tail;
+    int size;
+
+    def constructList() -> void {
+        Node dummy;
+        dummy.construct(0);
+        size = 0;
+        head = dummy;
+        tail = dummy;
+    }
+
+    def addLast(int v) -> void {
+        Node n;
+        n.construct(v);
+        tail.next = n;
+        tail = n;
+        size = size + 1;
+    }
+
+    def popFirst() -> int {
+        if (size <= 0) {printError(9901);} else {}
+        /*return the error code for pop from empty list of bounds*/
+
+        Node res = head.next;
+        head = head.next;
+        size = size - 1;
+        return res.value;
+    }
+
+    def getNode(int nr) -> Node {
+        if (nr >= size) {printError(9902);} else {}
+            /*return the error code for out of bounds*/
+
+        Node cur = head;
+        while (nr>=0) {
+            nr = nr - 1;
+            cur = cur.next;
+        }
+        return cur;
+    }
+
+    def get(int nr) -> int {
+        Node n = this.getNode(nr);
+        return n.value;
+    }
+
+    def set(int nr, int value) -> void {
+        Node n = getNode(nr);
+        n.value = value;
+    }
 }
 
 
+def printList(List l) -> void {
+    putChar(91);
+    if (l.size != 0){
+    Node cur = l.head;
+    while (cur != l.tail) {
+        cur = cur.next;
+        print(cur.value);
+        putChar(32);
 
-def init(List this) -> void{
-    Node n;
-    this.head = n;
-    this.tail = n;
+    }} else {}
+    putChar(93);
+    putChar(10);
 }
-
-def append(List this, int value)-> void {
-    Node n;
-    this.tail.next = n;
-    this.tail = n;
-}
-
-
-def lastValue(List this)-> int {
-    return this.tail.value;
-}
-
-
 
 def main() -> int {
     List l;
-    init(l);
-    append(l, 1);
-    append(l, 5);
+    l.constructList();
+    l.addLast(5);
+    addLast(l,7);
+    l.addLast(9);
 
-    return lastValue(l);
-}
-
-def Bool_(int d) -> Bool {
-    Bool res;
-    if (d == 0) {
-        res.data = 0;
-    } else {
-        res.data = 1;
-    }
-    return res;
-}
-
-def and_(Bool a, Bool b) -> Bool {
-    return Bool_(a.data & b.data);
-}
-
-def append(List this, int value)-> void {
-    Node n;
-    this.tail.next = n;
-    this.tail = n;
-}
-
-
-def lastValue(List this)-> int {
-    return this.tail.value;
+    putChar(10);
+    l.printList();
 }

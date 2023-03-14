@@ -35,6 +35,8 @@ struct Tokenstream {
 
     Tokenstream(list<string>::iterator begin_, list<string>::iterator end_);
 
+    /*Tokenstream(const string& only_token);*/
+
     Tokenstream read_while(std::function<bool(string)> predicate);
 
     Tokenstream read_until(const string& token, bool stop_at_token = false);
