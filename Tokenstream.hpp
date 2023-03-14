@@ -10,6 +10,10 @@
 #include <map>
 #include <vector>
 #include <functional>
+#include <optional>
+#include <memory>
+
+#include "FileEditor.hpp"
 
 using std::string;
 using std::list;
@@ -17,25 +21,27 @@ using std::map;
 using std::vector;
 
 
-static const map<string,string> corresponding_bracket = {{"(",")"},{"{","}"},{"[","]"},{"/%","%/"},{"/*","*/"}};
+static const map<string,string> corresponding_bracket = {{"(",")"},{"{","}"},{"[","]"},{"/%","%/"},{"/*","*/"},
+                                                         {"'","'"}, {"\"","\""}};
 
 struct Tokenstream {
-    list<string>::iterator begin_;
-    list<string>::iterator end_;
+    vector<Token>::iterator begin_;
+    vector<Token>::iterator end_;
+
+    FileEditor* file_editor;
 
     bool empty() const;
     size_t size();
     void operator+=(int);
-    string operator*();
+    string operator*() const;
+    Token get_token();
 
     // only use this constructor if the only purpose is declaring a variable
     Tokenstream();
 
-    Tokenstream(list<string>* obj);
+    Tokenstream(FileEditor obj);
 
-    Tokenstream(list<string>::iterator begin_, list<string>::iterator end_);
-
-    /*Tokenstream(const string& only_token);*/
+    Tokenstream(vector<Token>::iterator begin_, vector<Token>::iterator end_);
 
     Tokenstream read_while(std::function<bool(string)> predicate);
 
@@ -46,6 +52,14 @@ struct Tokenstream {
     Tokenstream read_inside_brackets();
 
     std::string to_string();
+
+    void delete_token();
+
+    void insert_token(std::string word);
+
+    /*void delete_tokenstream();
+
+    void insert_tokenstream(Tokenstream other);*/
 };
 
 

@@ -16,9 +16,6 @@ ASTCalculationNode::ASTCalculationNode(std::shared_ptr<ASTCalculationNode> left,
 
 
     std::string ASTCalculationNode::compile() {
-        /*if (comp_type == VAR) {
-            return "mov -" + std::to_string(offset) + "("+frame_pointer+")" + ", " + reg + "\n";
-        } else*/
 
         if (comp_type == LIT) {
             return "mov $" + std::to_string(value) + "," + reg + "\n";
@@ -32,7 +29,6 @@ ASTCalculationNode::ASTCalculationNode(std::shared_ptr<ASTCalculationNode> left,
         std::string code;// = left->compile();
 
         std::vector<std::shared_ptr<ASTCalculationNode>> children = {left, right};
-
 
         for (auto child : children) {
             code+=child->compile();

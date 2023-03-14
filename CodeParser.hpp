@@ -26,6 +26,8 @@ private:
 
     bool is_valid_data_type(std::string token, std::shared_ptr<GlobalVariableManager> g);
 
+    void throw_parser_error(Tokenstream t, std::string message);
+
     void expect(Tokenstream t, string token);
 
     void expect_one_of(Tokenstream t, vector<string> tokens);

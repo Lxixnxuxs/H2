@@ -1,17 +1,16 @@
 #include <fstream>
 #include <iostream>
 #include "CodeParser.hpp"
-#include "lexer.hpp"
+#include "FileEditor.hpp"
 #include "abstract_syntax_tree/ASTRootNode.hpp"
+
 
 int main() {
     std::string path = "./resources/raw.txt";
-    std::ifstream file(path);
-    std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    Tokenstream t = lexer(content);
+    FileEditor fe = path;
 
     CodeParser parser;
-    std::shared_ptr<ASTRootNode> root = parser.parse(t);
+    std::shared_ptr<ASTRootNode> root = parser.parse({fe});
     std::string compilation = root->compile();
 
     // add some printing logic
@@ -36,5 +35,7 @@ int main() {
     ofile << ".globl main\n";
     ofile << compilation;
     ofile.close();
+
+    fe.apply_changes();
     return 0;
 }

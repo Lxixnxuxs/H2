@@ -14,7 +14,8 @@
 #include "abstract_syntax_tree/ASTVariableNode.hpp"
 
 static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-", SUB}, {"*", MUL}, {"/", DIV},
-                                                                 {"%", MOD}};
+                                                                 {"%", MOD}, {"&",BITWISE_AND},{"|",BITWISE_OR},
+                                                                 {"<<",SHIFT_L}, {">>",SHIFT_R}};
 
 
 string CodeParser::is_valid_identifier(std::string token) {
@@ -39,9 +40,15 @@ bool CodeParser::is_valid_data_type(std::string token, std::shared_ptr<GlobalVar
     return (g->class_exists(token) || find(data_types.begin(),data_types.end(),token) != data_types.end());
 }
 
+
+
+void CodeParser::throw_parser_error(Tokenstream t, std::string message) {
+    throw std::invalid_argument("PARSER ERROR "+ t.file_editor->get_error_position_information(t)+message);
+}
+
 void CodeParser::expect(Tokenstream t, string token){
     if (*t != token){
-        throw std::invalid_argument("PARSER ERROR  Expected '"+token+"' but recieved '"+*t+"'");
+        throw_parser_error(t," Expected '"+token+"' but recieved '"+*t+"'");
     }
 }
 
@@ -53,19 +60,19 @@ void CodeParser::expect_one_of(Tokenstream t, vector<string> tokens){
         }
     }
     if (!valid){
-        string message = "PARSER ERROR  Expected one of: ";
+        string message = "Expected one of: ";
         for (int i = 0; i<tokens.size(); i++){
             message+= "'"+tokens[i] + "' ";
         }
         message += " but recieved '"+*t+"'";
-        throw std::invalid_argument(message);
+        throw_parser_error(t,message);
     }
 }
 
 void CodeParser::expect_identifier(Tokenstream t) {
     string message = is_valid_identifier(*t);
     if (!message.empty()){
-        throw std::invalid_argument("PARSER ERROR  "+message);
+        throw_parser_error(t,message);
     }
 }
 
@@ -77,7 +84,7 @@ void CodeParser::expect_empty(Tokenstream t) {
             end_message += " '"+*t_copy+"'";
             t_copy+=1;
         }
-        throw std::invalid_argument("PARSER ERROR  Expected an empty stream but received a stream of size "+std::to_string(t.size())+" starting with " + end_message );
+        throw_parser_error(t,"Expected an empty stream but received a stream of size "+std::to_string(t.size())+" starting with " + end_message );
     }
 
 
@@ -85,13 +92,13 @@ void CodeParser::expect_empty(Tokenstream t) {
 
 void CodeParser::expect_data_type(Tokenstream t, std::shared_ptr<GlobalVariableManager> g) {
     if (!is_valid_data_type(*t,g)){
-        throw std::invalid_argument("PARSER ERROR  Expected a data type but received '"+*t+"'");
+        throw_parser_error(t,"Expected a data type but received '"+*t+"'");
     }
 }
 
 std::shared_ptr<ASTRootNode> CodeParser::parse(Tokenstream t) {
         if (t.empty()) {
-            throw std::invalid_argument("PARSER ERROR  cannot parse empty programm");
+            throw_parser_error(t, "cannot parse empty programm");
         }
         auto g = std::make_shared<GlobalVariableManager>();
 
@@ -232,6 +239,8 @@ std::shared_ptr<ASTFunctionNode> CodeParser::parse_function(Tokenstream& t, std:
 
 
     string func_name = *t;
+    if (g->function_exists(func_name)) throw_parser_error(t,"trying to define function '"+ func_name +"' which was already declared previously");
+
     var_manager->name = func_name;
 
         auto res = std::make_shared<ASTFunctionNode>();
@@ -410,7 +419,7 @@ std::map<string, VirtualMathTerm> CodeParser::parse_complexity(Tokenstream t) {
 VirtualMathTerm CodeParser::parse_complexity_term(Tokenstream t) {
     // TODO enable parsing of floats with . eg 1.5   will not work now
     if (t.empty()) {
-        throw std::invalid_argument("PARSER ERROR  cannot parse empty complexity_term");
+        throw_parser_error(t," cannot parse empty complexity_term");
     }
 
     // variable or number (checked in the constructor)
@@ -423,7 +432,7 @@ VirtualMathTerm CodeParser::parse_complexity_term(Tokenstream t) {
             double nr = stoi(*t);
             return {-1*nr};
         } catch (...) {
-            throw std::invalid_argument("PARSER ERROR  cannot parse '-[non_number]' ");
+            throw_parser_error(t,"  cannot parse '-[non_number]' ");
         }
     }
 
@@ -603,7 +612,7 @@ std::shared_ptr<ASTCallNode> CodeParser::parse_call(Tokenstream& t, std::shared_
 
 
         auto var_stream = t.read_while([this](std::string token){return (token=="." or is_valid_identifier(token).empty());});
-        if (var_stream.empty()) throw std::invalid_argument("PARSER ERROR: trying to parse function without name");
+        if (var_stream.empty()) throw_parser_error(t," trying to parse function without name");
 
         string func_name;
         std::optional<Tokenstream> implicit_argument_stream = {};
@@ -621,7 +630,7 @@ std::shared_ptr<ASTCallNode> CodeParser::parse_call(Tokenstream& t, std::shared_
 
 
         if (!g->function_exists(func_name)) {
-            throw std::invalid_argument("PARSER ERROR: trying to call function '" + func_name + "', which does not exist");
+            throw_parser_error(t," trying to call function '" + func_name + "', which does not exist");
         }
         auto argument_list = g->var_to_argument_list[func_name];
 
@@ -649,15 +658,15 @@ std::shared_ptr<ASTCallNode> CodeParser::parse_call(Tokenstream& t, std::shared_
 
         if (argument_count == argument_list.size() - 1 and !implicit_argument_stream and class_name) {
             // there may be one argument missing, because 'f()' instead of 'this.f()' was written
-            std::list<std::string> l = {"this"};
-            Tokenstream tmp = &l;
+            std::vector<Token> l = {{"this",{}}};
+            Tokenstream tmp = {l.begin(), l.end()};
 
             auto temp = parse_calculation(tmp,v,g,h, class_name);
             arguments.insert(arguments.begin(), temp);
         }
 
         while (!arguments_stream.empty()) {
-            if (arguments.size()>=argument_list.size()) throw std::invalid_argument("PARSER ERROR  '"+func_name+
+            if (arguments.size()>=argument_list.size()) throw_parser_error(t,"  '"+func_name+
                           "' was called with too many arguments (with more than "+ std::to_string(argument_list.size())+")");
 
             auto stream = arguments_stream.read_until(",");
@@ -665,7 +674,7 @@ std::shared_ptr<ASTCallNode> CodeParser::parse_call(Tokenstream& t, std::shared_
             // here should be implemented a type-check for the argument
         }
 
-        if (arguments.size()<argument_list.size()) throw std::invalid_argument("PARSER ERROR  '"+func_name+
+        if (arguments.size()<argument_list.size()) throw_parser_error(t," '"+func_name+
                            "' was called with not enough arguments: "+std::to_string(arguments.size())+" instead of "+ std::to_string(argument_list.size())+"");
 
         return std::make_shared<ASTCallNode>(nullptr, nullptr,VAR,"",0,0,g->var_to_node[func_name],arguments,h);
@@ -679,11 +688,11 @@ std::shared_ptr<ASTComparisonNode> CodeParser::parse_comparison(Tokenstream t, s
     std::shared_ptr<ASTCalculationNode> left, right;
 
         if (t.empty()){
-            throw std::invalid_argument("PARSER ERROR: trying to parse an empty comparison");
+            throw_parser_error(t," trying to parse an empty comparison");
         }
 
         if (t.size() == 1) {
-            throw std::invalid_argument("PARSER ERROR: trying to parse an comparison, but only recieved '"+*t+"'");
+            throw_parser_error(t," trying to parse an comparison, but only recieved '"+*t+"'");
         }
 
         auto first_calculation_stream = t.read_until_one_of(comparison_symbols, true);
@@ -713,7 +722,7 @@ std::shared_ptr<ASTCalculationNode> CodeParser::parse_calculation(Tokenstream t,
     };
 
     if (t.empty()) {
-        throw std::invalid_argument("PARSER ERROR: trying to parse an empty calculation");
+        throw_parser_error(t,"trying to parse an empty calculation");
     }
 
     while(!t.empty()) {
@@ -742,7 +751,7 @@ std::shared_ptr<ASTCalculationNode> CodeParser::parse_calculation(Tokenstream t,
                                                                   std::shared_ptr<GlobalVariableManager> g, int h, std::optional<std::string> class_name) {
     // receives open stream and extracts one symbol from it
     if (t.empty()) {
-        throw std::invalid_argument("PARSER ERROR: trying to parse an empty literal");
+        throw_parser_error(t," trying to parse an empty literal");
     }
 
     // try to interpret as a number
@@ -752,6 +761,20 @@ std::shared_ptr<ASTCalculationNode> CodeParser::parse_calculation(Tokenstream t,
         return std::make_shared<ASTCalculationNode>(nullptr, nullptr, LIT, regs[h], value, 0);
     } catch (...) {}
 
+    if (*t == "'"){
+        std::cout << "char!";
+    }
+    // try to interpret as char (like 'a')
+    if (*t == "'" and t.size() == 3){
+        t+=1;
+        std::string char_token = *t;
+        if (char_token.size() != 1) throw_parser_error(t," invalid character '" + char_token + "' found");
+        char char_ = char_token.at(0);
+        t+=1;
+        expect(t,"'");
+        t+=1;
+        return std::make_shared<ASTCalculationNode>(nullptr, nullptr, LIT, regs[h], int(char_), 0);
+    }
 
     auto copy = t;
     copy.read_while([this](std::string token){return (token=="." or is_valid_identifier(token).empty());});
@@ -789,7 +812,7 @@ std::shared_ptr<ASTVariableNode> CodeParser::parse_variable(Tokenstream t, bool 
     }
 
     if(prev_class_name and !global_vars->class_exists(prev_class_name.value())) {
-        throw std::invalid_argument("PARSER ERROR: Class " + prev_class_name.value() + " does not exist");
+        throw_parser_error(t," Class " + prev_class_name.value() + " does not exist");
     }
 
     // check if variable is defined
@@ -805,12 +828,12 @@ std::shared_ptr<ASTVariableNode> CodeParser::parse_variable(Tokenstream t, bool 
                 return std::make_shared<ASTVariableNode>("this", child, is_root, local_vars, global_vars, reg);
 
             } else {
-                throw std::invalid_argument("PARSER ERROR: Variable '" + *t + "' not defined");
+                throw_parser_error(t," Variable '" + *t + "' not defined");
             }
         }
     } else {
         if (!global_vars->class_to_local_manager[prev_class_name.value()]->variable_exists(*t)) {
-            throw std::invalid_argument("PARSER ERROR: Class " + prev_class_name.value() + " has no member " + *t);
+            throw_parser_error(t," Class " + prev_class_name.value() + " has no member " + *t);
         }
     }
 
@@ -836,3 +859,7 @@ std::shared_ptr<ASTVariableNode> CodeParser::parse_variable(Tokenstream t, bool 
         return std::make_shared<ASTVariableNode>(instance_name, child, is_root, local_vars, global_vars, reg);
     }
 }
+
+
+
+
