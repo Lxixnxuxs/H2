@@ -1,7 +1,7 @@
 //
 // Created by ray on 14.03.23.
 //
-
+#include <cassert>
 #include <fstream>
 #include "FileEditor.hpp"
 #include <algorithm>
@@ -123,16 +123,19 @@ std::pair<int, int> FileEditor::line_and_position_of_index(int index) {
 }
 
 Tokenstream FileEditor::get_line(int nr) {
+    assert(nr>=1);  // 1-indexing for lines
     Tokenstream res = Tokenstream(*this);
     res.end_ = res.begin_;
     std::advance(res.end_, line_break_positions[nr-1].second);
-    std::advance(res.begin_,line_break_positions[nr-2].second);
-
+    if (nr != 1) std::advance(res.begin_,line_break_positions[nr-2].second);
     return res;
 }
 
 std::string FileEditor::get_line_as_string(int nr) {
-    int begin = line_break_positions[nr-2].first;
+    assert(nr>=1);  // 1-indexing for lines
+    int begin;
+    if (nr != 1) { begin = line_break_positions[nr-2].first;}
+    else begin = 0;
     int end = line_break_positions[nr-1].first;
 
     return content.substr(begin,end-begin);
@@ -142,6 +145,7 @@ std::string FileEditor::get_line_as_string(int nr) {
 std::string FileEditor::get_error_position_information(Tokenstream t) {
     //try {t.file_editor->get_line(1);}
     //catch (...) { throw std::invalid_argument("this Tokenstream has no file editor");}
+    if (t.file_editor == nullptr) return "\n(no detailed information available)\n";
 
     auto token = t.get_token();
     int absolute_position = token.text_position_boundary.value().first;

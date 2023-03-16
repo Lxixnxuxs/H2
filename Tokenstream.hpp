@@ -28,7 +28,7 @@ struct Tokenstream {
     vector<Token>::iterator begin_;
     vector<Token>::iterator end_;
 
-    FileEditor* file_editor;
+    FileEditor* file_editor = nullptr;
 
     bool empty() const;
     size_t size();
@@ -42,6 +42,8 @@ struct Tokenstream {
     Tokenstream(FileEditor obj);
 
     Tokenstream(vector<Token>::iterator begin_, vector<Token>::iterator end_);
+
+    Tokenstream(FileEditor* obj, vector<Token>::iterator begin_, vector<Token>::iterator end_);
 
     Tokenstream read_while(std::function<bool(string)> predicate);
 

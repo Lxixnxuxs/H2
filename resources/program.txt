@@ -3,25 +3,34 @@ def showDigit(int a) -> void {
     putChar(a+48);
 }
 
-def recursivePrint(int a)-> void {
+def recursivePrint(int a, int basis)-> void {
     if (a!=0) {
-         int b = a % 10;
-         a = a/10;
-         recursivePrint(a);
+         int b = a % basis;
+         a = a/basis;
+         recursivePrint(a, basis);
          showDigit(b);
     } else {}
 }
 
-def print(int a)->void {
+def print(int a, int basis)->void {
     if (a==0) {
-        showDigit(0);
+        showDigit (0);
     } else {}
 
-    recursivePrint(a);
+    recursivePrint(a, basis);
 }
 
+def printDecimal(int a)->void {
+    print(a, 10);
+}
+
+def printBinary(int a)->void {
+    print(a, 2);
+}
+
+
 def printLn(int a) -> void {
-    print(a);
+    print(a,10);
     putChar(10);
 }
 
@@ -107,7 +116,7 @@ def printList(List l) -> void {
     Node cur = l.head;
     while (cur != l.tail) {
         cur = cur.next;
-        print(cur.value);
+        printDecimal(cur.value);
         putChar(32);
 
     }} else {}
@@ -115,13 +124,50 @@ def printList(List l) -> void {
     putChar(10);
 }
 
-def main() -> int {
-    List l;
-    l.constructList();
-    l.addLast(5);
-    addLast(l,7);
-    l.addLast(9);
 
+class String [] {
+    List storage;
+
+    def printString() -> void {
+        int i = 0;
+        while (i<storage.size){
+            putChar(storage.get(i));
+            i = i + 1;
+        }
+
+        putChar(10);
+    }
+}
+
+class Double [] {
+    int data;
+
+    def toInt() -> int {
+        int mantissa = data & 15;
+        int exp = (data >> 4) & 7;
+        return mantissa << exp;
+    }
+}
+
+def main() -> int {
+    /*List l;
+    l.constructList();
+    l.addLast('H');
+    addLast(l,'a');
+    l.addLast('l');
+    l.addLast('l');
+    l.addLast('o');
+
+    String s;
+    s.storage = l;
+
+
+    s.printString();
+    putChar(10);*/
+
+    Double d;
+    d.data = (2 << 4) + 6;
+    printBinary(d.data);
     putChar(10);
-    l.printList();
+    printDecimal(d.toInt());
 }

@@ -35,6 +35,8 @@
 
     Tokenstream::Tokenstream(vector<Token>::iterator begin_, vector<Token>::iterator end_): begin_(begin_), end_(end_) {}
 
+    Tokenstream::Tokenstream(FileEditor* obj, vector<Token>::iterator begin_, vector<Token>::iterator end_): file_editor(obj), begin_(begin_), end_(end_) {}
+
     Tokenstream Tokenstream::read_until(const string& token, bool stop_at_token){
         // gives back whole Tokenstream, if no instance is found
 
@@ -135,6 +137,9 @@ Tokenstream Tokenstream::read_while(std::function<bool(string)> predicate) {
 Token Tokenstream::get_token() {
     return *begin_;
 }
+
+
+
 /*
 void Tokenstream::delete_token() {
     if (!file_editor) {

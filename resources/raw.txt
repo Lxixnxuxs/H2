@@ -60,7 +60,7 @@ class List [size] {
     Node tail;
     int size;
 
-    def constructList() -> void {
+    def construct() -> void {
         Node dummy;
         dummy.construct(0);
         size = 0;
@@ -107,28 +107,29 @@ class List [size] {
         Node n = getNode(nr);
         n.value = value;
     }
+
+    def show() -> void {
+        putChar(91);
+        if (size != 0){
+        Node cur = head;
+        while (cur != tail) {
+            cur = cur.next;
+            printDecimal(cur.value);
+            putChar(32);
+        }} else {}
+        putChar(93);
+        putChar(10);
+    }
 }
 
 
-def printList(List l) -> void {
-    putChar(91);
-    if (l.size != 0){
-    Node cur = l.head;
-    while (cur != l.tail) {
-        cur = cur.next;
-        printDecimal(cur.value);
-        putChar(32);
 
-    }} else {}
-    putChar(93);
-    putChar(10);
-}
 
 
 class String [] {
     List storage;
 
-    def printString() -> void {
+    def show() -> void {
         int i = 0;
         while (i<storage.size){
             putChar(storage.get(i));
@@ -150,24 +151,27 @@ class Double [] {
 }
 
 def main() -> int {
-    /*List l;
-    l.constructList();
-    l.addLast('H');
-    addLast(l,'a');
-    l.addLast('l');
-    l.addLast('l');
-    l.addLast('o');
-
-    String s;
-    s.storage = l;
-
-
-    s.printString();
-    putChar(10);*/
 
     Double d;
     d.data = (2 << 4) + 6;
     printBinary(d.data);
     putChar(10);
     printDecimal(d.toInt());
+
+    /*List l;
+    l.construct();
+    l.addLast('H');
+    l.addLast('a');
+    l.addLast('l');
+    l.addLast('l');
+    l.addLast('o');
+    l.show();
+
+    String s;
+    s.storage = l;
+
+    s.show();
+    putChar(10);*/
+
+
 }

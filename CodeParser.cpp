@@ -239,6 +239,7 @@ std::shared_ptr<ASTFunctionNode> CodeParser::parse_function(Tokenstream& t, std:
 
 
     string func_name = *t;
+    if (class_name) func_name = class_method_name(class_name.value(), func_name);  // special class method naming
     if (g->function_exists(func_name)) throw_parser_error(t,"trying to define function '"+ func_name +"' which was already declared previously");
 
     var_manager->name = func_name;
@@ -621,13 +622,24 @@ std::shared_ptr<ASTCallNode> CodeParser::parse_call(Tokenstream& t, std::shared_
         if (var_stream.size() != 1) {
             auto copy = var_stream;
             while (copy.size() > 2) copy += 1;
-            implicit_argument_stream = Tokenstream(var_stream.begin_, copy.begin_);
+            implicit_argument_stream = Tokenstream(var_stream.file_editor,var_stream.begin_, copy.begin_);
             expect(copy,".");
             copy+=1;
             expect_identifier(copy);
             func_name = *copy;
         } else {func_name = *var_stream;}
 
+
+        // inducing class method name by implicit argument type
+        if (implicit_argument_stream) {
+            auto var = parse_variable(implicit_argument_stream.value(),true,"",v,g,class_name);
+            func_name = class_method_name(var->get_resulting_type(), func_name);
+        }
+
+        // trying to refer to a class function
+        if (class_name && g->function_exists(class_method_name(class_name.value(),func_name))) {
+            func_name = class_method_name(class_name.value(), func_name);
+        }
 
         if (!g->function_exists(func_name)) {
             throw_parser_error(t," trying to call function '" + func_name + "', which does not exist");
@@ -761,9 +773,6 @@ std::shared_ptr<ASTCalculationNode> CodeParser::parse_calculation(Tokenstream t,
         return std::make_shared<ASTCalculationNode>(nullptr, nullptr, LIT, regs[h], value, 0);
     } catch (...) {}
 
-    if (*t == "'"){
-        std::cout << "char!";
-    }
     // try to interpret as char (like 'a')
     if (*t == "'" and t.size() == 3){
         t+=1;
@@ -775,6 +784,7 @@ std::shared_ptr<ASTCalculationNode> CodeParser::parse_calculation(Tokenstream t,
         t+=1;
         return std::make_shared<ASTCalculationNode>(nullptr, nullptr, LIT, regs[h], int(char_), 0);
     }
+
 
     auto copy = t;
     copy.read_while([this](std::string token){return (token=="." or is_valid_identifier(token).empty());});
@@ -804,7 +814,9 @@ std::shared_ptr<ASTVariableNode> CodeParser::parse_variable(Tokenstream t, bool 
                                                             std::shared_ptr<GlobalVariableManager> global_vars,
                                                             std::optional<std::string> prev_class_name, bool is_declaration, bool comes_after_implicit_this) {
 
-
+    if (*t=="storage"){
+        std::cout << "here";
+    }
 
     if (!is_root && !comes_after_implicit_this) {
         expect(t, ".");
@@ -828,7 +840,7 @@ std::shared_ptr<ASTVariableNode> CodeParser::parse_variable(Tokenstream t, bool 
                 return std::make_shared<ASTVariableNode>("this", child, is_root, local_vars, global_vars, reg);
 
             } else {
-                throw_parser_error(t," Variable '" + *t + "' not defined");
+                throw_parser_error(t,"Variable '" + *t + "' not defined");
             }
         }
     } else {

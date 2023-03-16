@@ -46,4 +46,6 @@ const std::string frame_pointer = "%rbp";
 //const std::string heap_pointer = "%r10";
 
 const int block_indentation = 4;
+
+std::string class_method_name(std::string class_,  std::string func_);
 #endif //H2_GLOBAL_INFORMATION_HPP
