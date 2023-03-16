@@ -740,11 +740,11 @@ std::shared_ptr<ASTCalculationNode> CodeParser::parse_calculation(Tokenstream t,
     while(!t.empty()) {
         if (!next_comes_operator) {
             if (*t == "(") {
-                add_to_calculation(parse_calculation(t.read_inside_brackets(), v, g, h, class_name));
-                h+=1; // reuse all but one register from sub-calculation
+                add_to_calculation(parse_calculation(t.read_inside_brackets(), v, g, (calculation_until_now)? h+1 : h, class_name));    // dont use reg h+1 if it is the first part of a calculation
+                //h+=1; // reuse all but one register from sub-calculation
             } else {
-                add_to_calculation(parse_literal(t, v, g, h, class_name));
-                h+=1; // go to next calculation register
+                add_to_calculation(parse_literal(t, v, g, (calculation_until_now)? h+1 : h, class_name));
+                //h+=1; // go to next calculation register
             }
         } else {
             expect_one_of(t, operator_symbols);

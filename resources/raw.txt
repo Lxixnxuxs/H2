@@ -1,5 +1,6 @@
 
 def showDigit(int a) -> void {
+    /*int a = (3 + 4) * (5 + 1);*/
     putChar(a+48);
 }
 
@@ -22,10 +23,12 @@ def print(int a, int basis)->void {
 
 def printDecimal(int a)->void {
     print(a, 10);
+    putChar(10);
 }
 
 def printBinary(int a)->void {
     print(a, 2);
+    putChar(10);
 }
 
 
@@ -140,23 +143,36 @@ class String [] {
     }
 }
 
+def exp(int base, int exp_) -> int {
+    int res = 1;
+    while(exp_>0){
+        exp_ = exp_ - 1;
+        res = res * base;
+    }
+    return res;
+}
+
 class Double [] {
     int data;
 
     def toInt() -> int {
         int mantissa = data & 15;
-        int exp = (data >> 4) & 7;
-        return mantissa << exp;
+        
+        int exponent = (data >> 4) & 7;
+        mantissa = mantissa * exp(10,exponent);
+        return mantissa;
     }
 }
 
 def main() -> int {
 
     Double d;
-    d.data = (2 << 4) + 6;
+    d.data = (3 << 4) + 6;
     printBinary(d.data);
     putChar(10);
-    printDecimal(d.toInt());
+    int r = d.toInt();
+    putChar(10);
+    printDecimal(r);
 
     /*List l;
     l.construct();

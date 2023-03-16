@@ -6,7 +6,7 @@
 #include <iostream>
 #include "../global_information.hpp"
 #include "ASTVariableNode.hpp"
-
+#include <cassert>
 
 ASTCalculationNode::ASTCalculationNode(std::shared_ptr<ASTCalculationNode> left, std::shared_ptr<ASTCalculationNode> right, ComputationOp comp_type, std::string reg,
                        int value, size_t offset, std::string var_name): left(left), right(right), comp_type(comp_type), value(value), offset(offset), var_name(var_name) {
@@ -26,6 +26,11 @@ ASTCalculationNode::ASTCalculationNode(std::shared_ptr<ASTCalculationNode> left,
             return "mov $" + optimize_literal_computation() + ", " + reg + "\n";
         } else {*/
 
+        //assert(left->reg != right->reg);
+        if (left->reg == right->reg){
+            std::cout << "error";
+        }
+
         std::string code;// = left->compile();
 
         std::vector<std::shared_ptr<ASTCalculationNode>> children = {left, right};
@@ -40,14 +45,20 @@ ASTCalculationNode::ASTCalculationNode(std::shared_ptr<ASTCalculationNode> left,
         if (comp_type == DIV) {
             /*code += "mov " + left->reg + ", %eax\nmov " + right->reg + ", %edx\n" +
                     "div " + (own_reg ? reg : left->reg) + "\n";*/
-            code += "mov $0, %rdx\nmov " + left->reg + ", %rax\ndiv " + right->reg +
-                    (own_reg ? "\nmov %rax, " + reg : "\nmov %rax, " + left->reg) + "\n"; // TODO may the order in the ternary operator be wrong?
+            code += "mov $0, %rdx\n"
+                    "mov " + left->reg + ", %rax\n"
+                    "div " + right->reg + "\n"
+                    "mov %rax, " + left->reg + "\n";
+                    //(own_reg ? "\nmov %rax, " + reg : "\nmov %rax, " + left->reg) + "\n"; // TODO may the order in the ternary operator be wrong?
             return code;
         }
 
         if (comp_type == MOD) {
-            code += "mov $0, %rdx\nmov " + left->reg + ", %rax\ndiv " + right->reg +
-                            (own_reg ? "\nmov %rdx, " + reg : "\nmov %rdx, " + left->reg) + "\n";
+            code += "mov $0, %rdx\n"
+                    "mov " + left->reg + ", %rax\n"
+                    "div " + right->reg + "\n"
+                    "mov %rdx, " + left->reg + "\n";
+                            //(own_reg ? "\nmov %rdx, " + reg : "\nmov %rdx, " + left->reg) + "\n";
             return code;
         }
 
@@ -55,13 +66,13 @@ ASTCalculationNode::ASTCalculationNode(std::shared_ptr<ASTCalculationNode> left,
                         // shifts can only be done by 8-bit shift amount stored in the cl-register
                         // note that the content of rcx is overwritten here
             code += "mov " + right->reg + ", " + "%rcx\n";
-            code += computation_op_to_string() + " %cl, " + left->reg +
-                            (own_reg ? "\nmov " + left->reg + "," + reg + "\n" : "\n");
+            code += computation_op_to_string() + " %cl, " + left->reg + "\n";
+                            //(own_reg ? "\nmov " + left->reg + "," + reg + "\n" : "\n");
             return code;
         }
 
-        code += computation_op_to_string() + " " + right->reg + "," + left->reg +
-                            (own_reg ? "\nmov " + left->reg + "," + reg + "\n" : "\n");
+        code += computation_op_to_string() + " " + right->reg + ", " + left->reg + "\n";
+                            //(own_reg ? "\nmov " + left->reg + "," + reg + "\n" : "\n");
         return code;
 
 
@@ -71,7 +82,7 @@ ASTCalculationNode::ASTCalculationNode(std::shared_ptr<ASTCalculationNode> left,
         switch (comp_type) {
             case ADD: return "add";
             case SUB: return "sub";
-            case MUL: return "mul";
+            case MUL: return "imul";
             case DIV: return "div";
             case BITWISE_AND: return "and";
             case BITWISE_OR: return "or";

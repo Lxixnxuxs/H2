@@ -24,7 +24,7 @@ struct ASTFunctionNode : public ASTNode {
     bool virtual_exec_surrendered = false;
     bool within_active_analysis = false; // mark which functions do not have a closed form yet
 
-    int callee_reg_size = 4;
+    int callee_reg_size = 8;
     int callee_reg_count = callee_save_regs.size();
 
     ASTFunctionNode(std::string f_name, std::vector<std::shared_ptr<ASTStatementNode>> body, std::shared_ptr<LocalVariableManager> stack_frame, size_t arg_stackpart_size,
