@@ -10,10 +10,10 @@
 #include "../global_information.hpp"
 #include "../complexity_analyzer/virtual_math_term.hpp"
 #include "../LocalVariableManager.hpp"
-
-//extern struct ExecutionPath;
 #include "../complexity_analyzer/ExecutionPath.hpp"
 #include "../complexity_analyzer/recursive_analysis.hpp"
+#include "../Tokenstream.hpp"
+#include "../FileEditor.hpp"
 
 
 #include "ASTFunctionNode.hpp"
@@ -80,7 +80,20 @@ ASTFunctionNode::ASTFunctionNode(std::string f_name, std::vector<std::shared_ptr
     }
 
     std::string ASTFunctionNode::to_code() {
-        auto res = get_indentation(block_level)+"def " + f_name + "(";
+
+        // override complexity
+        if (complexity_stream.first == nullptr) throw std::invalid_argument("func node has no complexity stream to override");
+
+        std::string new_complexity_string;
+        new_complexity_string += "/% ";
+        if (!complexity_is_custom) {
+            new_complexity_string += "_";
+        }
+        new_complexity_string += "O(" + complexity.as_string() + ") %/";
+
+        complexity_stream.first->enqueue_change(Replacement(complexity_stream.second.first,complexity_stream.second.second, new_complexity_string));//replace_stream_with("@somethi");
+
+        /*auto res = get_indentation(block_level)+"def " + f_name + "(";
         for (int i = 0; i<argument_list.size(); i++) {
             res += argument_list[i].second + " " + argument_list[i].first;
             if (i!=argument_list.size()-1) res += ", ";
@@ -98,7 +111,8 @@ ASTFunctionNode::ASTFunctionNode(std::string f_name, std::vector<std::shared_ptr
 
         res += get_indentation(block_level)+"}\n";
 
-        return res;
+        return res;*/
+        return "";
     }
 
     void ASTFunctionNode::set_block_level(int n) {

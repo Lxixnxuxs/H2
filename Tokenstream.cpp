@@ -31,7 +31,7 @@
     // only use this constructor if the only purpose is declaring a variable
     Tokenstream::Tokenstream(){}
 
-    Tokenstream::Tokenstream(FileEditor obj): begin_(obj.tokens.begin()), end_(obj.tokens.end()), file_editor(&obj) {}
+    Tokenstream::Tokenstream(FileEditor* obj): begin_(obj->tokens.begin()), end_(obj->tokens.end()), file_editor(obj) {}
 
     Tokenstream::Tokenstream(vector<Token>::iterator begin_, vector<Token>::iterator end_): begin_(begin_), end_(end_) {}
 
@@ -111,11 +111,14 @@
         return res;
     }
 
-std::string Tokenstream::to_string() {
+std::string Tokenstream::to_string(std::string seperator) {
     std::string text;
     auto old_begin = begin_;
+    bool first_iteration = true;
     while(!empty()) {
-        text+=" ";
+        if (!first_iteration) {
+            text+=seperator;
+        } else first_iteration = false;
         text += operator*();
         begin_++;
     }
@@ -138,6 +141,21 @@ Token Tokenstream::get_token() {
     return *begin_;
 }
 
+void Tokenstream::replace_stream_with(std::string) {
+    if (!file_editor) {
+        throw std::invalid_argument("tried to modify file editor from tokenstream without file editor");
+    }
+    if (!get_token().text_position_boundary ){
+        throw std::invalid_argument("tried to modify file editor from tokenstream, but the tokens do not know their position");
+    }
+    file_editor->enqueue_change(Replacement(get_token().text_position_boundary->first, (*end_).text_position_boundary->second, "@replacement"));
+}
+
+Tokenstream::Tokenstream(Tokenstream const &other) {
+    file_editor = other.file_editor;
+    begin_ = other.begin_;
+    end_ = other.end_;
+}
 
 
 /*

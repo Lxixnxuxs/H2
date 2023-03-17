@@ -39,11 +39,13 @@ struct Tokenstream {
     // only use this constructor if the only purpose is declaring a variable
     Tokenstream();
 
-    Tokenstream(FileEditor obj);
+    Tokenstream(FileEditor* obj);
 
     Tokenstream(vector<Token>::iterator begin_, vector<Token>::iterator end_);
 
     Tokenstream(FileEditor* obj, vector<Token>::iterator begin_, vector<Token>::iterator end_);
+
+    Tokenstream(Tokenstream const& other);
 
     Tokenstream read_while(std::function<bool(string)> predicate);
 
@@ -53,11 +55,13 @@ struct Tokenstream {
 
     Tokenstream read_inside_brackets();
 
-    std::string to_string();
+    std::string to_string(std::string seperator = " ");
 
-    void delete_token();
+    void replace_stream_with(std::string);
 
-    void insert_token(std::string word);
+    /*void delete_token();
+
+    void insert_token(std::string word);*/
 
     /*void delete_tokenstream();
 

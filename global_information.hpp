@@ -41,8 +41,9 @@ const std::vector<std::string> comparison_symbols = {"==","!=","<=",">=","<",">"
 const std::vector<std::string> data_types = {"void","int"};
 extern std::map<std::string, size_t> type_to_size; // = { {"void",0},{"int", 4} }
 
-const std::string stack_pointer = "%rsp";
 const std::string frame_pointer = "%rbp";
+const std::string stack_pointer = "%rsp";
+
 //const std::string heap_pointer = "%r10";
 
 const int block_indentation = 4;

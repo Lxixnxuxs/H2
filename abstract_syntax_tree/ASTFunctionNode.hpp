@@ -7,16 +7,20 @@
 #include "../complexity_analyzer/virtual_math_term.hpp"
 struct ASTStatementNode;
 struct LocalVariableManager;
-
+struct Tokenstream;
+struct FileEditor;
 
 struct ASTFunctionNode : public ASTNode {
 
+    std::pair<FileEditor*,std::pair<int,int>> complexity_stream;
     std::string f_name;
     size_t arg_stackpart_size;
     std::shared_ptr<LocalVariableManager> stack_frame;
     std::vector<std::shared_ptr<ASTStatementNode>> body;
     std::vector<std::pair<std::string,std::string>> argument_list;  // name to type
     std::string return_type;
+
+
 
     std::optional<std::string> class_name;
 

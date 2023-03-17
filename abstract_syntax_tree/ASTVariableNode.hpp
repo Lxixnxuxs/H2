@@ -34,9 +34,9 @@ struct ASTVariableNode : ASTCalculationNode {
 
     std::string compile() override;
 
-    VirtualMathTerm get_complexity(){};
+    VirtualMathTerm get_complexity();
 
-    std::string to_code(){};
+    std::string to_code();
 
     std::string get_class(){return "ASTVariableNode";};
 

@@ -7,7 +7,7 @@
 
 int main() {
     std::string path = "./resources/raw.txt";
-    FileEditor fe = path;
+    auto* fe = new FileEditor(path);
 
     CodeParser parser;
     std::shared_ptr<ASTRootNode> root = parser.parse({fe});
@@ -36,6 +36,16 @@ int main() {
     ofile << compilation;
     ofile.close();
 
-    fe.apply_changes();
+    root->get_complexity();
+    root->set_block_level(0);
+
+    auto new_code = root->to_code();
+
+    /*std::ofstream override_file("./resources/raw.txt");
+    override_file << new_code;
+    override_file.close();*/
+
+
+    fe->apply_changes();
     return 0;
 }

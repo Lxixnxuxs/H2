@@ -22,6 +22,8 @@ struct ASTClassNode;
 
 class CodeParser {
 private:
+    bool is_integer(std::string token);
+
     string is_valid_identifier(std::string token);
 
     bool is_valid_data_type(std::string token, std::shared_ptr<GlobalVariableManager> g);
@@ -60,6 +62,8 @@ public:
     std::map<string, VirtualMathTerm> parse_complexity(Tokenstream t);
 
     VirtualMathTerm parse_complexity_term(Tokenstream t);
+
+    VirtualMathTerm parse_complexity_literal(Tokenstream& t);
 
     std::shared_ptr<ASTStatementNode> parse_line(Tokenstream t, std::shared_ptr<LocalVariableManager> v, std::shared_ptr<GlobalVariableManager> g, std::optional<std::string> class_name = {});
 

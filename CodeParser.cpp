@@ -18,6 +18,8 @@ static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-
                                                                  {"<<",SHIFT_L}, {">>",SHIFT_R}, {"€",BITWISE_XOR}};
 
 
+
+
 string CodeParser::is_valid_identifier(std::string token) {
     // returns a error message. If it returns empty string, the identifier is valid
 
@@ -274,10 +276,15 @@ std::shared_ptr<ASTFunctionNode> CodeParser::parse_function(Tokenstream& t, std:
 
     map<string, VirtualMathTerm> complexity_map;
     if (*t == "/%") {
+        auto replacement_start = t.begin_->text_position_boundary->first;
+
         // a complexity annotation is given
         Tokenstream complexity_stream = t.read_inside_brackets();
         res->initialize_with_complexity_map(parse_complexity(complexity_stream));
-    }
+
+        res->complexity_stream = {complexity_stream.file_editor,{ replacement_start, complexity_stream.end_->text_position_boundary->second}};
+    } else {res->complexity_stream = {t.file_editor,{t.begin_->text_position_boundary->first, t.begin_->text_position_boundary->first}};}
+
 
 
     expect(t,"{");
@@ -402,7 +409,7 @@ std::map<string, VirtualMathTerm> CodeParser::parse_complexity(Tokenstream t) {
 
     while (!t.empty()) {
 
-        expect_one_of(t,{"O","I","_O","_I","C","_C"});
+        expect_one_of(t,{"O","_O"});
         std::string op = *t;
         bool custom = (op[0] != '_');
         t+=1; // disregard operator
@@ -418,13 +425,59 @@ std::map<string, VirtualMathTerm> CodeParser::parse_complexity(Tokenstream t) {
 }
 
 VirtualMathTerm CodeParser::parse_complexity_term(Tokenstream t) {
-    // TODO enable parsing of floats with . eg 1.5   will not work now
+
+    std::string most_recent_operation;
+    std::optional<VirtualMathTerm> calculation_until_now = {};
+    bool next_comes_operator = false;
+
+    // function to safely build the calculation tree
+    auto add_to_calculation = [&](VirtualMathTerm node){
+        if (!calculation_until_now) {
+            calculation_until_now = node;
+        } else {
+            node.children.push_back(calculation_until_now.value());
+            calculation_until_now = node;
+        }
+    };
+
+    if (t.empty()) {
+        throw_parser_error(t,"trying to parse an empty complexity");
+    }
+
+    while(!t.empty()) {
+        if (!next_comes_operator) {
+            if (*t == "(") {
+                add_to_calculation(parse_complexity_term(t.read_inside_brackets()));
+            } else {
+                add_to_calculation(parse_complexity_literal(t));
+            }
+        } else {
+            expect_one_of(t, complexity_operator_symbols);
+            most_recent_operation = *t;
+            t+=1; // discard operator
+        }
+        next_comes_operator = !next_comes_operator;
+    }
+
+    return calculation_until_now.value();
+
+
+
+
+
+
+
+/*
     if (t.empty()) {
         throw_parser_error(t," cannot parse empty complexity_term");
     }
 
-    // variable or number (checked in the constructor)
+    // variable or integer (checked in the constructor)
     if (t.size() == 1) return {*t};
+
+    auto copy = t;
+    auto number_stream = copy.read_while([this](std::string token){return token == "." or is_integer(token);});
+
 
     // take negative numbers into account
     if (t.size() == 2 and *t == "-") {
@@ -442,17 +495,17 @@ VirtualMathTerm CodeParser::parse_complexity_term(Tokenstream t) {
         expect(t,"(");
         Tokenstream arg_stream = t.read_inside_brackets();
 
-            expect_empty(t); // should be empty, because log (without brackets) can only occur without any + * etc. concatenation
+        expect_empty(t); // should be empty, because log (without brackets) can only occur without any + * etc. concatenation
 
-            auto first_arg = arg_stream.read_until(",");
-            if (arg_stream.empty()) {   // only one argument -> implicit log10(arg)
-                return VirtualMathTerm(LOGARITHM, {10,parse_complexity_term(first_arg)});
-            } else {
-                return VirtualMathTerm(LOGARITHM, {parse_complexity_term(first_arg),parse_complexity_term(arg_stream)});
-            }
+        auto first_arg = arg_stream.read_until(",");
+        if (arg_stream.empty()) {   // only one argument -> implicit log10(arg)
+            return VirtualMathTerm(LOGARITHM, {10,parse_complexity_term(first_arg)});
+        } else {
+            return VirtualMathTerm(LOGARITHM, {parse_complexity_term(first_arg),parse_complexity_term(arg_stream)});
         }
+    }
 
-        VirtualMathTerm first;
+    VirtualMathTerm first;
         VirtualMathTerm second;
         string operation;
 
@@ -494,7 +547,47 @@ VirtualMathTerm CodeParser::parse_complexity_term(Tokenstream t) {
         res.children.push_back(second);
 
         return res;
+    }*/
+}
+
+VirtualMathTerm CodeParser::parse_complexity_literal(Tokenstream& t) {
+    if (t.empty()) {
+        throw_parser_error(t," cannot parse empty complexity_term");
     }
+
+    auto number_stream = t.read_while([this](std::string token){return token == "." or token == "-" or is_integer(token);});
+
+    if (number_stream.size() > 0) {
+        int number_size = number_stream.size();
+        if (*number_stream == "-") number_size-=1;
+        if (number_size != 1 and number_size != 3) throw_parser_error(number_stream,"invalid number format given");
+        try {
+            VirtualMathTerm res = {number_stream.to_string(".")}; // unite pieces back into one string and let c++ parse the double
+            return res;
+        } catch (...) {
+            throw_parser_error(number_stream, "invalid number format given");
+        }
+    }
+
+    if (*t=="log") {
+        t+=1; // disregard log
+        expect(t,"(");
+        Tokenstream arg_stream = t.read_inside_brackets();
+
+        auto first_arg = arg_stream.read_until(",");
+        if (arg_stream.empty()) {   // only one argument -> implicit log10(arg)
+            return VirtualMathTerm(LOGARITHM, {10,parse_complexity_term(first_arg)});
+        } else {
+            return VirtualMathTerm(LOGARITHM, {parse_complexity_term(first_arg),parse_complexity_term(arg_stream)});
+        }
+    }
+
+    // variable (checked in the constructor)
+    std::string var = *t;
+    t += 1;
+    return {var};
+}
+
 
 std::shared_ptr<ASTStatementNode> CodeParser::parse_line(Tokenstream t, std::shared_ptr<LocalVariableManager> v,
                                                          std::shared_ptr<GlobalVariableManager> g, std::optional<std::string> class_name){
@@ -814,9 +907,6 @@ std::shared_ptr<ASTVariableNode> CodeParser::parse_variable(Tokenstream t, bool 
                                                             std::shared_ptr<GlobalVariableManager> global_vars,
                                                             std::optional<std::string> prev_class_name, bool is_declaration, bool comes_after_implicit_this) {
 
-    if (*t=="storage"){
-        std::cout << "here";
-    }
 
     if (!is_root && !comes_after_implicit_this) {
         expect(t, ".");
@@ -871,6 +961,15 @@ std::shared_ptr<ASTVariableNode> CodeParser::parse_variable(Tokenstream t, bool 
         return std::make_shared<ASTVariableNode>(instance_name, child, is_root, local_vars, global_vars, reg);
     }
 }
+
+bool CodeParser::is_integer(std::string token) {
+    try {
+        int value = std::stoi(token);  // this may cause an error, it it isn't a number
+        return true;
+    } catch (...) {}
+    return false;
+}
+
 
 
 

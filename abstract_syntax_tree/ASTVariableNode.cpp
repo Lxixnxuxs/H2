@@ -7,6 +7,7 @@
 #include "../LocalVariableManager.hpp"
 #include "../GlobalVariableManager.hpp"
 #include "../global_information.hpp"
+#include "../complexity_analyzer/virtual_math_term.hpp"
 
 ASTVariableNode::ASTVariableNode(std::string name, std::shared_ptr<ASTVariableNode> child,
                                  bool is_root, std::shared_ptr<LocalVariableManager> local_vars, std::shared_ptr<GlobalVariableManager> global_vars,
@@ -62,6 +63,18 @@ std::string ASTVariableNode::compile() {
 std::string ASTVariableNode::get_resulting_type(std::string last_class_name) {
     if (child == nullptr) return get_type(last_class_name);
     else return child->get_resulting_type(get_type(last_class_name));
+}
+
+VirtualMathTerm ASTVariableNode::get_complexity() {
+    complexity = {1};
+    return complexity;
+}
+
+std::string ASTVariableNode::to_code() {
+    if (child == nullptr) return name;
+    else {
+        return name + "." + child->to_code();
+    }
 }
 
 

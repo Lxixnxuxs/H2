@@ -124,7 +124,7 @@ std::pair<int, int> FileEditor::line_and_position_of_index(int index) {
 
 Tokenstream FileEditor::get_line(int nr) {
     assert(nr>=1);  // 1-indexing for lines
-    Tokenstream res = Tokenstream(*this);
+    auto res = Tokenstream(this);
     res.end_ = res.begin_;
     std::advance(res.end_, line_break_positions[nr-1].second);
     if (nr != 1) std::advance(res.begin_,line_break_positions[nr-2].second);

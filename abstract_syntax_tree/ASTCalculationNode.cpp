@@ -149,7 +149,10 @@ ASTCalculationNode::ASTCalculationNode(std::shared_ptr<ASTCalculationNode> left,
 
     VirtualMathTerm ASTCalculationNode::as_math_term() {
         if (comp_type == LIT) return VirtualMathTerm(value, false);
-        if (comp_type == VAR) return VirtualMathTerm(var_name, false);
+        if (comp_type == VAR) {
+            ASTVariableNode* tmp = dynamic_cast<ASTVariableNode*>(this);
+            return VirtualMathTerm(tmp->to_code(), false);
+        }
 
         auto left_term = left->as_math_term();
         auto right_term = right->as_math_term();

@@ -1,5 +1,6 @@
 
 def showDigit(int a) -> void {
+    /*int a = (3 + 4) * (5 + 1);*/
     putChar(a+48);
 }
 
@@ -20,12 +21,19 @@ def print(int a, int basis)->void {
     recursivePrint(a, basis);
 }
 
-def printDecimal(int a)->void {
+def printD(int a)->void {
+    if (a<0) {
+        putChar('-');
+        a = 0 - 1 € a + 1;
+        /* This creates the 2-complement */
+    } else {}
     print(a, 10);
+    putChar(10);
 }
 
-def printBinary(int a)->void {
+def printB(int a)->void {
     print(a, 2);
+    putChar(10);
 }
 
 
@@ -60,7 +68,7 @@ class List [size] {
     Node tail;
     int size;
 
-    def constructList() -> void {
+    def construct() -> void {
         Node dummy;
         dummy.construct(0);
         size = 0;
@@ -107,28 +115,29 @@ class List [size] {
         Node n = getNode(nr);
         n.value = value;
     }
+
+    def show() -> void {
+        putChar(91);
+        if (size != 0){
+        Node cur = head;
+        while (cur != tail) {
+            cur = cur.next;
+            printD(cur.value);
+            putChar(32);
+        }} else {}
+        putChar(93);
+        putChar(10);
+    }
 }
 
 
-def printList(List l) -> void {
-    putChar(91);
-    if (l.size != 0){
-    Node cur = l.head;
-    while (cur != l.tail) {
-        cur = cur.next;
-        printDecimal(cur.value);
-        putChar(32);
 
-    }} else {}
-    putChar(93);
-    putChar(10);
-}
 
 
 class String [] {
     List storage;
 
-    def printString() -> void {
+    def show() -> void {
         int i = 0;
         while (i<storage.size){
             putChar(storage.get(i));
@@ -139,35 +148,100 @@ class String [] {
     }
 }
 
+def exp(int base, int exp_) -> int {
+    int res = 1;
+    while(exp_>0){
+        exp_ = exp_ - 1;
+        res = res * base;
+    }
+    while (exp_ < 0) {
+        exp_ = exp_ + 1;
+        res = res / base;
+    }
+    return res;
+}
+
+
 class Double [] {
     int data;
+    int exp_minus;
+
+    def construct() -> void {
+         exp_minus = 1 << 6 - 1;
+    }
+
+    def getMantissa(int useless_argument) -> int {
+    /*
+        The format uses a mantissa of 8 bit, an exponent of 7 and one sign bit
+        seeeeeeemmmmmmmm
+        */
+        return data & (1 << 8 - 1);
+    }
+
+    def getExponent() -> int {
+        int raw =  (data >> 8) & (1 << 7 - 1);
+        return raw;
+    }
+
+    def unite(int exponent, int mantissa) -> void {
+        data = exponent << 8 | mantissa;
+    }
+
+    def fromInt(int a) -> void {
+        int exponent = exp_minus;
+        int mantissa = a;
+        unite(exponent, mantissa);
+    }
+
+    def mul10() -> void {
+        unite( getExponent() - 1,getMantissa(8));
+    }
 
     def toInt() -> int {
-        int mantissa = data & 15;
-        int exp = (data >> 4) & 7;
-        return mantissa << exp;
+        int mantissa = getMantissa(8);
+        printD(mantissa);
+        int exponent = getExponent() - exp_minus;
+        printD(exponent);
+        if (exponent >= 0 ) {
+            mantissa = mantissa << exponent;
+        } else {
+            mantissa = mantissa >> (0 - exponent);
+        }
+
+        return mantissa;
     }
+
+    def show() -> void {
+
+    }
+
+
 }
 
 def main() -> int {
+    Double d;
+    d.construct();
+    /*d.data = (3 << 8) + 6;*/
+    d.fromInt(99);
+    d.mul10();
+    d.mul10();
+    printB(d.data);
+    int r = d.toInt();
+    printD(r);
+
     /*List l;
-    l.constructList();
+    l.construct();
     l.addLast('H');
-    addLast(l,'a');
+    l.addLast('a');
     l.addLast('l');
     l.addLast('l');
     l.addLast('o');
+    l.show();
 
     String s;
     s.storage = l;
 
-
-    s.printString();
+    s.show();
     putChar(10);*/
 
-    Double d;
-    d.data = (2 << 4) + 6;
-    printBinary(d.data);
-    putChar(10);
-    printDecimal(d.toInt());
 }

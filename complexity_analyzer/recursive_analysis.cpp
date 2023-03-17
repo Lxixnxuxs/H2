@@ -72,7 +72,9 @@ std::vector<double> get_base_case_direction(LogicTerm base_case, std::vector<std
     int var_index = (base_case.math_children[0].type == VARIABLE) ? 0 : 1;
     auto var_term = base_case.math_children[var_index];
 
-    int index = std::distance(var_names.begin(), std::find(var_names.begin(), var_names.end(), var_term.name));//extract_param_nr(var_term.name);
+    auto tmp = std::find(var_names.begin(), var_names.end(), var_term.name);
+    if (tmp == var_names.end()) {throw std::invalid_argument("recursive analysis get_base_case direction: variable in base case not found!");}
+    int index = std::distance(var_names.begin(), tmp);//extract_param_nr(var_term.name);
     res.insert(res.end(),fmax(index,0),0);
     int value = (base_case.type == LESS or base_case.type == LESS_EQUAL)? -1 : 1;
 
