@@ -15,7 +15,7 @@
 
 static std::map<std::string, ComputationOp> op_string_to_type = {{"+", ADD}, {"-", SUB}, {"*", MUL}, {"/", DIV},
                                                                  {"%", MOD}, {"&",BITWISE_AND},{"|",BITWISE_OR},
-                                                                 {"<<",SHIFT_L}, {">>",SHIFT_R}};
+                                                                 {"<<",SHIFT_L}, {">>",SHIFT_R}, {"€",BITWISE_XOR}};
 
 
 string CodeParser::is_valid_identifier(std::string token) {

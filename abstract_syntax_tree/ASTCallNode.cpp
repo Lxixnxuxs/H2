@@ -20,6 +20,9 @@ ASTCallNode::ASTCallNode(std::shared_ptr<ASTCalculationNode> left, std::shared_p
         for (int i = 0; i<arguments.size(); i++) {
             code += arguments[i]->compile();
             follow_variable_reference_if_applying(arguments[i],code);
+        }
+        // first calculating subexpressions, then moving into argument registers. This ensures, that nested calls will not override argument registers of this call
+        for (int i = 0; i<arguments.size(); i++) {
             code += "mov "+regs[i+h]+", "+argument_regs[i]+"\n";   // put subcalculation-result in corresponding argument place
         }
 
